@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.18.0 — VM byte layer (full addresses + strings → real ERC-721)
+
+- **Byte-storage layer** in the VM: contracts now have `bkey → []byte` storage beside the uint64
+  store, for **full addresses and strings**. New opcodes `BSTORE` (copy a calldata byte-range),
+  `CALLERB`/`SELFB` (store a full address), `BEQ`/`BLEN`/`BHASH`, `RETURNB` (return bytes), `CDLEN`.
+- **Full-address ERC-721** now possible: `ownerOf` returns the real owner address (not a uint64
+  digest) and `transfer` compares the caller's full address. Token URIs/names are byte blobs.
+  Tested end-to-end (`erc721_test.go`).
+- `state.QueryContractRaw` + `POST /call` return `return_bytes` (hex). Account gains `BStorage`
+  (covered by clone/rollback). Additive — **no chain reset** (tx/header format unchanged).
+- Remaining: a standard ABI convention + `.shl` sugar for byte/string values (byte ops work from
+  raw bytecode today).
+
 ## v0.17.0 — consensus liveness (leader-timeout / round fallback)
 
 - **No more single-leader stalls.** The leader for a block is now elected per `(height, prevHash,

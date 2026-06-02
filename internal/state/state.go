@@ -19,10 +19,11 @@ import (
 // Account is the per-address state. Contract accounts additionally carry Code
 // and Storage; plain accounts leave them empty.
 type Account struct {
-	Balance uint64            `json:"balance"`
-	Nonce   uint64            `json:"nonce"`
-	Code    []byte            `json:"code,omitempty"`    // contract bytecode (empty for EOAs)
-	Storage map[string]uint64 `json:"storage,omitempty"` // contract key/value store
+	Balance  uint64            `json:"balance"`
+	Nonce    uint64            `json:"nonce"`
+	Code     []byte            `json:"code,omitempty"`     // contract bytecode (empty for EOAs)
+	Storage  map[string]uint64 `json:"storage,omitempty"`  // contract uint64 key/value store
+	BStorage map[string][]byte `json:"bstorage,omitempty"` // contract byte store (addresses, strings)
 }
 
 // clone deep-copies an account (for block-level rollback snapshots).
@@ -35,6 +36,12 @@ func (a *Account) clone() *Account {
 		cp.Storage = make(map[string]uint64, len(a.Storage))
 		for k, v := range a.Storage {
 			cp.Storage[k] = v
+		}
+	}
+	if a.BStorage != nil {
+		cp.BStorage = make(map[string][]byte, len(a.BStorage))
+		for k, v := range a.BStorage {
+			cp.BStorage[k] = append([]byte(nil), v...)
 		}
 	}
 	return cp
@@ -367,7 +374,7 @@ func (s *State) ApplyBlock(b *types.Block) error {
 			if len(to.Code) == 0 {
 				break // calling a non-contract behaves as a plain transfer
 			}
-			if _, _, ok := s.execContract(t.To, types.AddrDigest(t.From), t.Data, t.Amount, t.Gas, snap, 0, &blockLogs, i); !ok {
+			if _, _, ok := s.execContract(t.To, types.AddrDigest(t.From), t.From, t.Data, t.Amount, t.Gas, snap, 0, &blockLogs, i); !ok {
 				to.Balance -= t.Amount             // revert value credit
 				s.acct(t.From).Balance += t.Amount // refund sender (fee still kept)
 			}
@@ -462,23 +469,27 @@ func (s *State) contractByDigest(d uint64) (crypto.Address, bool) {
 // records accounts for block-level rollback. depth bounds recursion.
 //
 // Must be called with s.mu held (ApplyBlock holds it).
-func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, value, gas uint64, snap func(crypto.Address), depth int, logs *[]types.Log, txIndex int) (ret, used uint64, ok bool) {
+func (s *State) execContract(addr crypto.Address, caller uint64, callerAddr crypto.Address, input []byte, value, gas uint64, snap func(crypto.Address), depth int, logs *[]types.Log, txIndex int) (ret, used uint64, ok bool) {
 	c := s.acct(addr)
 	snap(addr)
 	storage := storageDecode(c.Storage)
+	bstore := bstoreDecode(c.BStorage)
 	ctx := vm.Context{
-		Caller:  caller,
-		Self:    types.AddrDigest(addr),
-		Value:   value,
-		Balance: c.Balance,
-		Host:    &vmHost{s: s, snap: snap, logs: logs, txIndex: txIndex},
-		Depth:   depth,
+		Caller:     caller,
+		Self:       types.AddrDigest(addr),
+		CallerAddr: []byte(callerAddr),
+		SelfAddr:   []byte(addr),
+		Value:      value,
+		Balance:    c.Balance,
+		Host:       &vmHost{s: s, snap: snap, logs: logs, txIndex: txIndex},
+		Depth:      depth,
 	}
-	res, err := vm.Execute(c.Code, input, storage, gas, ctx)
+	res, err := vm.ExecuteB(c.Code, input, storage, bstore, gas, ctx)
 	if err != nil {
-		return 0, gas, false // reverted; storage (a copy in Execute) discarded
+		return 0, gas, false // reverted; working copies in Execute discarded
 	}
 	c.Storage = storageEncode(storage)
+	c.BStorage = bstoreEncode(bstore)
 	// Emit this contract's events into the block log (only on success).
 	if logs != nil {
 		for _, ev := range res.Logs {
@@ -488,27 +499,55 @@ func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, v
 	return res.Return, res.GasUsed, true
 }
 
+func bstoreDecode(m map[string][]byte) map[uint64][]byte {
+	out := make(map[uint64][]byte, len(m))
+	for k, v := range m {
+		if n, err := strconv.ParseUint(k, 10, 64); err == nil {
+			out[n] = v
+		}
+	}
+	return out
+}
+func bstoreEncode(m map[uint64][]byte) map[string][]byte {
+	if len(m) == 0 {
+		return nil
+	}
+	out := make(map[string][]byte, len(m))
+	for k, v := range m {
+		out[strconv.FormatUint(k, 10)] = v
+	}
+	return out
+}
+
 // QueryContract executes a contract call READ-ONLY against current state and
 // returns its RETURN value. No transaction, no fee, no state mutation — the
 // analog of Ethereum's eth_call, for serving data (ownerOf, balanceOf, ...).
 // Cross-contract CALL is disabled in queries (host nil → pushes 0).
 func (s *State) QueryContract(addr crypto.Address, caller uint64, input []byte, gas uint64) (uint64, bool) {
+	ret, _, ok := s.QueryContractRaw(addr, caller, input, gas)
+	return ret, ok
+}
+
+// QueryContractRaw is QueryContract but also returns the contract's byte return
+// (set via RETURNB — e.g. an owner address or a token URI).
+func (s *State) QueryContractRaw(addr crypto.Address, caller uint64, input []byte, gas uint64) (uint64, []byte, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	c := s.Accounts[addr]
 	if c == nil || len(c.Code) == 0 {
-		return 0, false
+		return 0, nil, false
 	}
 	if gas == 0 {
 		gas = 1_000_000
 	}
-	storage := storageDecode(c.Storage) // a copy; Execute mutates only this
-	ctx := vm.Context{Caller: caller, Self: types.AddrDigest(addr), Balance: c.Balance}
-	res, err := vm.Execute(c.Code, input, storage, gas, ctx)
+	storage := storageDecode(c.Storage)
+	bstore := bstoreDecode(c.BStorage)
+	ctx := vm.Context{Caller: caller, Self: types.AddrDigest(addr), SelfAddr: []byte(addr), Balance: c.Balance}
+	res, err := vm.ExecuteB(c.Code, input, storage, bstore, gas, ctx)
 	if err != nil {
-		return 0, false
+		return 0, nil, false
 	}
-	return res.Return, true
+	return res.Return, res.ReturnBytes, true
 }
 
 // vmHost implements vm.CallHost so a contract can call another contract.
@@ -526,7 +565,9 @@ func (h *vmHost) Call(self, target, arg, gasLimit uint64, depth int) (uint64, ui
 	if !found {
 		return 0, 0, false
 	}
-	ret, used, ok := h.s.execContract(addr, self, u64word(arg), 0, gasLimit, h.snap, depth, h.logs, h.txIndex)
+	// Nested calls don't carry a full caller address (byte-layer CALLERB is for
+	// top-level calls in v0.18); pass empty.
+	ret, used, ok := h.s.execContract(addr, self, "", u64word(arg), 0, gasLimit, h.snap, depth, h.logs, h.txIndex)
 	if !ok {
 		return 0, gasLimit, false
 	}

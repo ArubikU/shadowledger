@@ -143,8 +143,8 @@ func (s *Server) ControlHandler() http.Handler {
 		if req.Caller != "" {
 			caller = types.AddrDigest(crypto.Address(req.Caller))
 		}
-		ret, ok := s.chain.State().QueryContract(crypto.Address(req.To), caller, data, req.Gas)
-		writeJSON(w, map[string]any{"ok": ok, "return": ret})
+		ret, retb, ok := s.chain.State().QueryContractRaw(crypto.Address(req.To), caller, data, req.Gas)
+		writeJSON(w, map[string]any{"ok": ok, "return": ret, "return_bytes": hex.EncodeToString(retb)})
 	})
 	// Direct user submission: pool + gossip.
 	mux.HandleFunc("POST /tx", func(w http.ResponseWriter, r *http.Request) {

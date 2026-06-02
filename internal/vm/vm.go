@@ -9,7 +9,10 @@
 // control and simple logic, with a clear path to a richer VM (or WASM) later.
 package vm
 
-import "errors"
+import (
+	"crypto/sha256"
+	"errors"
+)
 
 // Opcodes.
 const (
@@ -42,6 +45,17 @@ const (
 	CALL   = 0x71 // pop gasLimit, pop arg, pop target -> call target contract; push its return (0 on fail)
 	RETURN = 0x70 // pop -> set return value, halt
 	LOG    = 0x72 // pop n, pop n topic words -> emit an event (history); n<=maxLogTopics
+
+	// Byte-value layer: full addresses & strings live in byte-storage (bkey -> []byte),
+	// sourced from calldata. The uint64 stack holds byte-storage keys / lengths.
+	CDLEN   = 0x66 // push calldata length in bytes
+	BSTORE  = 0x53 // pop bkey, pop off, pop len -> bstore[bkey] = calldata[off:off+len]
+	BEQ     = 0x54 // pop bkeyA, pop bkeyB -> push 1 if the byte blobs are equal else 0
+	BLEN    = 0x55 // pop bkey -> push len(bstore[bkey])
+	BHASH   = 0x56 // pop bkey -> push uint64 digest of bstore[bkey] (for keying)
+	CALLERB = 0x67 // pop bkey -> bstore[bkey] = caller's full address bytes
+	SELFB   = 0x68 // pop bkey -> bstore[bkey] = this contract's full address bytes
+	RETURNB = 0x73 // pop bkey -> return bstore[bkey] as the call's byte return, halt
 )
 
 const maxLogTopics = 8
@@ -67,12 +81,14 @@ type CallHost interface {
 
 // Context is the execution environment exposed to a contract.
 type Context struct {
-	Caller  uint64   // caller identity (uint64 digest of address)
-	Self    uint64   // this contract's identity
-	Value   uint64   // value sent with this call
-	Balance uint64   // contract balance
-	Host    CallHost // cross-contract call host (nil disables CALL)
-	Depth   int      // current call depth (reentrancy / recursion bound)
+	Caller     uint64   // caller identity (uint64 digest of address)
+	Self       uint64   // this contract's identity
+	CallerAddr []byte   // caller's FULL address bytes (for the byte layer)
+	SelfAddr   []byte   // this contract's FULL address bytes
+	Value      uint64   // value sent with this call
+	Balance    uint64   // contract balance
+	Host       CallHost // cross-contract call host (nil disables CALL)
+	Depth      int      // current call depth (reentrancy / recursion bound)
 }
 
 const (
@@ -84,11 +100,11 @@ const (
 // gas cost per opcode (storage writes are the expensive ones).
 func gasCost(op byte) uint64 {
 	switch op {
-	case SSTORE:
+	case SSTORE, BSTORE, CALLERB, SELFB:
 		return 100
 	case LOG:
 		return 50 // + 8 per topic, charged inline
-	case SLOAD:
+	case SLOAD, BEQ, BHASH:
 		return 20
 	case PUSH:
 		return 3
@@ -99,10 +115,11 @@ func gasCost(op byte) uint64 {
 
 // Result reports the outcome of execution.
 type Result struct {
-	GasUsed uint64
-	Return  uint64
-	Stack   []uint64
-	Logs    [][]uint64 // events emitted via LOG (each is a list of topic words)
+	GasUsed     uint64
+	Return      uint64
+	ReturnBytes []byte // set by RETURNB (e.g. an address or a token URI)
+	Stack       []uint64
+	Logs        [][]uint64 // events emitted via LOG (each is a list of topic words)
 }
 
 // words decodes input bytes into uint64 words (8 bytes BE each).
@@ -122,11 +139,23 @@ func word(input []byte, idx uint64) uint64 {
 // given input, gas limit and context. On any error the storage map is left
 // untouched (the caller copies before calling, so reverts are clean).
 func Execute(code, input []byte, storage map[uint64]uint64, gas uint64, ctx Context) (*Result, error) {
+	return ExecuteB(code, input, storage, nil, gas, ctx)
+}
+
+// ExecuteB is Execute with a byte-storage map (bstore: key -> []byte) for the
+// address/string layer. bstore may be nil (byte ops then have nothing to read,
+// stores are dropped). It is mutated in place ONLY on success.
+func ExecuteB(code, input []byte, storage map[uint64]uint64, bstore map[uint64][]byte, gas uint64, ctx Context) (*Result, error) {
 	// Run against a working copy so a mid-execution error reverts storage.
 	work := make(map[uint64]uint64, len(storage))
 	for k, v := range storage {
 		work[k] = v
 	}
+	bwork := make(map[uint64][]byte, len(bstore))
+	for k, v := range bstore {
+		bwork[k] = append([]byte(nil), v...)
+	}
+	var retBytes []byte
 
 	var st []uint64
 	push := func(v uint64) error {
@@ -164,7 +193,7 @@ func Execute(code, input []byte, storage map[uint64]uint64, gas uint64, ctx Cont
 
 		switch op {
 		case STOP:
-			return commit(storage, work, used, ret, st, logs), nil
+			return commitB(storage, work, bstore, bwork, used, ret, retBytes, st, logs), nil
 		case PUSH:
 			if pc+8 > len(code) {
 				return nil, ErrBadCode
@@ -350,28 +379,118 @@ func Execute(code, input []byte, storage map[uint64]uint64, gas uint64, ctx Cont
 				topics[i] = v
 			}
 			logs = append(logs, topics)
+		case CDLEN:
+			if err := push(uint64(len(input))); err != nil {
+				return nil, err
+			}
+		case BSTORE:
+			bkey, e1 := pop()
+			off, e2 := pop()
+			ln, e3 := pop()
+			if e1 != nil || e2 != nil || e3 != nil {
+				return nil, ErrStackUnder
+			}
+			if off+ln > uint64(len(input)) || off+ln < off {
+				return nil, ErrBadCode // out-of-range calldata slice
+			}
+			bwork[bkey] = append([]byte(nil), input[off:off+ln]...)
+		case BEQ:
+			a, e1 := pop()
+			b, e2 := pop()
+			if e1 != nil || e2 != nil {
+				return nil, ErrStackUnder
+			}
+			if err := push(b2u(bytesEqual(bwork[a], bwork[b]))); err != nil {
+				return nil, err
+			}
+		case BLEN:
+			k, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			if err := push(uint64(len(bwork[k]))); err != nil {
+				return nil, err
+			}
+		case BHASH:
+			k, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			sum := sha256.Sum256(bwork[k])
+			if err := push(beU64(sum[:8])); err != nil {
+				return nil, err
+			}
+		case CALLERB:
+			k, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			bwork[k] = append([]byte(nil), ctx.CallerAddr...)
+		case SELFB:
+			k, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			bwork[k] = append([]byte(nil), ctx.SelfAddr...)
+		case RETURNB:
+			k, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			retBytes = append([]byte(nil), bwork[k]...)
+			return commitB(storage, work, bstore, bwork, used, ret, retBytes, st, logs), nil
 		case RETURN:
 			r, err := pop()
 			if err != nil {
 				return nil, err
 			}
 			ret = r
-			return commit(storage, work, used, ret, st, logs), nil
+			return commitB(storage, work, bstore, bwork, used, ret, retBytes, st, logs), nil
 		default:
 			return nil, ErrBadCode
 		}
 	}
-	return commit(storage, work, used, ret, st, logs), nil
+	return commitB(storage, work, bstore, bwork, used, ret, retBytes, st, logs), nil
 }
 
-func commit(dst, work map[uint64]uint64, used, ret uint64, st []uint64, logs [][]uint64) *Result {
+// commitB flushes the uint64 working storage AND the byte working storage back
+// to the live maps (only called on successful halt), and builds the Result.
+func commitB(dst, work map[uint64]uint64, bdst, bwork map[uint64][]byte, used, ret uint64, retBytes []byte, st []uint64, logs [][]uint64) *Result {
 	for k := range dst {
 		delete(dst, k)
 	}
 	for k, v := range work {
 		dst[k] = v
 	}
-	return &Result{GasUsed: used, Return: ret, Stack: st, Logs: logs}
+	if bdst != nil {
+		for k := range bdst {
+			delete(bdst, k)
+		}
+		for k, v := range bwork {
+			bdst[k] = v
+		}
+	}
+	return &Result{GasUsed: used, Return: ret, ReturnBytes: retBytes, Stack: st, Logs: logs}
+}
+
+func bytesEqual(a, b []byte) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func beU64(b []byte) uint64 {
+	var v uint64
+	for i := 0; i < len(b) && i < 8; i++ {
+		v = v<<8 | uint64(b[i])
+	}
+	return v
 }
 
 func binop(op byte, a, b uint64) (uint64, error) {

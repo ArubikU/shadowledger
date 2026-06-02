@@ -36,6 +36,11 @@ node computes identical results, which consensus requires.
 | CALL | 0x71 | pop gasLimit, arg, target → call target contract; push its return (0 on fail) |
 | LOG | 0x72 | pop n, pop n topic words → emit an event (recorded in block history) |
 | RETURN | 0x70 | pop → return value, halt |
+| CDLEN | 0x66 | push calldata byte length |
+| BSTORE | 0x53 | pop bkey, off, len → byte-store[bkey] = calldata[off:off+len] |
+| BEQ / BLEN / BHASH | 0x54–0x56 | compare byte blobs / length / uint64 digest of a blob |
+| CALLERB / SELFB | 0x67 / 0x68 | pop bkey → store caller's / self's full address bytes |
+| RETURNB | 0x73 | pop bkey → return that byte blob (address / string), halt |
 
 Stack is uint64 words (max 1024 deep); step limit 1,000,000.
 
@@ -135,14 +140,17 @@ a deliberate Frankenstein of Ethereum + ShadowLedger:
   `slctl logs` reconstructs from K-of-(K+M) log-shards and **verifies the result against `LogsRoot`**
   before returning. Tested end-to-end (`TestLogsHybridRoundTrip`).
 
-**Still not full production ERC-721**, honestly:
-- Owners are stored as a **uint64 digest** of the address, not the full address (VM words are
-  uint64) — fine for ownership checks, but you can't recover the full owner address on-chain.
-- **No string metadata** (token URIs) — storage is uint64→uint64.
-- No standard ABI/interface.
+**Full addresses + strings: done (v0.18) — the byte layer.** Alongside the uint64 store, a contract
+now has **byte-storage** (`bkey → []byte`) for full addresses and strings, with opcodes `BSTORE`
+(copy a calldata byte-range), `CALLERB`/`SELFB` (store a full address), `BEQ` (compare blobs),
+`BLEN`, `BHASH`, `RETURNB` (return bytes), `CDLEN`. Tested: a **full-address ERC-721** where
+`ownerOf` returns the real owner address (not a digest) and `transfer` compares the caller's full
+address (`erc721_test.go`). Token URIs / names are just byte blobs stored via `BSTORE` and returned
+via `RETURNB`. `slctl query` / `POST /call` return `return_bytes` (hex).
 
-Remaining for full ERC-721: address-width words (or byte arrays) + string storage. Events are now
-in place.
+Remaining for a standard ERC-721/20: an agreed ABI/interface convention and `.shl` sugar for
+byte/string values (the byte ops are usable from raw bytecode today). No on-chain reentrancy risk
+(no value-bearing cross-contract calls). Audit before trusting with value.
 
 ## Can it do APIs?
 
