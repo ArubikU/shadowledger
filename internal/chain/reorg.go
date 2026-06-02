@@ -53,12 +53,12 @@ func (c *Chain) AcceptBlock(blk *types.Block) error {
 	return c.reorgToBest()
 }
 
-// pathToBase walks parents from tip down to (and excluding) the replay base,
-// returning the branch in genesis→tip order. ok=false if the tip does not
-// descend from the replay base (a reorg deeper than our rewind floor).
-func (c *Chain) pathToBase(tip types.Hash) ([]*types.Block, bool) {
+// walkDown follows parents from tip until it reaches `stop` (exclusive),
+// returning the blocks in ascending (stop→tip) order. ok=false if `stop` is not
+// an ancestor of tip or a body is missing.
+func (c *Chain) walkDown(tip, stop types.Hash) ([]*types.Block, bool) {
 	var rev []*types.Block
-	for id := tip; id != c.replayBaseID; {
+	for id := tip; id != stop; {
 		b := c.block(id)
 		if b == nil {
 			return nil, false
@@ -66,7 +66,7 @@ func (c *Chain) pathToBase(tip types.Hash) ([]*types.Block, bool) {
 		rev = append(rev, b)
 		id = b.Header.PrevHash
 		if id == (types.Hash{}) {
-			return nil, false // reached genesis without hitting the base
+			return nil, false // hit genesis without reaching stop
 		}
 	}
 	for i, j := 0, len(rev)-1; i < j; i, j = i+1, j-1 {
@@ -75,40 +75,43 @@ func (c *Chain) pathToBase(tip types.Hash) ([]*types.Block, bool) {
 	return rev, true
 }
 
-// reorgToBest makes the head follow the heaviest tip, fast-forwarding if it
-// extends the current head, else rewinding to the replay base and replaying the
-// winning branch onto a fresh copy (committed only if it fully applies, so a bad
-// branch can never corrupt live state). Caller holds c.mu.
+// reorgToBest makes the head follow the heaviest tip. Two cases:
+//   - FAST-FORWARD: the best tip extends the current head → just apply the new
+//     blocks on the live state (needs no replay base, so a node WITHOUT one —
+//     e.g. the bootstrap node after restart — still follows other validators).
+//   - REORG: the best tip is on a divergent branch → rewind to the replay base
+//     and replay the winning branch on a fresh clone (committed only if it fully
+//     applies). Requires a replay base; without one, the head is kept.
+//
+// Caller holds c.mu.
 func (c *Chain) reorgToBest() error {
-	if c.replayBase == nil {
-		return nil // reorg base unavailable
-	}
 	best, _ := c.tree.Best()
 	if best == c.head.ID() {
 		return nil
 	}
 
-	branch, ok := c.pathToBase(best)
-	if !ok {
-		return nil // can't reorg below the replay floor; keep current head
-	}
-
-	// Fast-forward: if the current head is on the winning branch, just apply the
-	// blocks above it to the live state (no full rewind).
-	if idx := indexOf(branch, c.head.ID()); idx >= 0 {
-		for _, b := range branch[idx+1:] {
+	// Fast-forward: best descends from the current head.
+	if suffix, ok := c.walkDown(best, c.head.ID()); ok {
+		for _, b := range suffix {
 			if err := c.state.ApplyBlock(b); err != nil {
 				return ErrReorgReplay
 			}
 			c.commitCanonical(b)
 		}
-		if n := len(branch); n > 0 {
-			c.head = branch[n-1].Header
+		if n := len(suffix); n > 0 {
+			c.head = suffix[n-1].Header
 		}
 		return nil
 	}
 
-	// Divergent branch: rewind to base, replay the whole branch on a clone.
+	// Divergent branch → needs the replay base to rewind to.
+	if c.replayBase == nil {
+		return nil
+	}
+	branch, ok := c.walkDown(best, c.replayBaseID)
+	if !ok {
+		return nil // deeper than our rewind floor; keep current head
+	}
 	ns := c.replayBase.Clone()
 	for _, b := range branch {
 		if err := ns.ApplyBlock(b); err != nil {
@@ -130,13 +133,4 @@ func (c *Chain) commitCanonical(b *types.Block) {
 	body := b.Body()
 	_, _ = c.persistBlockSet(&b.Header, body)
 	c.persistLogs(&b.Header)
-}
-
-func indexOf(branch []*types.Block, id types.Hash) int {
-	for i, b := range branch {
-		if b.Header.ID() == id {
-			return i
-		}
-	}
-	return -1
 }
