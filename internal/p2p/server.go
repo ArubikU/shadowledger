@@ -115,6 +115,27 @@ func (s *Server) ControlHandler() http.Handler {
 		}
 		writeJSON(w, map[string]any{"height": h, "tx_count": len(txs), "txs": txs})
 	})
+	// Read-only contract query (eth_call analog): execute a call against current
+	// state, return its value, mutate nothing. Body: {"to","data"(hex),"caller","gas"}.
+	mux.HandleFunc("POST /call", func(w http.ResponseWriter, r *http.Request) {
+		var req struct {
+			To     string `json:"to"`
+			Data   string `json:"data"`
+			Caller string `json:"caller"`
+			Gas    uint64 `json:"gas"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		data, _ := hex.DecodeString(req.Data)
+		var caller uint64
+		if req.Caller != "" {
+			caller = types.AddrDigest(crypto.Address(req.Caller))
+		}
+		ret, ok := s.chain.State().QueryContract(crypto.Address(req.To), caller, data, req.Gas)
+		writeJSON(w, map[string]any{"ok": ok, "return": ret})
+	})
 	// Direct user submission: pool + gossip.
 	mux.HandleFunc("POST /tx", func(w http.ResponseWriter, r *http.Request) {
 		var tx types.Transaction

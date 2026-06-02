@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.12.0 — read-only contract calls + deeper contract tests
+
+- **`POST /call` / `slctl query`** — read-only contract execution (eth_call analog): runs a method
+  against current state and returns its value, with no tx, no fee and no state mutation. Turns any
+  contract into a read API (`ownerOf`, `balanceOf`, ...).
+- **Deeper contract tests**: a working minimal **NFT** (mint / owner-gated transfer / ownerOf, with
+  unauthorized transfer reverting) and explicit **gas-metering** tests (out-of-gas reverts; enough
+  gas succeeds), built with a small label assembler.
+- Docs: SMART-CONTRACTS.md now explains the gas model ("how do you buy gas" — you don't; gas is a
+  compute budget, fee is flat), execution paths, and honest NFT/API capabilities + limits.
+
 ## v0.11.0 — versioning + voluntary updates
 
 - **Build version** baked in (`internal/version`, injected from the git tag via release ldflags).

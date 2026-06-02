@@ -456,6 +456,29 @@ func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, v
 	return res.Return, res.GasUsed, true
 }
 
+// QueryContract executes a contract call READ-ONLY against current state and
+// returns its RETURN value. No transaction, no fee, no state mutation — the
+// analog of Ethereum's eth_call, for serving data (ownerOf, balanceOf, ...).
+// Cross-contract CALL is disabled in queries (host nil → pushes 0).
+func (s *State) QueryContract(addr crypto.Address, caller uint64, input []byte, gas uint64) (uint64, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	c := s.Accounts[addr]
+	if c == nil || len(c.Code) == 0 {
+		return 0, false
+	}
+	if gas == 0 {
+		gas = 1_000_000
+	}
+	storage := storageDecode(c.Storage) // a copy; Execute mutates only this
+	ctx := vm.Context{Caller: caller, Self: types.AddrDigest(addr), Balance: c.Balance}
+	res, err := vm.Execute(c.Code, input, storage, gas, ctx)
+	if err != nil {
+		return 0, false
+	}
+	return res.Return, true
+}
+
 // vmHost implements vm.CallHost so a contract can call another contract.
 type vmHost struct {
 	s    *State

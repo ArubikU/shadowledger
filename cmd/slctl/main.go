@@ -46,6 +46,8 @@ func main() {
 		deploy(os.Args[2:])
 	case "call":
 		call(os.Args[2:])
+	case "query":
+		query(os.Args[2:])
 	case "validators":
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/validators"))
 	case "bans":
@@ -117,7 +119,8 @@ Passphrase for .tok wallets: --pass or env SL_WALLET_PASS.
   slash       --wallet w.tok --evidence ev.json --rpc URL   (report equivocation; earn 10% of bond)
   bans        --rpc URL               (locally banned peers)
   deploy      --wallet w.tok --code prog.hex [--gas N] --rpc URL   (deploy a contract)
-  call        --wallet w.tok --to <contract> [--data HEX] [--amount N] [--gas N] --rpc URL`)
+  call        --wallet w.tok --to <contract> [--data HEX] [--amount N] [--gas N] --rpc URL
+  query       --to <contract> [--data HEX] [--caller sl..] [--gas N] --rpc URL   (read-only, no tx/fee)`)
 	os.Exit(2)
 }
 
@@ -245,6 +248,23 @@ func slash(args []string) {
 	tx := types.Transaction{Kind: types.KindSlash, Data: ev, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
 	tx.Sign(kp)
 	submit(rpc, tx)
+}
+
+// query runs a READ-ONLY contract call (no tx, no fee) and prints the return value.
+func query(args []string) {
+	rpc := rpcOf(args)
+	body := map[string]any{
+		"to":     flagVal(args, "to"),
+		"data":   strings.TrimPrefix(flagVal(args, "data"), "0x"),
+		"caller": flagVal(args, "caller"),
+		"gas":    mustU64opt(args, "gas", 0),
+	}
+	b, _ := json.Marshal(body)
+	resp, err := http.Post(rpc+"/call", "application/json", bytes.NewReader(b))
+	must(err)
+	defer resp.Body.Close()
+	out, _ := io.ReadAll(resp.Body)
+	fmt.Println(string(out))
 }
 
 func rpcOf(args []string) string {

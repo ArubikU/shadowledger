@@ -87,9 +87,66 @@ PUSH <gasLimit>    ; gas to forward
 CALL               ; -> pushes callee return value (0 on failure)
 ```
 
+## How gas works (and "how do you buy gas?")
+
+ShadowLedger does **not** have a gas market (no `gasPrice`, no EIP-1559). Two separate things:
+
+- **`Gas`** on a tx = an **execution budget** (a step/compute ceiling). Each opcode costs gas
+  (`SSTORE` 100, `SLOAD` 20, `PUSH` 3, others 1). If a call exceeds its `Gas`, it **reverts**
+  (out-of-gas) — this is the anti-infinite-loop guard, verified in tests. You don't *buy* gas; you
+  set a high-enough limit (unused gas costs nothing).
+- **`Fee`** = the flat amount paid to the block validator for including your tx. It is charged
+  whether the call succeeds or reverts (anti-spam). The fee is **not** `gasUsed × price` today.
+
+So: gas = "how much compute am I allowed," fee = "what I pay." A true `fee = gasUsed × gasPrice`
+market is a deliberate future choice (see roadmap) — for now keep `Gas` generous and set a small
+`Fee`.
+
+## How a contract is executed
+
+1. **Deploy** — `slctl deploy --code prog.hex` sends a `KindDeploy` tx (`Data` = bytecode). The
+   contract address is `ContractAddress(deployer, nonce)`, deterministic.
+2. **Call (writes)** — `slctl call --to <addr> --data <hex words> --gas N` sends a `KindCall` tx.
+   Every node re-executes the bytecode against the contract's storage when applying the block, so
+   the result is identical everywhere (consensus). Revert → storage untouched, value refunded, fee
+   kept.
+3. **Query (reads)** — `slctl query --to <addr> --data <hex>` hits `POST /call`: runs the contract
+   **read-only** against current state and returns its `RETURN` value. No tx, no fee, no mutation —
+   the analog of Ethereum's `eth_call`, for serving data.
+
+Input is 8-byte big-endian **words**; `CDLOAD <i>` reads input word `i`, so a call can pass a
+selector + arguments. `RETURN` yields one word.
+
+## Can it do NFTs?
+
+**A minimal NFT: yes** (tested — `TestNFTMintTransferOwnerOf`). A contract with selector dispatch:
+`mint` sets `storage[tokenId] = CALLER`, `transfer` checks `storage[tokenId] == CALLER` then
+reassigns (reverts on unauthorized), `ownerOf` returns the owner. Mint/transfer/access-control all
+work, and `ownerOf` is queryable read-only.
+
+**But not production ERC-721 yet**, honestly:
+- Owners are stored as a **uint64 digest** of the address, not the full address (VM words are
+  uint64) — fine for ownership checks, but you can't recover the full owner address on-chain.
+- **No events/logs** (ERC-721 emits `Transfer`) — indexers can't subscribe.
+- **No string metadata** (token URIs) — storage is uint64→uint64.
+- No standard ABI/interface.
+
+Real NFTs need: address-width words (or byte arrays), an event/log opcode, and string storage —
+that's the "richer VM" roadmap item.
+
+## Can it do APIs?
+
+Two senses:
+- **Contracts as read APIs** — yes: `POST /call` / `slctl query` turns any contract method into a
+  read endpoint (`ownerOf`, `balanceOf`, ...) with no tx. The node's HTTP RPC *is* the API surface.
+- **Contracts calling external web APIs (oracles)** — **no, and never directly**: the VM is
+  deterministic by design (no network, time, or randomness), because every node must compute the
+  same result. External data must come through an **oracle pattern** (someone posts the data on-chain
+  via a tx; the contract reads it). That's standard for all blockchains, not a ShadowLedger gap.
+
 ## Limits / roadmap
 
-Still small: single uint64 arg/return across calls (no byte-array ABI), no value transfer in CALL,
-no dynamic memory, no events/logs, uint64-only words, no constructor. Next: value-bearing calls,
-multi-word calldata/return, event logs, richer types, possibly a WASM backend (`wazero`). See
-[GAPS-AND-DESIGN.md](GAPS-AND-DESIGN.md).
+Still small: uint64-only words (so addresses are stored as digests), no events/logs, no string
+storage, no value transfer in cross-contract `CALL`, no gas-price market, no constructor. Next:
+address/byte-array values + an event/log opcode (unlocks real ERC-721/20), `fee = gasUsed × price`,
+value-bearing calls, possibly a WASM backend (`wazero`). See [GAPS-AND-DESIGN.md](GAPS-AND-DESIGN.md).
