@@ -3,6 +3,7 @@ package chain
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/ArubikU/shadowledger/internal/bloom"
 	"github.com/ArubikU/shadowledger/internal/consensus"
@@ -137,6 +138,61 @@ func TestLogsHybridRoundTrip(t *testing.T) {
 	}
 	if len(logs) != 1 || len(logs[0].Topics) != 1 || logs[0].Topics[0] != 99 || logs[0].Contract != caddr {
 		t.Fatalf("reconstructed logs wrong: %+v", logs)
+	}
+}
+
+// TestRejectMaliciousBlocks proves the chain refuses to ingest forged/invalid
+// blocks at every tampered field — i.e. "nobody can inject a malicious block".
+func TestRejectMaliciousBlocks(t *testing.T) {
+	val, _ := crypto.Generate()
+	attacker, _ := crypto.Generate()
+
+	fresh := func() *Chain {
+		c := newTestChain(t, val)
+		if _, err := c.Genesis(map[crypto.Address]uint64{val.Address(): 1_000_000_000}, val.Address(), val); err != nil {
+			t.Fatal(err)
+		}
+		return c
+	}
+	clone := func(b *types.Block) *types.Block {
+		return &types.Block{Header: b.Header, Txs: append([]types.Transaction(nil), b.Txs...)}
+	}
+
+	// A valid block produced by the real validator.
+	a := fresh()
+	blk, _, err := a.ProduceBlock(nil, val, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Sanity: a pristine peer accepts the legitimate block.
+	if err := fresh().ApplyExternalBlock(clone(blk)); err != nil {
+		t.Fatalf("valid block rejected: %v", err)
+	}
+
+	cases := []struct {
+		name   string
+		tamper func(b *types.Block)
+	}{
+		{"unauthorized validator", func(b *types.Block) { b.Header.Sign(attacker) }}, // attacker forges + signs
+		{"tampered body", func(b *types.Block) { // change txs without fixing merkle root
+			b.Txs = append(b.Txs, types.Transaction{To: attacker.Address(), Amount: 999})
+		}},
+		{"wrong height", func(b *types.Block) { b.Header.Height = 9; b.Header.Sign(val) }},
+		{"wrong prev", func(b *types.Block) { b.Header.PrevHash[0] ^= 0xFF; b.Header.Sign(val) }},
+		{"future timestamp", func(b *types.Block) {
+			b.Header.Timestamp = time.Now().Unix() + 1_000_000
+			b.Header.Sign(val)
+		}},
+		{"forged logs root", func(b *types.Block) { b.Header.LogsRoot[0] ^= 0xFF; b.Header.Sign(val) }},
+		{"flipped signature", func(b *types.Block) { b.Header.Sig[0] ^= 0xFF }},
+	}
+	for _, tc := range cases {
+		bad := clone(blk)
+		tc.tamper(bad)
+		if err := fresh().ApplyExternalBlock(bad); err == nil {
+			t.Fatalf("%s: malicious block was ACCEPTED (should reject)", tc.name)
+		}
 	}
 }
 
