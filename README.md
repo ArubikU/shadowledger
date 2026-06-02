@@ -74,24 +74,24 @@ go install github.com/ArubikU/shadowledger/cmd/slctl@latest
 
 Or from source: `go build ./...` (binaries `slnode`, `slctl`).
 
-## Quick start
+## Quick start (zero config)
+
+Mainnet is baked into the binary (genesis + bootstrap seeds), like `bitcoind`. Just run it:
 
 ```
-go test ./...
+slnode                       # joins mainnet: derives shared genesis, syncs from seeds, serves shards
 
-# generate an ENCRYPTED wallet (.tok). Passphrase via --pass or SL_WALLET_PASS.
-slctl keygen --out wallet.tok --pass "your strong passphrase"
-# (plaintext .json wallets also work for dev: slctl keygen --out wallet.json)
-
-# run a validator node (genesis funds the configured address)
-slnode --config node.yaml
-
-# check balance / send
-slctl balance --addr <addr> --rpc http://localhost:4004
-slctl send --wallet wallet.tok --pass "…" --to <addr> --amount 100 --rpc http://localhost:4004
-slctl supply --rpc http://localhost:4004     # $SHARD minted + next reward
-slctl peers  --rpc http://localhost:4004     # discovered peers
+# wallet + queries (slctl auto-targets your local node, else the mainnet seed)
+slctl keygen --out wallet.tok --pass "your strong passphrase"   # .tok = encrypted; .json = plaintext
+slctl balance --addr <addr>
+slctl send  --wallet wallet.tok --pass "…" --to <addr> --amount 100
+slctl supply         # $SHARD minted + next reward
+slctl peers          # known peers
+slctl storage        # Proof-of-Storage scoreboard
 ```
+
+No `node.yaml` to write. Override only what you need (identity, `advertise`, ports) for a
+public/validator node — see [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Running on the public internet
 
@@ -111,5 +111,6 @@ ShadowLedger is built for the cloud/open internet (no LAN-only mode). A node bin
 
 [SPEC-CORE-V1.md](docs/SPEC-CORE-V1.md) · [ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
 [SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md) · [PROOF-OF-STORAGE.md](docs/PROOF-OF-STORAGE.md) ·
+[DEPLOY.md](docs/DEPLOY.md) ·
 [GAPS-AND-DESIGN.md](docs/GAPS-AND-DESIGN.md) (PoW decision, discovery, onboarding, roadmap) ·
 [CHANGELOG.md](CHANGELOG.md)

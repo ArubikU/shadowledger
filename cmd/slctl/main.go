@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ArubikU/shadowledger/internal/chainparams"
 	"github.com/ArubikU/shadowledger/internal/crypto"
 	"github.com/ArubikU/shadowledger/internal/types"
 )
@@ -194,11 +195,27 @@ func send(args []string) {
 }
 
 func rpcOf(args []string) string {
-	rpc := flagVal(args, "rpc")
-	if rpc == "" {
-		rpc = "http://localhost:4004"
+	if rpc := flagVal(args, "rpc"); rpc != "" {
+		return rpc
 	}
-	return rpc
+	// Default to a local node if one is running, else the embedded mainnet seed
+	// so queries work with no local node.
+	if nodeAlive("http://localhost:4004") {
+		return "http://localhost:4004"
+	}
+	if seeds := chainparams.Mainnet().Seeds; len(seeds) > 0 {
+		return seeds[0]
+	}
+	return "http://localhost:4004"
+}
+
+func nodeAlive(rpc string) bool {
+	resp, err := http.Get(rpc + "/health")
+	if err != nil {
+		return false
+	}
+	resp.Body.Close()
+	return resp.StatusCode == http.StatusOK
 }
 
 func getJSON(url string) string {

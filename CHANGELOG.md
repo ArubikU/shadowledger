@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.7.0 — zero-config mainnet
+
+- **Embedded chain params** (`internal/chainparams`): genesis premine, validators and bootstrap
+  seeds are baked into the binary (like Bitcoin/Ethereum). `slnode` with no config joins mainnet —
+  derives the shared deterministic genesis, connects to seeds, fast-syncs. No `node.yaml` required.
+- Config is now a partial override merged over the embedded params; data defaults to
+  `~/.shadowledger`. `slctl` auto-targets a local node or falls back to the mainnet seed.
+- **Bootstrap/validator node deployed** to a public VPS (`136.248.77.107`, the embedded seed).
+- Docs: [docs/DEPLOY.md](docs/DEPLOY.md) (zero-config join + VPS hosting + cloud-firewall + SELinux).
+
 ## v0.6.0 — Proof-of-Storage, DNS seeds, internet-only
 
 - **Proof-of-Storage** (`internal/pos`): holders answer random shard challenges

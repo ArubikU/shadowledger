@@ -13,10 +13,12 @@ import (
 )
 
 func main() {
-	cfgPath := flag.String("config", "node.yaml", "path to node config YAML")
+	cfgPath := flag.String("config", "node.yaml", "path to node config YAML (optional; defaults to embedded mainnet)")
 	flag.Parse()
 
-	cfg, err := node.LoadConfig(*cfgPath)
+	// Zero-config: with no config file, connect to embedded mainnet (seeds +
+	// genesis baked into the binary), like bitcoind joining Bitcoin mainnet.
+	cfg, err := node.LoadConfigOrMainnet(*cfgPath)
 	if err != nil {
 		log.Fatalf("load config: %v", err)
 	}
