@@ -139,6 +139,15 @@ The intended fork-choice fits ShadowLedger's thesis: the canonical chain is the 
   blocks — "compare the reconstructions, pick the available one." The full reorg engine
   (rewind to common ancestor, replay the heavier-available branch) is the remaining work; v0.19
   ships the per-block availability proof it builds on.
+
+### Selection rule (v0.21, `internal/forkchoice`)
+
+The deterministic rule is implemented + tested: a block tree whose canonical tip is the one with the
+**heaviest cumulative weight** (ties → lowest block id), with `CommonAncestor` for the rewind point.
+Per-block weight is pluggable, meant to be storage/availability weight (heaviest = most-available).
+Every node computes the identical tip → convergence without coordination. **Remaining:** wire it into
+the chain so a better tip triggers state-rewind-to-ancestor + replay (needs per-block state
+snapshots / body replay) — the reorg engine proper; its selection rule is now done.
 6. On-chain storage-proof records → enforceable eligibility + reward/fee share + slashing of failed
    proofs (storage-failure slashing; equivocation already done)
 7. Finality gadget, hardened P2P, audit, public testnet

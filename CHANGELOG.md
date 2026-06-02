@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.21.0 — fork-choice rule (deterministic heaviest-chain selection)
+
+- **`internal/forkchoice`** — a block tree + deterministic chain-selection rule: among competing
+  branches pick the **heaviest cumulative weight**, ties broken by lowest block id, plus
+  `CommonAncestor` (the rewind point). Every node computes the same canonical tip from the same tree
+  → convergence without coordination, replacing "first-valid-block-per-height wins" (which could
+  diverge under a partition). Per-block weight is pluggable — the intent is **storage/availability
+  weight** so the heaviest chain is the most-available one (ShadowLedger's thesis as fork choice).
+- This is the **selection rule** (tested). The chain-level **reorg** that acts on it — rewind state
+  to the common ancestor and replay the heavier branch — is the next slice (needs per-block state
+  snapshots / body replay). Security test (5 local nodes + remote): forged blocks rejected (409) and
+  the attacker IP banned (403); no poison could be injected.
+
 ## v0.20.0 — registration Proof-of-Work (PoW × PoS Sybil gate)
 
 - **`internal/regpow`** — to register as a validator you now solve a one-time PoW puzzle
