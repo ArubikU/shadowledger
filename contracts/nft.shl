@@ -1,0 +1,23 @@
+// nft.shl — a minimal NFT in the .shl language.
+// Input words: arg(0)=selector, arg(1)=tokenId, arg(2)=newOwner.
+//   selector 0 = mint     : owner[tokenId] = caller; emit Transfer
+//   selector 1 = transfer : require caller owns it, then reassign; emit Transfer
+//   selector 2 = ownerOf  : return owner[tokenId]
+// Owner is stored as the caller's id (uint64 digest) — see docs/SMART-CONTRACTS.md
+// for the honest ERC-721 limits.
+
+if (arg(0) == 0) {
+    store[arg(1)] = caller();
+    emit(0, caller(), arg(1));          // Transfer(mint): topics [sig=0, to, tokenId]
+} else {
+    if (arg(0) == 1) {
+        if (store[arg(1)] == caller()) {
+            store[arg(1)] = arg(2);
+            emit(1, caller(), arg(2), arg(1)); // Transfer: [sig=1, from, to, tokenId]
+        } else {
+            return 0;                   // not the owner -> no-op
+        }
+    } else {
+        return store[arg(1)];           // ownerOf
+    }
+}

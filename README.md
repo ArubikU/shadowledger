@@ -25,9 +25,10 @@ participates. Built for the open internet — no LAN-only mode.
 per-node scoreboard tracks pass/miss and gates block-production eligibility. See
 [docs/PROOF-OF-STORAGE.md](docs/PROOF-OF-STORAGE.md).
 
-**Smart contracts:** a small deterministic stack VM with gas + per-contract storage, including
-contract-to-contract calls. Deploy and call on-chain code (`slctl deploy` / `slctl call`). See
-[docs/SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md).
+**Smart contracts:** a small deterministic stack VM with gas + per-contract storage, contract-to-
+contract calls, and event logs. Write them in the **`.shl` language** (`if`/`while`/expressions),
+compile with `slctl compile`, estimate gas with `slctl estimate`, deploy/call/query. See
+[docs/SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md) and [docs/SHL.md](docs/SHL.md).
 
 ## Why
 
@@ -110,7 +111,7 @@ ShadowLedger is built for the cloud/open internet (no LAN-only mode). A node bin
 ## Docs
 
 [SPEC-CORE-V1.md](docs/SPEC-CORE-V1.md) · [ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
-[SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md) · [PROOF-OF-STORAGE.md](docs/PROOF-OF-STORAGE.md) ·
+[SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md) · [SHL.md](docs/SHL.md) · [PROOF-OF-STORAGE.md](docs/PROOF-OF-STORAGE.md) ·
 [CONSENSUS.md](docs/CONSENSUS.md) ·
 [DEPLOY.md](docs/DEPLOY.md) ·
 [GAPS-AND-DESIGN.md](docs/GAPS-AND-DESIGN.md) (PoW decision, discovery, onboarding, roadmap) ·

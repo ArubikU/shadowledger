@@ -13,6 +13,7 @@ import (
 
 	"github.com/ArubikU/shadowledger/internal/chainparams"
 	"github.com/ArubikU/shadowledger/internal/crypto"
+	"github.com/ArubikU/shadowledger/internal/shl"
 	"github.com/ArubikU/shadowledger/internal/types"
 	"github.com/ArubikU/shadowledger/internal/version"
 )
@@ -50,6 +51,10 @@ func main() {
 		query(os.Args[2:])
 	case "logs":
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/logs/" + flagVal(os.Args[2:], "height")))
+	case "compile":
+		compileSHL(os.Args[2:])
+	case "estimate":
+		estimateSHL(os.Args[2:])
 	case "validators":
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/validators"))
 	case "bans":
@@ -123,7 +128,9 @@ Passphrase for .tok wallets: --pass or env SL_WALLET_PASS.
   deploy      --wallet w.tok --code prog.hex [--gas N] --rpc URL   (deploy a contract)
   call        --wallet w.tok --to <contract> [--data HEX] [--amount N] [--gas N] --rpc URL
   query       --to <contract> [--data HEX] [--caller sl..] [--gas N] --rpc URL   (read-only, no tx/fee)
-  logs        --height N --rpc URL    (contract event logs at a block)`)
+  logs        --height N --rpc URL    (contract event logs at a block)
+  compile     --in prog.shl [--out prog.hex]   (.shl source -> VM bytecode)
+  estimate    --in prog.shl                     (approx gas for the compiled program)`)
 	os.Exit(2)
 }
 
@@ -251,6 +258,32 @@ func slash(args []string) {
 	tx := types.Transaction{Kind: types.KindSlash, Data: ev, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
 	tx.Sign(kp)
 	submit(rpc, tx)
+}
+
+// compileSHL compiles a .shl source file to VM bytecode (hex). Writes to --out
+// if given (ready for `slctl deploy --code out.hex`), else prints to stdout.
+func compileSHL(args []string) {
+	src, err := os.ReadFile(flagVal(args, "in"))
+	must(err)
+	code, err := shl.Compile(string(src))
+	must(err)
+	h := hex.EncodeToString(code)
+	if out := flagVal(args, "out"); out != "" {
+		must(os.WriteFile(out, []byte(h), 0o644))
+		fmt.Printf("compiled %d bytes -> %s\n", len(code), out)
+		return
+	}
+	fmt.Println(h)
+}
+
+// estimateSHL compiles a .shl file and reports approximate gas for one pass.
+func estimateSHL(args []string) {
+	src, err := os.ReadFile(flagVal(args, "in"))
+	must(err)
+	code, gas, err := shl.CompileAndEstimate(string(src))
+	must(err)
+	fmt.Printf("bytecode: %d bytes\napprox gas (one pass): %d\n", len(code), gas)
+	fmt.Println("note: loops cost per-iteration; cross-contract CALL gas not included.")
 }
 
 // query runs a READ-ONLY contract call (no tx, no fee) and prints the return value.

@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.15.0 — SHL contract language + compiler + gas estimate
+
+- **`.shl` high-level language** with a real lexer → parser → **AST** → codegen pipeline
+  (`internal/shl`) targeting the VM. Has variables, arithmetic, comparisons, `&&`/`||`/`!`,
+  **`if`/`else`, `while`**, `store[]`, builtins (`caller/value/balance/self/arg`), `emit`, `return`.
+- **`slctl compile --in prog.shl [--out prog.hex]`** — source → bytecode (hex), ready for
+  `slctl deploy --code`.
+- **`slctl estimate --in prog.shl`** — approximate gas for one pass (mirrors the VM gas schedule;
+  notes that loops are per-iteration and CALL callee gas is excluded).
+- Example contracts [contracts/counter.shl](contracts/counter.shl) and
+  [contracts/nft.shl](contracts/nft.shl); language reference [docs/SHL.md](docs/SHL.md).
+- Tested: compile+run counter, if/else, while, range checks, gas estimate.
+
 ## v0.14.0 — hybrid log history (Ethereum root + ShadowLedger fragments)
 
 - Logs are no longer stored whole on every node (that contradicted the no-node-stores-everything

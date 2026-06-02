@@ -1,0 +1,8 @@
+// counter.shl — increments storage[0] each call and returns the new value.
+// Compile:  slctl compile --in contracts/counter.shl --out counter.hex
+// Deploy:   slctl deploy  --wallet w.tok --code counter.hex --rpc <node>
+// Call:     slctl call    --wallet w.tok --to <contract> --rpc <node>
+// Read:     slctl query   --to <contract> --rpc <node>
+
+store[0] = store[0] + 1;
+return store[0];
