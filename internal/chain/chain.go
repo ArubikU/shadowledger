@@ -221,6 +221,7 @@ func (c *Chain) ProduceBlock(txs []types.Transaction, kp *crypto.KeyPair) (*type
 	if err != nil {
 		return nil, types.ShardSet{}, err
 	}
+	_ = c.store.PutLogs(hdr.Height, c.state.LastLogs())
 	c.head = hdr
 	return blk, set, nil
 }
@@ -255,9 +256,13 @@ func (c *Chain) ApplyExternalBlock(blk *types.Block) error {
 	if _, err := c.persistBlockSet(hdr, body); err != nil {
 		return err
 	}
+	_ = c.store.PutLogs(hdr.Height, c.state.LastLogs())
 	c.head = *hdr
 	return nil
 }
+
+// Logs returns the raw JSON event logs stored at a height.
+func (c *Chain) Logs(height uint64) []byte { return c.store.GetLogs(height) }
 
 // persistBlock stores the header (computing the shard set) without keeping body.
 func (c *Chain) persistBlock(hdr *types.Header, body []byte) error {

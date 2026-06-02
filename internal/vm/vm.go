@@ -41,7 +41,10 @@ const (
 	SELF   = 0x64 // push this contract's id (uint64 digest of its address)
 	CALL   = 0x71 // pop gasLimit, pop arg, pop target -> call target contract; push its return (0 on fail)
 	RETURN = 0x70 // pop -> set return value, halt
+	LOG    = 0x72 // pop n, pop n topic words -> emit an event (history); n<=maxLogTopics
 )
+
+const maxLogTopics = 8
 
 // Errors. ErrRevert and out-of-gas are "soft": the caller reverts effects but
 // still charges the fee. Structural errors are also treated as reverts.
@@ -83,6 +86,8 @@ func gasCost(op byte) uint64 {
 	switch op {
 	case SSTORE:
 		return 100
+	case LOG:
+		return 50 // + 8 per topic, charged inline
 	case SLOAD:
 		return 20
 	case PUSH:
@@ -97,6 +102,7 @@ type Result struct {
 	GasUsed uint64
 	Return  uint64
 	Stack   []uint64
+	Logs    [][]uint64 // events emitted via LOG (each is a list of topic words)
 }
 
 // words decodes input bytes into uint64 words (8 bytes BE each).
@@ -141,6 +147,7 @@ func Execute(code, input []byte, storage map[uint64]uint64, gas uint64, ctx Cont
 
 	var used uint64
 	var ret uint64
+	var logs [][]uint64
 	steps := 0
 	pc := 0
 	for pc < len(code) {
@@ -157,7 +164,7 @@ func Execute(code, input []byte, storage map[uint64]uint64, gas uint64, ctx Cont
 
 		switch op {
 		case STOP:
-			return commit(storage, work, used, ret, st), nil
+			return commit(storage, work, used, ret, st, logs), nil
 		case PUSH:
 			if pc+8 > len(code) {
 				return nil, ErrBadCode
@@ -322,28 +329,49 @@ func Execute(code, input []byte, storage map[uint64]uint64, gas uint64, ctx Cont
 			} else if err := push(0); err != nil {
 				return nil, err
 			}
+		case LOG:
+			n, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			if n > maxLogTopics {
+				return nil, ErrBadCode
+			}
+			if used+8*n > gas {
+				return nil, ErrOutOfGas
+			}
+			used += 8 * n
+			topics := make([]uint64, n)
+			for i := int(n) - 1; i >= 0; i-- { // popped in reverse → restore order
+				v, err := pop()
+				if err != nil {
+					return nil, err
+				}
+				topics[i] = v
+			}
+			logs = append(logs, topics)
 		case RETURN:
 			r, err := pop()
 			if err != nil {
 				return nil, err
 			}
 			ret = r
-			return commit(storage, work, used, ret, st), nil
+			return commit(storage, work, used, ret, st, logs), nil
 		default:
 			return nil, ErrBadCode
 		}
 	}
-	return commit(storage, work, used, ret, st), nil
+	return commit(storage, work, used, ret, st, logs), nil
 }
 
-func commit(dst, work map[uint64]uint64, used, ret uint64, st []uint64) *Result {
+func commit(dst, work map[uint64]uint64, used, ret uint64, st []uint64, logs [][]uint64) *Result {
 	for k := range dst {
 		delete(dst, k)
 	}
 	for k, v := range work {
 		dst[k] = v
 	}
-	return &Result{GasUsed: used, Return: ret, Stack: st}
+	return &Result{GasUsed: used, Return: ret, Stack: st, Logs: logs}
 }
 
 func binop(op byte, a, b uint64) (uint64, error) {

@@ -98,6 +98,16 @@ func (s *Server) ControlHandler() http.Handler {
 		}
 		writeJSON(w, recs)
 	})
+	// Contract event logs at a height (history for indexers / ERC-721 Transfer).
+	mux.HandleFunc("GET /logs/{height}", func(w http.ResponseWriter, r *http.Request) {
+		h, err := strconv.ParseUint(r.PathValue("height"), 10, 64)
+		if err != nil {
+			http.Error(w, "bad height", http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(s.chain.Logs(h))
+	})
 	// Account-state snapshot at the chain tip (assumeutxo-style fast sync).
 	mux.HandleFunc("GET /state/snapshot", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, s.chain.State())

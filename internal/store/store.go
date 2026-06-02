@@ -27,7 +27,7 @@ type headerRecord struct {
 
 // Open prepares the directory layout under dir.
 func Open(dir string) (*Store, error) {
-	for _, sub := range []string{"blocks", "shards", "keys"} {
+	for _, sub := range []string{"blocks", "shards", "keys", "logs"} {
 		if err := os.MkdirAll(filepath.Join(dir, sub), 0o755); err != nil {
 			return nil, err
 		}
@@ -44,6 +44,39 @@ func (s *Store) headerPath(height uint64) string {
 
 func (s *Store) shardDir(blockID types.Hash) string {
 	return filepath.Join(s.dir, "shards", hex.EncodeToString(blockID[:]))
+}
+
+func (s *Store) logsPath(height uint64) string {
+	return filepath.Join(s.dir, "logs", fmt.Sprintf("%020d.json", height))
+}
+
+// PutLogs persists a block's event logs (any JSON-serializable value). Skips
+// writing when there are no logs.
+func (s *Store) PutLogs(height uint64, logs any) error {
+	b, err := json.Marshal(logs)
+	if err != nil {
+		return err
+	}
+	if string(b) == "null" || string(b) == "[]" {
+		return nil
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := os.MkdirAll(filepath.Join(s.dir, "logs"), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(s.logsPath(height), b, 0o644)
+}
+
+// GetLogs returns the raw JSON logs at a height (or "[]" if none).
+func (s *Store) GetLogs(height uint64) []byte {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	b, err := os.ReadFile(s.logsPath(height))
+	if err != nil {
+		return []byte("[]")
+	}
+	return b
 }
 
 // PutHeader persists a header + shard set at its height.

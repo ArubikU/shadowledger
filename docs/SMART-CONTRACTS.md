@@ -34,6 +34,7 @@ node computes identical results, which consensus requires.
 | CDLOAD | 0x63 | push input word at popped index |
 | SELF | 0x64 | push this contract's id |
 | CALL | 0x71 | pop gasLimit, arg, target → call target contract; push its return (0 on fail) |
+| LOG | 0x72 | pop n, pop n topic words → emit an event (recorded in block history) |
 | RETURN | 0x70 | pop → return value, halt |
 
 Stack is uint64 words (max 1024 deep); step limit 1,000,000.
@@ -124,15 +125,20 @@ selector + arguments. `RETURN` yields one word.
 reassigns (reverts on unauthorized), `ownerOf` returns the owner. Mint/transfer/access-control all
 work, and `ownerOf` is queryable read-only.
 
-**But not production ERC-721 yet**, honestly:
+**Events/history: done (v0.13).** The `LOG` opcode emits events recorded in block history; the
+tested NFT emits a `Transfer`-style event on mint. Query them at `GET /logs/{height}` / `slctl logs
+--height N`. Logs are deterministic and re-derivable by re-executing the block, so they're real
+history, not a side database. (A `logsRoot` header commitment for light-client proofs is a later
+add.)
+
+**Still not full production ERC-721**, honestly:
 - Owners are stored as a **uint64 digest** of the address, not the full address (VM words are
   uint64) — fine for ownership checks, but you can't recover the full owner address on-chain.
-- **No events/logs** (ERC-721 emits `Transfer`) — indexers can't subscribe.
 - **No string metadata** (token URIs) — storage is uint64→uint64.
 - No standard ABI/interface.
 
-Real NFTs need: address-width words (or byte arrays), an event/log opcode, and string storage —
-that's the "richer VM" roadmap item.
+Remaining for full ERC-721: address-width words (or byte arrays) + string storage. Events are now
+in place.
 
 ## Can it do APIs?
 

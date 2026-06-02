@@ -58,6 +58,15 @@ type Validator struct {
 	Slashed bool   `json:"slashed,omitempty"` // permanently barred after equivocation
 }
 
+// Log is an event emitted by a contract via the LOG opcode. Logs are part of
+// block history (deterministic, re-derivable by re-executing the block) and let
+// indexers track activity like ERC-721 Transfer events.
+type Log struct {
+	Contract crypto.Address `json:"contract"`
+	Topics   []uint64       `json:"topics"`
+	TxIndex  int            `json:"tx_index"`
+}
+
 // State is a thread-safe account ledger bound to a head height.
 type State struct {
 	mu         sync.RWMutex
@@ -65,6 +74,14 @@ type State struct {
 	Validators map[crypto.Address]*Validator `json:"validators"` // on-chain validator registry
 	Height     uint64                        `json:"height"`     // height of last applied block
 	Minted     uint64                        `json:"minted"`     // total $SHARD emitted (counts toward cap)
+	lastLogs   []Log                         // events from the most recently applied block (transient)
+}
+
+// LastLogs returns the events emitted by the most recently applied block.
+func (s *State) LastLogs() []Log {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return append([]Log(nil), s.lastLogs...)
 }
 
 // New returns an empty state.
@@ -276,6 +293,7 @@ func (s *State) ApplyBlock(b *types.Block) error {
 		}
 	}
 	valBackup := s.cloneValidators()
+	var blockLogs []Log
 	rollback := func() {
 		for a, ac := range saved {
 			if ac != nil {
@@ -342,7 +360,7 @@ func (s *State) ApplyBlock(b *types.Block) error {
 			if len(to.Code) == 0 {
 				break // calling a non-contract behaves as a plain transfer
 			}
-			if _, _, ok := s.execContract(t.To, types.AddrDigest(t.From), t.Data, t.Amount, t.Gas, snap, 0); !ok {
+			if _, _, ok := s.execContract(t.To, types.AddrDigest(t.From), t.Data, t.Amount, t.Gas, snap, 0, &blockLogs, i); !ok {
 				to.Balance -= t.Amount             // revert value credit
 				s.acct(t.From).Balance += t.Amount // refund sender (fee still kept)
 			}
@@ -397,6 +415,7 @@ func (s *State) ApplyBlock(b *types.Block) error {
 		s.acct(b.Header.Validator).Balance += fees
 	}
 	s.Height = b.Header.Height
+	s.lastLogs = blockLogs
 	return nil
 }
 
@@ -436,7 +455,7 @@ func (s *State) contractByDigest(d uint64) (crypto.Address, bool) {
 // records accounts for block-level rollback. depth bounds recursion.
 //
 // Must be called with s.mu held (ApplyBlock holds it).
-func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, value, gas uint64, snap func(crypto.Address), depth int) (ret, used uint64, ok bool) {
+func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, value, gas uint64, snap func(crypto.Address), depth int, logs *[]Log, txIndex int) (ret, used uint64, ok bool) {
 	c := s.acct(addr)
 	snap(addr)
 	storage := storageDecode(c.Storage)
@@ -445,7 +464,7 @@ func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, v
 		Self:    types.AddrDigest(addr),
 		Value:   value,
 		Balance: c.Balance,
-		Host:    &vmHost{s: s, snap: snap},
+		Host:    &vmHost{s: s, snap: snap, logs: logs, txIndex: txIndex},
 		Depth:   depth,
 	}
 	res, err := vm.Execute(c.Code, input, storage, gas, ctx)
@@ -453,6 +472,12 @@ func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, v
 		return 0, gas, false // reverted; storage (a copy in Execute) discarded
 	}
 	c.Storage = storageEncode(storage)
+	// Emit this contract's events into the block log (only on success).
+	if logs != nil {
+		for _, ev := range res.Logs {
+			*logs = append(*logs, Log{Contract: addr, Topics: ev, TxIndex: txIndex})
+		}
+	}
 	return res.Return, res.GasUsed, true
 }
 
@@ -481,17 +506,20 @@ func (s *State) QueryContract(addr crypto.Address, caller uint64, input []byte, 
 
 // vmHost implements vm.CallHost so a contract can call another contract.
 type vmHost struct {
-	s    *State
-	snap func(crypto.Address)
+	s       *State
+	snap    func(crypto.Address)
+	logs    *[]Log
+	txIndex int
 }
 
-// Call resolves target to a contract and executes it (no value transfer in v0.5).
+// Call resolves target to a contract and executes it (no value transfer yet).
+// Logs from the callee bubble into the same block log.
 func (h *vmHost) Call(self, target, arg, gasLimit uint64, depth int) (uint64, uint64, bool) {
 	addr, found := h.s.contractByDigest(target)
 	if !found {
 		return 0, 0, false
 	}
-	ret, used, ok := h.s.execContract(addr, self, u64word(arg), 0, gasLimit, h.snap, depth)
+	ret, used, ok := h.s.execContract(addr, self, u64word(arg), 0, gasLimit, h.snap, depth, h.logs, h.txIndex)
 	if !ok {
 		return 0, gasLimit, false
 	}

@@ -71,8 +71,10 @@ func nftCode() []byte {
 	a.label("mint")
 	a.push(1).op(vm.CDLOAD). // key = tokenId
 					op(vm.CALLER). // value = caller
-					op(vm.SSTORE). // storage[tokenId] = caller
-					op(vm.STOP)
+					op(vm.SSTORE)  // storage[tokenId] = caller
+	// emit Transfer event: topics [sig=0, to=CALLER, tokenId]
+	a.push(0).op(vm.CALLER).push(1).op(vm.CDLOAD).push(3).op(vm.LOG)
+	a.op(vm.STOP)
 
 	a.label("transfer")
 	// require storage[tokenId] == CALLER
@@ -117,6 +119,12 @@ func TestNFTMintTransferOwnerOf(t *testing.T) {
 	applyOne(t, s, 2, val.Address(), mint(alice, 0))
 	if got := s.Get(nft).Storage["7"]; got != types.AddrDigest(alice.Address()) {
 		t.Fatalf("after mint, owner=%d want alice=%d", got, types.AddrDigest(alice.Address()))
+	}
+	// Mint emitted a Transfer event (history): topics [0, alice, 7].
+	logs := s.LastLogs()
+	if len(logs) != 1 || len(logs[0].Topics) != 3 ||
+		logs[0].Topics[1] != types.AddrDigest(alice.Address()) || logs[0].Topics[2] != tokenID {
+		t.Fatalf("mint did not emit expected Transfer event: %+v", logs)
 	}
 
 	// Alice transfers token 7 to Bob.

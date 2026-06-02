@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.13.0 — contract event logs (on-chain history)
+
+- **`LOG` opcode** — contracts emit events (`pop n` + `n` topic words). Events are collected per
+  block (including from nested cross-contract calls), discarded on revert, and persisted as block
+  history. Deterministic and re-derivable by re-executing the block — real history, not a side DB.
+- **`GET /logs/{height}` / `slctl logs --height N`** — query a block's events (the substrate
+  indexers need for ERC-721 `Transfer`, etc.). Tested: the NFT now emits a Transfer event on mint.
+- Gets ERC-721 most of the way: mint/transfer/ownerOf/**events** all work. Remaining for full
+  ERC-721: full-address words + string metadata (next).
+
 ## v0.12.0 — read-only contract calls + deeper contract tests
 
 - **`POST /call` / `slctl query`** — read-only contract execution (eth_call analog): runs a method

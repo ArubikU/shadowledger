@@ -48,6 +48,8 @@ func main() {
 		call(os.Args[2:])
 	case "query":
 		query(os.Args[2:])
+	case "logs":
+		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/logs/" + flagVal(os.Args[2:], "height")))
 	case "validators":
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/validators"))
 	case "bans":
@@ -120,7 +122,8 @@ Passphrase for .tok wallets: --pass or env SL_WALLET_PASS.
   bans        --rpc URL               (locally banned peers)
   deploy      --wallet w.tok --code prog.hex [--gas N] --rpc URL   (deploy a contract)
   call        --wallet w.tok --to <contract> [--data HEX] [--amount N] [--gas N] --rpc URL
-  query       --to <contract> [--data HEX] [--caller sl..] [--gas N] --rpc URL   (read-only, no tx/fee)`)
+  query       --to <contract> [--data HEX] [--caller sl..] [--gas N] --rpc URL   (read-only, no tx/fee)
+  logs        --height N --rpc URL    (contract event logs at a block)`)
 	os.Exit(2)
 }
 
