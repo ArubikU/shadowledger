@@ -14,6 +14,7 @@ import "github.com/ArubikU/shadowledger/internal/crypto"
 type Params struct {
 	Network     string
 	ChainID     uint64                    // network id bound into every tx (cross-network replay protection)
+	GenesisTime int64                     // fixed genesis timestamp (anchors round timing; same on all nodes)
 	Genesis     map[crypto.Address]uint64 // premine: address -> base units (counts toward 21M cap)
 	Validators  []crypto.Address          // authorized block producers (v0 authority)
 	Seeds       []string                  // bootstrap node control URLs
@@ -30,8 +31,9 @@ const founder crypto.Address = "sl0fa7cc3eacafa2ab32381ac11b4836d31229ddf2"
 // Mainnet is the default ShadowLedger network embedded in the binary.
 func Mainnet() Params {
 	return Params{
-		Network: "shadowledger-mainnet",
-		ChainID: 1,
+		Network:     "shadowledger-mainnet",
+		ChainID:     1,
+		GenesisTime: 1780000000, // fixed launch anchor (unix); deterministic across nodes
 		Genesis: map[crypto.Address]uint64{
 			founder: 100_000_000_000_000, // 1,000,000 SHARD treasury premine
 		},

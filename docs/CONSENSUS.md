@@ -106,7 +106,14 @@ This is the **permissionless-entry** mechanism. Two things still gate turning it
 3. ✅ On-chain validator registry + storage bond — register/exit txs (v0.9)
 4. ✅ Equivocation slashing — KindSlash burns the bond of a validator that double-signs, 10% bounty
    to the reporter, permanent bar (v0.10). Local peer banlist for DoS hygiene (v0.10).
-5. Liveness: leader-timeout fallback + fork choice (so an offline validator can't halt the chain)
+5. ✅ Liveness: **leader-timeout / round fallback** (v0.17). The leader for a height is
+   `HRW(prevHash, height, round)`; round = elapsed-since-head / blockTime. If round-0's leader is
+   offline for one block-time, round 1 elects a different validator who may produce. Headers carry
+   `Round`; `ApplyExternalBlock` validates round-timing (`ts >= prevTs + round*blockTime`, not far
+   future) so a high round can't be claimed early. Genesis uses a fixed timestamp to anchor timing.
+   **Remaining:** true reorg-based fork choice — today it's first-valid-block-per-height-wins (no
+   reorg), so a network partition could leave nodes on different tips until manual intervention.
+   Heaviest-chain reorg + finality is the next consensus item.
 6. On-chain storage-proof records → enforceable eligibility + reward/fee share + slashing of failed
    proofs (storage-failure slashing; equivocation already done)
 7. Finality gadget, hardened P2P, audit, public testnet

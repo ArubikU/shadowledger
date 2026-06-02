@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.17.0 — consensus liveness (leader-timeout / round fallback)
+
+- **No more single-leader stalls.** The leader for a block is now elected per `(height, prevHash,
+  round)`; `round` = time elapsed since the head / block-time. If the round-0 leader is offline for
+  one block-time, round 1 elects a *different* validator who can produce — the chain keeps moving.
+- Header gains a signed `Round` field; `ApplyExternalBlock` enforces **round-timing**
+  (`ts >= prevTs + round*blockTime`, and not far in the future) so a validator can't jump to a high
+  round to steal a slot early. Genesis now uses a fixed `GenesisTime` (chainparams) to anchor timing.
+- Authority (single-validator mainnet) behavior unchanged. Honest limit: still *first-valid-block-
+  per-height wins* (no reorg) — heaviest-chain fork choice is the next consensus item (docs/CONSENSUS.md).
+- Header format changed → fresh chain.
+
 ## v0.16.0 — usable token/NFT/meme contracts + ChainID replay protection + security review
 
 - **Usable example contracts in `.shl`**: [contracts/token.shl](contracts/token.shl) (ERC-20-style:

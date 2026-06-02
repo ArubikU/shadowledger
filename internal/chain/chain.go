@@ -34,13 +34,15 @@ type ShardSource interface {
 
 // Chain is the local view of the ledger.
 type Chain struct {
-	mu      sync.RWMutex
-	store   *store.Store
-	state   *state.State
-	engine  consensus.Engine
-	bloom   *bloom.Filter
-	selfID  string
-	members func() []string // current node-id set for rendezvous
+	mu        sync.RWMutex
+	store     *store.Store
+	state     *state.State
+	engine    consensus.Engine
+	bloom     *bloom.Filter
+	selfID    string
+	members   func() []string // current node-id set for rendezvous
+	blockTime int64           // seconds per round (for round-timing validation)
+	genesisTS int64           // fixed genesis timestamp (deterministic)
 
 	head   types.Header
 	hasGen bool
@@ -50,8 +52,10 @@ type Chain struct {
 // Config parameters for a chain. Erasure shape and replication are NOT set
 // here — they are derived from the live node count by package netparams.
 type Config struct {
-	SelfID  string
-	Members func() []string
+	SelfID       string
+	Members      func() []string
+	BlockTimeSec int64 // seconds per consensus round (leader-timeout fallback)
+	GenesisTime  int64 // fixed genesis block timestamp (must be identical on all nodes)
 }
 
 // New builds a chain over an opened store and state.
@@ -59,6 +63,10 @@ func New(st *store.Store, st2 *state.State, eng consensus.Engine, bf *bloom.Filt
 	c := &Chain{
 		store: st, state: st2, engine: eng, bloom: bf,
 		selfID: cfg.SelfID, members: cfg.Members,
+		blockTime: cfg.BlockTimeSec, genesisTS: cfg.GenesisTime,
+	}
+	if c.blockTime < 1 {
+		c.blockTime = 1
 	}
 	if c.store.HasHeaders() {
 		if hdr, _, err := c.store.GetHeader(c.store.Height()); err == nil {
@@ -89,6 +97,7 @@ var (
 	ErrBadMerkle   = errors.New("chain: merkle root mismatch")
 	ErrBadBodyHash = errors.New("chain: body hash mismatch")
 	ErrBadLogsRoot = errors.New("chain: logs root mismatch (forged event history)")
+	ErrBadRound    = errors.New("chain: block round/timestamp not yet reached or too far ahead")
 	ErrReconstruct = errors.New("chain: could not reconstruct block body")
 )
 
@@ -149,7 +158,7 @@ func (c *Chain) Genesis(funding map[crypto.Address]uint64, genesisVal crypto.Add
 		Height:     0,
 		PrevHash:   types.Hash{},
 		MerkleRoot: types.MerkleRootOf(txs),
-		Timestamp:  0, // fixed for determinism across nodes
+		Timestamp:  c.genesisTS, // fixed launch time (deterministic) — anchors round timing
 		Validator:  genesisVal,
 		TxCount:    uint32(len(txs)),
 		Spec:       netparams.GenesisSpec(), // fixed shape -> identical genesis everywhere
@@ -181,7 +190,7 @@ func (c *Chain) Genesis(funding map[crypto.Address]uint64, genesisVal crypto.Add
 
 // ProduceBlock builds, signs, persists and locally shards a new block from txs.
 // Returns the full block (for gossip) and its shard set.
-func (c *Chain) ProduceBlock(txs []types.Transaction, kp *crypto.KeyPair) (*types.Block, types.ShardSet, error) {
+func (c *Chain) ProduceBlock(txs []types.Transaction, kp *crypto.KeyPair, round uint32) (*types.Block, types.ShardSet, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if !c.hasGen {
@@ -211,6 +220,7 @@ func (c *Chain) ProduceBlock(txs []types.Transaction, kp *crypto.KeyPair) (*type
 		MerkleRoot: types.MerkleRootOf(full),
 		Timestamp:  time.Now().Unix(),
 		TxCount:    uint32(len(full)),
+		Round:      round,
 		Spec:       c.specFor(), // network-decided erasure shape for this block
 		BodyHash:   types.BodyHash(body),
 		Validator:  kp.Address(), // set early so ApplyBlock's coinbase check passes
@@ -251,6 +261,17 @@ func (c *Chain) ApplyExternalBlock(blk *types.Block) error {
 	}
 	if hdr.PrevHash != c.head.ID() {
 		return ErrBadPrev
+	}
+	// Round-timing: a round-r block is only valid once round r is actually
+	// reached in wall-clock (prevTime + r*blockTime), and not far in the future.
+	// This makes the leader-timeout fallback safe — a validator can't jump to a
+	// high round to steal a slot before the rightful leader's time elapses.
+	minTS := c.head.Timestamp + int64(hdr.Round)*c.blockTime
+	if hdr.Timestamp < minTS {
+		return ErrBadRound
+	}
+	if hdr.Timestamp > time.Now().Unix()+2*c.blockTime {
+		return ErrBadRound // too far in the future
 	}
 	if types.MerkleRootOf(blk.Txs) != hdr.MerkleRoot {
 		return ErrBadMerkle

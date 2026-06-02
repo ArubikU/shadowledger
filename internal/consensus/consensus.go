@@ -23,12 +23,14 @@ import (
 // Engine decides block-production rights and authorizes headers.
 type Engine interface {
 	// LeaderFor returns the address allowed to produce the block at height,
-	// given the previous block hash.
-	LeaderFor(height uint64, prev types.Hash) crypto.Address
-	// AuthorizeHeader checks that a header was produced by the right validator.
+	// given the previous block hash and the consensus round. Higher rounds elect
+	// a different validator, so a stalled (offline) leader is bypassed.
+	LeaderFor(height uint64, prev types.Hash, round uint32) crypto.Address
+	// AuthorizeHeader checks that a header was produced by the elected leader for
+	// its (height, prevHash, round).
 	AuthorizeHeader(h *types.Header) error
-	// CanProduce reports whether THIS node may produce the next block.
-	CanProduce(nextHeight uint64, prev types.Hash) bool
+	// CanProduce reports whether THIS node may produce the next block at round.
+	CanProduce(nextHeight uint64, prev types.Hash, round uint32) bool
 	// IsValidator reports whether this node is in the validator set at all.
 	IsValidator() bool
 }
@@ -67,7 +69,7 @@ func NewAuthority(validators []crypto.Address, self crypto.Address) *Authority {
 	return &Authority{set: set, Self: self}
 }
 
-func (a *Authority) LeaderFor(uint64, types.Hash) crypto.Address { return a.Self }
+func (a *Authority) LeaderFor(uint64, types.Hash, uint32) crypto.Address { return a.Self }
 
 func (a *Authority) AuthorizeHeader(h *types.Header) error {
 	if err := h.VerifySig(); err != nil {
@@ -79,7 +81,7 @@ func (a *Authority) AuthorizeHeader(h *types.Header) error {
 	return nil
 }
 
-func (a *Authority) CanProduce(uint64, types.Hash) bool {
+func (a *Authority) CanProduce(uint64, types.Hash, uint32) bool {
 	return a.Self != "" && a.set[a.Self]
 }
 
@@ -118,23 +120,27 @@ func (p *PoStorage) setList() (map[crypto.Address]bool, []crypto.Address) {
 	return validatorSet(p.validators())
 }
 
-func leaderScore(prev types.Hash, v crypto.Address, height uint64) uint64 {
+func leaderScore(prev types.Hash, v crypto.Address, height uint64, round uint32) uint64 {
 	h := sha256.New()
 	h.Write(prev[:])
 	h.Write([]byte(v))
 	var hb [8]byte
 	binary.BigEndian.PutUint64(hb[:], height)
 	h.Write(hb[:])
+	var rb [4]byte
+	binary.BigEndian.PutUint32(rb[:], round)
+	h.Write(rb[:])
 	return binary.BigEndian.Uint64(h.Sum(nil)[:8])
 }
 
-// LeaderFor returns the elected validator for (height, prev).
-func (p *PoStorage) LeaderFor(height uint64, prev types.Hash) crypto.Address {
+// LeaderFor returns the elected validator for (height, prev, round). Each round
+// reshuffles the ranking, so the leader changes when a round advances.
+func (p *PoStorage) LeaderFor(height uint64, prev types.Hash, round uint32) crypto.Address {
 	_, list := p.setList()
 	var best crypto.Address
 	var bestScore uint64
 	for _, v := range list {
-		s := leaderScore(prev, v, height)
+		s := leaderScore(prev, v, height, round)
 		if best == "" || s > bestScore || (s == bestScore && v < best) {
 			best, bestScore = v, s
 		}
@@ -153,18 +159,18 @@ func (p *PoStorage) AuthorizeHeader(h *types.Header) error {
 	if h.Height == 0 {
 		return nil // genesis: deterministic, stamped by validators[0], no election
 	}
-	if h.Validator != p.LeaderFor(h.Height, h.PrevHash) {
+	if h.Validator != p.LeaderFor(h.Height, h.PrevHash, h.Round) {
 		return ErrNotLeader
 	}
 	return nil
 }
 
-func (p *PoStorage) CanProduce(nextHeight uint64, prev types.Hash) bool {
+func (p *PoStorage) CanProduce(nextHeight uint64, prev types.Hash, round uint32) bool {
 	set, _ := p.setList()
 	if p.Self == "" || !set[p.Self] {
 		return false
 	}
-	if p.LeaderFor(nextHeight, prev) != p.Self {
+	if p.LeaderFor(nextHeight, prev, round) != p.Self {
 		return false
 	}
 	// Advisory storage gate: don't lead if we're failing storage proofs.

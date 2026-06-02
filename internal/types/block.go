@@ -35,6 +35,7 @@ type Header struct {
 	Timestamp  int64          `json:"timestamp"`
 	Validator  crypto.Address `json:"validator"`
 	TxCount    uint32         `json:"tx_count"`
+	Round      uint32         `json:"round"` // consensus round (leader-timeout fallback for liveness)
 	Spec       ShardSpec      `json:"spec"`
 	BodyHash   Hash           `json:"body_hash"` // SHA-256 of canonical body bytes
 	LogsRoot   Hash           `json:"logs_root"` // merkle root over this block's event logs (Ethereum-style)
@@ -175,6 +176,7 @@ func (h *Header) SigningBytes() []byte {
 	putU64(&b, uint64(h.Timestamp))
 	putString(&b, string(h.Validator))
 	putU64(&b, uint64(h.TxCount))
+	putU64(&b, uint64(h.Round))
 	b.WriteByte(h.Spec.K)
 	b.WriteByte(h.Spec.M)
 	b.Write(h.BodyHash[:])

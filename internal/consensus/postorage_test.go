@@ -21,8 +21,8 @@ func TestLeaderDeterministicAndInSet(t *testing.T) {
 	e := NewPoStorage(StaticValidators(vs), vs[0], nil, 0.8)
 	var prev types.Hash
 	prev[0] = 0x42
-	l1 := e.LeaderFor(7, prev)
-	l2 := e.LeaderFor(7, prev)
+	l1 := e.LeaderFor(7, prev, 0)
+	l2 := e.LeaderFor(7, prev, 0)
 	if l1 != l2 {
 		t.Fatal("leader not deterministic")
 	}
@@ -43,7 +43,7 @@ func TestLeaderRotates(t *testing.T) {
 	var prev types.Hash
 	seen := map[crypto.Address]int{}
 	for h := uint64(0); h < 200; h++ {
-		seen[e.LeaderFor(h, prev)]++
+		seen[e.LeaderFor(h, prev, 0)]++
 	}
 	// Every validator should win at least once over 200 heights (rotation).
 	if len(seen) < len(vs) {
@@ -63,7 +63,7 @@ func TestAuthorizeRequiresElectedLeader(t *testing.T) {
 	var prev types.Hash
 	prev[1] = 0x99
 	height := uint64(10)
-	leader := e.LeaderFor(height, prev)
+	leader := e.LeaderFor(height, prev, 0)
 
 	// Header from the elected leader → authorized.
 	var leaderKP *crypto.KeyPair
@@ -103,11 +103,29 @@ func TestGenesisAuthorizedWithoutElection(t *testing.T) {
 	}
 }
 
+func TestRoundFallbackChangesLeader(t *testing.T) {
+	vs := addrs(5)
+	e := NewPoStorage(StaticValidators(vs), vs[0], nil, 0.8)
+	var prev types.Hash
+	prev[0] = 0x07
+	// Across heights, advancing the round must (at least sometimes) elect a
+	// different leader — that's how an offline round-0 leader gets bypassed.
+	diff := 0
+	for h := uint64(0); h < 20; h++ {
+		if e.LeaderFor(h, prev, 0) != e.LeaderFor(h, prev, 1) {
+			diff++
+		}
+	}
+	if diff == 0 {
+		t.Fatal("round advance never changed the leader — no liveness fallback")
+	}
+}
+
 func TestSingleValidatorAlwaysLeads(t *testing.T) {
 	kp, _ := crypto.Generate()
 	e := NewPoStorage(StaticValidators([]crypto.Address{kp.Address()}), kp.Address(), nil, 0.8)
 	var prev types.Hash
-	if !e.CanProduce(1, prev) {
+	if !e.CanProduce(1, prev, 0) {
 		t.Fatal("single validator should always be able to produce")
 	}
 }

@@ -61,7 +61,7 @@ func TestGenesisProduceReconstruct(t *testing.T) {
 	if len(txs) != 1 {
 		t.Fatalf("reap got %d txs", len(txs))
 	}
-	blk, _, err := c.ProduceBlock(txs, val)
+	blk, _, err := c.ProduceBlock(txs, val, 0)
 	if err != nil {
 		t.Fatalf("produce: %v", err)
 	}
@@ -113,14 +113,14 @@ func TestLogsHybridRoundTrip(t *testing.T) {
 	code := []byte{0x01, 0, 0, 0, 0, 0, 0, 0, 99, 0x01, 0, 0, 0, 0, 0, 0, 0, 1, 0x72, 0x00}
 	dep := types.Transaction{Kind: types.KindDeploy, Data: code, Nonce: 0}
 	dep.Sign(val)
-	if _, _, err := c.ProduceBlock([]types.Transaction{dep}, val); err != nil {
+	if _, _, err := c.ProduceBlock([]types.Transaction{dep}, val, 0); err != nil {
 		t.Fatalf("deploy block: %v", err)
 	}
 	caddr := types.ContractAddress(val.Address(), 0)
 
 	call := types.Transaction{To: caddr, Kind: types.KindCall, Gas: 100000, Nonce: 1}
 	call.Sign(val)
-	blk, _, err := c.ProduceBlock([]types.Transaction{call}, val)
+	blk, _, err := c.ProduceBlock([]types.Transaction{call}, val, 0)
 	if err != nil {
 		t.Fatalf("call block: %v", err)
 	}

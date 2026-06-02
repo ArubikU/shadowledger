@@ -86,9 +86,15 @@ func New(cfg *Config) (*Node, error) {
 		peers: peers, eng: eng, bloom: bf, statePath: statePath,
 	}
 
+	bt := int64(cfg.BlockTimeMS / 1000)
+	if bt < 1 {
+		bt = 1
+	}
 	ch := chain.New(st, ledger, eng, bf, chain.Config{
-		SelfID:  string(id.Address()),
-		Members: peers.MemberIDs, // live, growing membership for rendezvous
+		SelfID:       string(id.Address()),
+		Members:      peers.MemberIDs, // live, growing membership for rendezvous
+		BlockTimeSec: bt,
+		GenesisTime:  chainparams.Mainnet().GenesisTime,
 	})
 	n.chain = ch
 
@@ -223,15 +229,31 @@ func (n *Node) loops(ctx context.Context) {
 }
 
 func (n *Node) maybeProduce() {
-	if !n.eng.CanProduce(n.chain.Height()+1, n.chain.HeadID()) {
+	head, ok := n.chain.Head()
+	if !ok {
+		return
+	}
+	// Consensus round = how many block-times have elapsed since the head. If the
+	// round-0 leader stays silent past one block-time, round 1's leader (a
+	// different validator) becomes eligible — this is the liveness fallback.
+	bt := int64(n.cfg.BlockTimeMS / 1000)
+	if bt < 1 {
+		bt = 1
+	}
+	elapsed := time.Now().Unix() - head.Timestamp
+	if elapsed < 0 {
+		elapsed = 0
+	}
+	round := uint32(elapsed / bt)
+	if !n.eng.CanProduce(head.Height+1, head.ID(), round) {
 		return
 	}
 	txs := n.pool.Reap(1000)
-	reward := n.state.NextReward(n.chain.Height() + 1)
+	reward := n.state.NextReward(head.Height + 1)
 	if len(txs) == 0 && reward == 0 {
 		return // nothing to do and no subsidy to mint
 	}
-	blk, set, err := n.chain.ProduceBlock(txs, n.id)
+	blk, set, err := n.chain.ProduceBlock(txs, n.id, round)
 	if err != nil {
 		log.Printf("produce block: %v", err)
 		return
