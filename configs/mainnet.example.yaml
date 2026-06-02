@@ -1,0 +1,31 @@
+# ShadowLedger mainnet bootstrap (founder/treasury validator).
+#
+# This is the genesis-defining node. The founder address below is the validator
+# (block authority) and is premined with $SHARD at genesis to retain authority
+# and bootstrap the economy. The founder PRIVATE key lives in an encrypted .tok
+# wallet OFF this repo (see secret/, which is gitignored) — only the public
+# address appears here.
+#
+# To run it, the operator provides the wallet passphrase via env:
+#   SL_WALLET_PASS="…"  slnode --config mainnet.yaml
+#
+# Shard K/M and replication are decided by the network (internal/netparams),
+# not set here.
+
+data_dir: ./data/mainnet
+control_addr: ":4004"
+shard_addr: ":4005"
+advertise: "YOUR.PUBLIC.IP.HERE"   # public host/IP others dial; forward both ports
+node_key: ./secret/founder.tok      # encrypted founder/validator wallet (gitignored)
+
+validators:
+  - sl0fa7cc3eacafa2ab32381ac11b4836d31229ddf2   # founder/treasury (block authority)
+
+seeds: []              # bootstrap node has no seeds; others seed off its public addr
+lan_discovery: false   # public node uses seeds, not LAN multicast
+block_time_ms: 5000
+
+# Genesis premine to the founder/treasury (base units; 1 SHARD = 100,000,000 units).
+# 1,000,000 SHARD reserved for authority/treasury (counts toward the 21M cap).
+genesis:
+  sl0fa7cc3eacafa2ab32381ac11b4836d31229ddf2: 100000000000000

@@ -1,0 +1,26 @@
+# ShadowLedger validator/producer node (node 1) — the network's bootstrap node.
+# It derives genesis deterministically (it is the only validator) and funds addresses.
+#
+# NOTE: shard K/M and replication are NOT here — the network decides them from the
+# live node count (internal/netparams). You only choose identity, ports, validators
+# and how to be found.
+data_dir: ./data/node1
+control_addr: ":4004"
+shard_addr: ":4005"
+advertise: "localhost"        # host/IP other nodes use to reach you
+node_key: ./data/node1/keys/node.json
+
+# Authorized block producers (v0 single-authority). Put node1's address here
+# (printed on first run / `slctl address --wallet ...`).
+validators:
+  - sl_REPLACE_WITH_NODE1_ADDRESS
+
+# This is the bootstrap node, so it has no seeds. Others will seed off it.
+seeds: []
+lan_discovery: true           # auto-discover peers on the LAN
+
+block_time_ms: 2000
+
+# Genesis funding (only used by the producer on first run; counts toward the 21M cap).
+genesis:
+  sl_REPLACE_WITH_NODE1_ADDRESS: 100000000000

@@ -1,0 +1,23 @@
+# ShadowLedger follower / joiner node (node 2).
+# Not a validator: it does not produce blocks. On startup it discovers peers via
+# the seed, fast-syncs the verified header chain + state snapshot, then stores its
+# rendezvous-assigned shards from new blocks and serves them to peers.
+#
+# No genesis config needed — it gets the chain from the network.
+data_dir: ./data/node2
+control_addr: ":4006"
+shard_addr: ":4007"
+advertise: "localhost"
+node_key: ./data/node2/keys/node.json
+
+# Same validator set as node1, so it authorizes node1's blocks.
+validators:
+  - sl_REPLACE_WITH_NODE1_ADDRESS
+
+# Bootstrap entry point: node1's control URL. NOT a central server — just the
+# first peer to ask. Peer-exchange discovers the rest.
+seeds:
+  - http://localhost:4004
+lan_discovery: true
+
+block_time_ms: 2000

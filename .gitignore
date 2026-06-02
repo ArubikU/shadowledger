@@ -1,0 +1,19 @@
+# build output
+/bin/
+# runtime data
+/data/
+/demo/
+/demo2/
+/demo3/
+**/data/
+# wallets / keys (NEVER commit private keys — plaintext or encrypted)
+*.wallet.json
+wallet.json
+node.json
+*.tok
+*.key
+# local node configs that may embed addresses/funding
+/node.yaml
+/mainnet.yaml
+# founder/treasury secrets — NEVER commit
+/secret/
