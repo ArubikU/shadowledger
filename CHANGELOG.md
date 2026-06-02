@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.4.0 — smart contracts
+
+- **Deterministic smart-contract VM** (`internal/vm`): uint64 stack machine, per-contract
+  key/value storage, gas metering, revert semantics. Opcode set covers arithmetic, comparison,
+  storage, control flow, caller/value/balance, calldata. See [docs/SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md).
+- **Contract accounts** with `Code` + `Storage`; deterministic `ContractAddress(deployer, nonce)`.
+- **New tx kinds**: deploy (`Data` = bytecode) and call (`To` = contract, `Data` = input). On VM
+  revert the value is refunded and only the fee is consumed; block state changes stay atomic.
+- **CLI**: `slctl deploy --code prog.hex`, `slctl call --to <contract> [--data HEX] [--amount N]`.
+- Note: tx wire format gained `kind`/`gas`/`data`, so v0.4 is a fresh chain (not v0.3-compatible).
+
 ## v0.3.0 — first public release
 
 - **Encrypted `.tok` wallets** — Ed25519 private key sealed with AES-256-GCM under a

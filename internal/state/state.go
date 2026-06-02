@@ -6,17 +6,45 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/ArubikU/shadowledger/internal/crypto"
 	"github.com/ArubikU/shadowledger/internal/economy"
 	"github.com/ArubikU/shadowledger/internal/types"
+	"github.com/ArubikU/shadowledger/internal/vm"
 )
 
-// Account is the per-address state.
+// Account is the per-address state. Contract accounts additionally carry Code
+// and Storage; plain accounts leave them empty.
 type Account struct {
-	Balance uint64 `json:"balance"`
-	Nonce   uint64 `json:"nonce"`
+	Balance uint64            `json:"balance"`
+	Nonce   uint64            `json:"nonce"`
+	Code    []byte            `json:"code,omitempty"`    // contract bytecode (empty for EOAs)
+	Storage map[string]uint64 `json:"storage,omitempty"` // contract key/value store
+}
+
+// clone deep-copies an account (for block-level rollback snapshots).
+func (a *Account) clone() *Account {
+	cp := &Account{Balance: a.Balance, Nonce: a.Nonce}
+	if a.Code != nil {
+		cp.Code = append([]byte(nil), a.Code...)
+	}
+	if a.Storage != nil {
+		cp.Storage = make(map[string]uint64, len(a.Storage))
+		for k, v := range a.Storage {
+			cp.Storage[k] = v
+		}
+	}
+	return cp
+}
+
+// IsContract reports whether an address holds contract code.
+func (s *State) IsContract(a crypto.Address) bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	ac := s.Accounts[a]
+	return ac != nil && len(ac.Code) > 0
 }
 
 // State is a thread-safe account ledger bound to a head height.
@@ -136,26 +164,23 @@ func (s *State) ApplyBlock(b *types.Block) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Snapshot for rollback.
-	type delta struct {
-		bal, nonce uint64
-		existed    bool
-	}
-	saved := map[crypto.Address]delta{}
+	// Full-account snapshot for block-level rollback (covers balance, nonce,
+	// code and storage, so contract effects revert cleanly too).
+	saved := map[crypto.Address]*Account{} // nil value => account did not exist
 	snap := func(a crypto.Address) {
 		if _, ok := saved[a]; ok {
 			return
 		}
 		if ac := s.Accounts[a]; ac != nil {
-			saved[a] = delta{ac.Balance, ac.Nonce, true}
+			saved[a] = ac.clone()
 		} else {
-			saved[a] = delta{0, 0, false}
+			saved[a] = nil
 		}
 	}
 	rollback := func() {
-		for a, d := range saved {
-			if d.existed {
-				s.Accounts[a] = &Account{Balance: d.bal, Nonce: d.nonce}
+		for a, ac := range saved {
+			if ac != nil {
+				s.Accounts[a] = ac
 			} else {
 				delete(s.Accounts, a)
 			}
@@ -184,7 +209,6 @@ func (s *State) ApplyBlock(b *types.Block) error {
 		}
 		from := s.acct(t.From)
 		snap(t.From)
-		snap(t.To)
 		if t.Nonce != from.Nonce {
 			rollback()
 			return ErrBadNonce
@@ -194,10 +218,35 @@ func (s *State) ApplyBlock(b *types.Block) error {
 			rollback()
 			return ErrInsufficient
 		}
+		// Debit value+fee and bump nonce up front; value may be refunded on a
+		// contract revert below. Fee is always kept (recycled to validator).
 		from.Balance -= total
 		from.Nonce++
-		s.acct(t.To).Balance += t.Amount
 		fees += t.Fee
+
+		switch t.Kind {
+		case types.KindDeploy:
+			caddr := types.ContractAddress(t.From, t.Nonce)
+			snap(caddr)
+			c := s.acct(caddr)
+			c.Code = append([]byte(nil), t.Data...)
+			if c.Storage == nil {
+				c.Storage = map[string]uint64{}
+			}
+			c.Balance += t.Amount
+			_ = caddr // contract created; no constructor execution in v0.4
+		case types.KindCall:
+			snap(t.To)
+			to := s.acct(t.To)
+			to.Balance += t.Amount
+			if len(to.Code) == 0 {
+				break // calling a non-contract behaves as a plain transfer
+			}
+			s.runContract(t, to)
+		default: // KindTransfer
+			snap(t.To)
+			s.acct(t.To).Balance += t.Amount
+		}
 	}
 
 	// Validate and apply the coinbase against the emission schedule.
@@ -221,6 +270,29 @@ func (s *State) ApplyBlock(b *types.Block) error {
 	}
 	s.Height = b.Header.Height
 	return nil
+}
+
+// runContract executes a contract call against account c (already credited with
+// the call value). On success it commits the contract's storage; on revert (any
+// VM error, incl. out-of-gas) it refunds the call value to the sender and leaves
+// storage untouched — the fee is still consumed.
+func (s *State) runContract(t *types.Transaction, c *Account) {
+	storage := make(map[uint64]uint64, len(c.Storage))
+	for k, v := range c.Storage {
+		if n, err := strconv.ParseUint(k, 10, 64); err == nil {
+			storage[n] = v
+		}
+	}
+	ctx := vm.Context{Caller: types.AddrDigest(t.From), Value: t.Amount, Balance: c.Balance}
+	if _, err := vm.Execute(c.Code, t.Data, storage, t.Gas, ctx); err != nil {
+		c.Balance -= t.Amount              // undo the value credit
+		s.acct(t.From).Balance += t.Amount // refund sender
+		return
+	}
+	c.Storage = make(map[string]uint64, len(storage))
+	for k, v := range storage {
+		c.Storage[strconv.FormatUint(k, 10)] = v
+	}
 }
 
 // Save persists the state snapshot to disk.

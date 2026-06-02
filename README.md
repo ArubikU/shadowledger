@@ -20,6 +20,9 @@ producer stamps the chosen shape into each block header.
 node), transitive **peer-exchange** gossip, and optional **LAN multicast**. A fresh node
 **fast-syncs** a verified header chain + state snapshot, then participates.
 
+**Smart contracts:** a small deterministic stack VM with gas + per-contract storage. Deploy and
+call on-chain code (`slctl deploy` / `slctl call`). See [docs/SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md).
+
 ## Why
 
 - Full Bitcoin node today: ~745 GB and growing. Barrier to running a node.
@@ -94,5 +97,6 @@ A node binds all interfaces (`:4004` control, `:4005` shard). To be reachable by
 ## Docs
 
 [SPEC-CORE-V1.md](docs/SPEC-CORE-V1.md) · [ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
+[SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md) ·
 [GAPS-AND-DESIGN.md](docs/GAPS-AND-DESIGN.md) (PoW decision, discovery, onboarding, roadmap) ·
 [CHANGELOG.md](CHANGELOG.md)

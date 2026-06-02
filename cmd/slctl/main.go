@@ -3,11 +3,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/ArubikU/shadowledger/internal/crypto"
 	"github.com/ArubikU/shadowledger/internal/types"
@@ -36,9 +38,46 @@ func main() {
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/supply"))
 	case "peers":
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/peers"))
+	case "deploy":
+		deploy(os.Args[2:])
+	case "call":
+		call(os.Args[2:])
 	default:
 		usage()
 	}
+}
+
+// deploy sends a contract-creation tx. --code is a path to a hex-encoded bytecode file.
+func deploy(args []string) {
+	rpc := rpcOf(args)
+	kp, err := crypto.LoadWalletAuto(flagVal(args, "wallet"), passOf(args))
+	must(err)
+	code := readHexArg(args, "code")
+	tx := types.Transaction{Kind: types.KindDeploy, Data: code, Gas: mustU64opt(args, "gas", 100000), Nonce: fetchNonce(rpc, kp.Address())}
+	tx.Sign(kp)
+	submit(rpc, tx)
+	fmt.Printf("contract address: %s\n", types.ContractAddress(kp.Address(), tx.Nonce))
+}
+
+// call sends a contract-call tx. --to is the contract; --data hex words input (optional).
+func call(args []string) {
+	rpc := rpcOf(args)
+	kp, err := crypto.LoadWalletAuto(flagVal(args, "wallet"), passOf(args))
+	must(err)
+	var data []byte
+	if d := flagVal(args, "data"); d != "" {
+		data = decodeHex(d)
+	}
+	amount := uint64(0)
+	if a := flagVal(args, "amount"); a != "" {
+		amount = mustU64(a)
+	}
+	tx := types.Transaction{
+		To: crypto.Address(flagVal(args, "to")), Kind: types.KindCall,
+		Amount: amount, Data: data, Gas: mustU64opt(args, "gas", 100000), Nonce: fetchNonce(rpc, kp.Address()),
+	}
+	tx.Sign(kp)
+	submit(rpc, tx)
 }
 
 func usage() {
@@ -54,7 +93,9 @@ Passphrase for .tok wallets: --pass or env SL_WALLET_PASS.
   block       --height N --rpc URL
   reconstruct --height N --rpc URL    (slow-path: rebuild body from shards)
   supply      --rpc URL               ($SHARD minted + next block reward)
-  peers       --rpc URL               (this node's known peers)`)
+  peers       --rpc URL               (this node's known peers)
+  deploy      --wallet w.tok --code prog.hex [--gas N] --rpc URL   (deploy a contract)
+  call        --wallet w.tok --to <contract> [--data HEX] [--amount N] [--gas N] --rpc URL`)
 	os.Exit(2)
 }
 
@@ -182,4 +223,48 @@ func mustU64(s string) uint64 {
 		must(fmt.Errorf("bad number %q", s))
 	}
 	return v
+}
+
+func mustU64opt(args []string, name string, def uint64) uint64 {
+	if v := flagVal(args, name); v != "" {
+		return mustU64(v)
+	}
+	return def
+}
+
+func decodeHex(s string) []byte {
+	b, err := hex.DecodeString(strings.TrimSpace(strings.TrimPrefix(s, "0x")))
+	must(err)
+	return b
+}
+
+func readHexArg(args []string, name string) []byte {
+	path := flagVal(args, name)
+	if path == "" {
+		must(fmt.Errorf("--%s (hex bytecode file) required", name))
+	}
+	raw, err := os.ReadFile(path)
+	must(err)
+	return decodeHex(string(raw))
+}
+
+func fetchNonce(rpc string, addr crypto.Address) uint64 {
+	var acct struct {
+		Nonce uint64 `json:"nonce"`
+	}
+	must(json.Unmarshal([]byte(getJSON(rpc+"/account/"+string(addr))), &acct))
+	return acct.Nonce
+}
+
+func submit(rpc string, tx types.Transaction) {
+	b, _ := json.Marshal(tx)
+	resp, err := http.Post(rpc+"/tx", "application/json", bytes.NewReader(b))
+	must(err)
+	defer resp.Body.Close()
+	out, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode/100 != 2 {
+		fmt.Fprintf(os.Stderr, "submit failed (%d): %s\n", resp.StatusCode, string(out))
+		os.Exit(1)
+	}
+	fmt.Printf("submitted: %s\n", string(out))
 }

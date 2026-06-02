@@ -7,6 +7,7 @@ import (
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 
 	"github.com/ArubikU/shadowledger/internal/crypto"
@@ -16,13 +17,23 @@ import (
 // Hash is the project-wide 32-byte digest (shared with merkle).
 type Hash = merkle.Hash
 
-// Transaction is an account-model value transfer.
+// Transaction kinds.
+const (
+	KindTransfer uint8 = 0 // plain value transfer
+	KindDeploy   uint8 = 1 // deploy a contract (Data = bytecode)
+	KindCall     uint8 = 2 // call a contract (To = contract, Data = input words)
+)
+
+// Transaction is an account-model value transfer or contract operation.
 type Transaction struct {
 	From   crypto.Address `json:"from"`
 	To     crypto.Address `json:"to"`
 	Amount uint64         `json:"amount"`
 	Fee    uint64         `json:"fee"`
 	Nonce  uint64         `json:"nonce"`
+	Kind   uint8          `json:"kind"`   // 0 transfer, 1 deploy, 2 call
+	Gas    uint64         `json:"gas"`    // execution gas limit (contract txs)
+	Data   []byte         `json:"data"`   // deploy bytecode / call input
 	PubKey []byte         `json:"pubkey"` // sender ed25519 pubkey (empty for coinbase)
 	Sig    []byte         `json:"sig"`    // ed25519 over SigningBytes (empty for coinbase)
 }
@@ -55,8 +66,28 @@ func (t *Transaction) SigningBytes() []byte {
 	putU64(&b, t.Amount)
 	putU64(&b, t.Fee)
 	putU64(&b, t.Nonce)
+	b.WriteByte(t.Kind)
+	putU64(&b, t.Gas)
+	putBytes(&b, t.Data)
 	putBytes(&b, t.PubKey)
 	return b.Bytes()
+}
+
+// ContractAddress derives a deployed contract's address from the deployer and
+// the nonce used in the deploy tx (deterministic, like Ethereum's CREATE).
+func ContractAddress(deployer crypto.Address, nonce uint64) crypto.Address {
+	var nb [8]byte
+	for i := 0; i < 8; i++ {
+		nb[7-i] = byte(nonce >> (8 * i))
+	}
+	sum := sha256.Sum256(append([]byte("contract:"+deployer), nb[:]...))
+	return crypto.Address(crypto.AddressPrefix + hex.EncodeToString(sum[:20]))
+}
+
+// AddrDigest reduces an address to a uint64 the VM can use (e.g. CALLER).
+func AddrDigest(a crypto.Address) uint64 {
+	h := sha256.Sum256([]byte(a))
+	return binary.BigEndian.Uint64(h[:8])
 }
 
 // canonical is the full encoding including Sig, used for the tx hash.

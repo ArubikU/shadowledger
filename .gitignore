@@ -17,3 +17,6 @@ node.json
 /mainnet.yaml
 # founder/treasury secrets — NEVER commit
 /secret/
+
+# local harness state
+/.claude/

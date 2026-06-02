@@ -138,6 +138,17 @@ func decodeTx(data []byte) (Transaction, error) {
 	if t.Nonce, err = readU64(r); err != nil {
 		return t, err
 	}
+	kind, err := r.ReadByte()
+	if err != nil {
+		return t, err
+	}
+	t.Kind = kind
+	if t.Gas, err = readU64(r); err != nil {
+		return t, err
+	}
+	if t.Data, err = readBytes(r); err != nil {
+		return t, err
+	}
 	if t.PubKey, err = readBytes(r); err != nil {
 		return t, err
 	}
