@@ -432,6 +432,23 @@ func (c *Chain) Logs(height uint64) []byte {
 	return out
 }
 
+// IsForgery reports whether err from ApplyExternalBlock indicates a CRYPTOGRAPHIC
+// forgery / malicious block (bad signature, unauthorized validator, wrong
+// merkle/body/logs root, bogus round) — worth striking/banning the sender. It
+// returns false for benign errors (out-of-order height, prev mismatch, no
+// genesis, dup) that happen during normal gossip races, so honest peers are not
+// banned for losing a propagation race.
+func IsForgery(err error) bool {
+	switch err {
+	case ErrBadMerkle, ErrBadBodyHash, ErrBadLogsRoot, ErrBadRound:
+		return true
+	case types.ErrBadSignature, types.ErrPubAddrMismatch,
+		consensus.ErrUnauthorizedValidator, consensus.ErrNotLeader:
+		return true
+	}
+	return false
+}
+
 // VerifyAvailable proves a block is DATA-AVAILABLE: it reconstructs the body
 // from pooled shards (local + fetched from peers) and checks the reconstruction
 // against the validator's signed commitments (BodyHash + MerkleRoot). This is

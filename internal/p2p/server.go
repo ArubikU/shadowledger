@@ -192,10 +192,13 @@ func (s *Server) ControlHandler() http.Handler {
 			return
 		}
 		if err := s.chain.ApplyExternalBlock(&blk); err != nil {
-			// Invalid block from this peer: strike its IP (DoS hygiene).
-			if banned := s.bans.Strike(clientIP(r)); banned {
-				http.Error(w, "banned", http.StatusForbidden)
-				return
+			// Only strike the sender for a genuine FORGERY — not for benign gossip
+			// races (out-of-order height, prev mismatch) which honest peers hit.
+			if chain.IsForgery(err) {
+				if banned := s.bans.Strike(clientIP(r)); banned {
+					http.Error(w, "banned", http.StatusForbidden)
+					return
+				}
 			}
 			http.Error(w, err.Error(), http.StatusConflict)
 			return
