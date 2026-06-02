@@ -1,10 +1,12 @@
 package state
 
 import (
+	"encoding/binary"
 	"testing"
 
 	"github.com/ArubikU/shadowledger/internal/crypto"
 	"github.com/ArubikU/shadowledger/internal/economy"
+	"github.com/ArubikU/shadowledger/internal/regpow"
 	"github.com/ArubikU/shadowledger/internal/types"
 )
 
@@ -46,6 +48,36 @@ func TestRegisterUnregisterValidator(t *testing.T) {
 	// 990 - 5 fee + MinBond returned
 	if got := s.Get(node.Address()).Balance; got != 990-5+economy.MinBond {
 		t.Fatalf("balance after unregister = %d", got)
+	}
+}
+
+func TestRegisterRequiresPoW(t *testing.T) {
+	node, _ := crypto.Generate()
+	val, _ := crypto.Generate()
+	s := New()
+	s.SetRegPoWBits(12) // enable the Sybil gate
+	s.Credit(node.Address(), economy.MinBond+1000)
+
+	// No PoW nonce -> rejected.
+	bad := types.Transaction{Kind: types.KindRegister, Amount: economy.MinBond, Nonce: 0}
+	bad.Sign(node)
+	blk := &types.Block{Header: types.Header{Height: 1, Validator: val.Address()}, Txs: []types.Transaction{bad}}
+	if err := s.ApplyBlock(blk); err != ErrBadRegPoW {
+		t.Fatalf("want ErrBadRegPoW, got %v", err)
+	}
+	if _, ok := s.ValidatorInfo(node.Address()); ok {
+		t.Fatal("registered without PoW")
+	}
+
+	// Solved PoW nonce -> accepted.
+	nonce := regpow.Solve(s.ChainID, node.Address(), 12)
+	data := make([]byte, 8)
+	binary.BigEndian.PutUint64(data, nonce)
+	good := types.Transaction{Kind: types.KindRegister, Amount: economy.MinBond, Data: data, Nonce: 0}
+	good.Sign(node)
+	applyOne(t, s, 2, val.Address(), good)
+	if vi, ok := s.ValidatorInfo(node.Address()); !ok || !vi.Active {
+		t.Fatal("valid PoW registration not accepted")
 	}
 }
 

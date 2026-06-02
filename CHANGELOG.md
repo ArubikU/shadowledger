@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.20.0 — registration Proof-of-Work (PoW × PoS Sybil gate)
+
+- **`internal/regpow`** — to register as a validator you now solve a one-time PoW puzzle
+  (`H(chainID‖address‖nonce)` with N leading zero bits) **on top of** the bond. This is the genuine
+  PoW role (Zilliqa/QuarkChain style): **Sybil resistance** (mass fake validators cost real compute)
+  + a **randomness seed** for shard assignment — NOT block mining (no wasted energy). Mainnet
+  difficulty = 20 bits (~1M hashes, sub-second).
+- `state` verifies the nonce on `KindRegister` (carried in tx `Data`); `slctl register` solves it
+  automatically. Bound to chain id + address (can't be reused). `RegPoWBits` is a network param
+  (0 = off, so tests/devnets can disable). Additive — no chain reset.
+- Together: **PoW to enter** (anti-Sybil) + **bond/PoS for stake** + **storage to earn** (the ongoing
+  competition is proven storage → leader weight, once on-chain proofs land).
+
 ## v0.19.0 — proof-of-availability (reconstruct + verify against commitment)
 
 - **`chain.VerifyAvailable(height)` / `GET /verify/{height}` / `slctl verify`** — reconstructs a

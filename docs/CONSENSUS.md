@@ -11,8 +11,16 @@ It is **not** Bitcoin/Ethereum-grade decentralization yet. Stated plainly so nob
 
 ## Is there Proof-of-Work?
 
-**No.** By design — the project's whole thesis is "no burned electricity." Minting rights come from
-**useful work: proving you store the network's data**, not from hashing.
+**Yes, but only as a Sybil gate — never to mine blocks.** A node must solve a one-time PoW puzzle to
+*register* as a validator (`internal/regpow`, v0.20), on top of its bond. This costs real compute so
+you can't spin up thousands of fake validators, and the puzzle hash seeds shard-assignment
+randomness — exactly Zilliqa/QuarkChain's model. Block *production* burns no energy: minting rights
+come from **useful work — proving you store the network's data**, not from hashing.
+
+How people compete:
+- **To enter:** spend compute (registration PoW) + lock a bond (PoS).
+- **To earn (mint):** store more assigned shards and prove it — proven storage weights leader
+  election (the ongoing race; deterministic weighting lands with on-chain storage proofs).
 
 ## Does everyone mint?
 

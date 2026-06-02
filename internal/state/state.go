@@ -3,6 +3,7 @@
 package state
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/ArubikU/shadowledger/internal/crypto"
 	"github.com/ArubikU/shadowledger/internal/economy"
+	"github.com/ArubikU/shadowledger/internal/regpow"
 	"github.com/ArubikU/shadowledger/internal/types"
 	"github.com/ArubikU/shadowledger/internal/vm"
 )
@@ -73,7 +75,16 @@ type State struct {
 	Height     uint64                        `json:"height"`     // height of last applied block
 	Minted     uint64                        `json:"minted"`     // total $SHARD emitted (counts toward cap)
 	ChainID    uint64                        `json:"chain_id"`   // network id txs must match (replay protection)
+	RegPoWBits int                           `json:"-"`          // validator-registration PoW difficulty (0 = off)
 	lastLogs   []types.Log                   // events from the most recently applied block (transient)
+}
+
+// SetRegPoWBits sets the difficulty (leading zero bits) of the validator
+// registration Proof-of-Work. 0 disables it.
+func (s *State) SetRegPoWBits(bits int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.RegPoWBits = bits
 }
 
 // SetChainID sets the network id transactions must carry.
@@ -219,6 +230,7 @@ var (
 	ErrNotValidator     = errors.New("state: not a registered validator")
 	ErrBadEvidence      = errors.New("state: invalid equivocation evidence")
 	ErrBadChainID       = errors.New("state: transaction chain id mismatch (wrong network)")
+	ErrBadRegPoW        = errors.New("state: invalid validator-registration proof-of-work")
 )
 
 // applySlash verifies equivocation evidence (two validly-signed conflicting
@@ -379,6 +391,16 @@ func (s *State) ApplyBlock(b *types.Block) error {
 				s.acct(t.From).Balance += t.Amount // refund sender (fee still kept)
 			}
 		case types.KindRegister:
+			// Registration Proof-of-Work (Sybil gate): Data carries an 8-byte nonce
+			// that must solve the puzzle bound to (chainID, from). bits==0 disables.
+			var nonce uint64
+			if len(t.Data) >= 8 {
+				nonce = binary.BigEndian.Uint64(t.Data)
+			}
+			if !regpow.Verify(s.ChainID, t.From, nonce, s.RegPoWBits) {
+				rollback()
+				return ErrBadRegPoW
+			}
 			// Amount is the bond (already debited above); lock it in the registry.
 			if t.Amount < economy.MinBond {
 				rollback()

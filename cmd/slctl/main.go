@@ -3,6 +3,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/ArubikU/shadowledger/internal/chainparams"
 	"github.com/ArubikU/shadowledger/internal/crypto"
+	"github.com/ArubikU/shadowledger/internal/regpow"
 	"github.com/ArubikU/shadowledger/internal/shl"
 	"github.com/ArubikU/shadowledger/internal/types"
 	"github.com/ArubikU/shadowledger/internal/version"
@@ -240,10 +242,16 @@ func register(args []string) {
 	kp, err := crypto.LoadWalletAuto(flagVal(args, "wallet"), passOf(args))
 	must(err)
 	bond := mustU64(flagVal(args, "bond"))
-	tx := types.Transaction{Kind: types.KindRegister, Amount: bond, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
+	// Solve the registration Proof-of-Work (Sybil gate) and carry the nonce in Data.
+	bits := chainparams.Mainnet().RegPoWBits
+	fmt.Printf("solving registration PoW (%d bits)...\n", bits)
+	nonce := regpow.Solve(chainparams.Mainnet().ChainID, kp.Address(), bits)
+	powData := make([]byte, 8)
+	binary.BigEndian.PutUint64(powData, nonce)
+	tx := types.Transaction{Kind: types.KindRegister, Amount: bond, Data: powData, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
 	signTx(&tx, kp)
 	submit(rpc, tx)
-	fmt.Printf("registering %s with bond %d\n", kp.Address(), bond)
+	fmt.Printf("registering %s with bond %d (pow nonce %d)\n", kp.Address(), bond, nonce)
 }
 
 // unregister exits the validator set and reclaims the bond.

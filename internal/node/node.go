@@ -56,7 +56,8 @@ func New(cfg *Config) (*Node, error) {
 	if loaded, err := state.Load(statePath); err == nil {
 		ledger = loaded
 	}
-	ledger.SetChainID(chainparams.Mainnet().ChainID) // bind txs to this network
+	ledger.SetChainID(chainparams.Mainnet().ChainID)       // bind txs to this network
+	ledger.SetRegPoWBits(chainparams.Mainnet().RegPoWBits) // validator-registration PoW (Sybil gate)
 	bf, err := bloom.Load(filepath.Join(cfg.DataDir, "bloom.dat"))
 	if err != nil {
 		bf = bloom.New(100000, 0.01)
