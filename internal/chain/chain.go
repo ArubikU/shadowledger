@@ -165,6 +165,7 @@ func (c *Chain) Genesis(funding map[crypto.Address]uint64, genesisVal crypto.Add
 		premine += amt
 	}
 	c.state.SetMinted(premine)
+	c.state.RegisterGenesisValidator(genesisVal) // seed the on-chain validator registry
 	c.state.Height = 0
 
 	if err := c.persistBlock(&hdr, body); err != nil {

@@ -45,6 +45,12 @@ func main() {
 		deploy(os.Args[2:])
 	case "call":
 		call(os.Args[2:])
+	case "validators":
+		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/validators"))
+	case "register":
+		register(os.Args[2:])
+	case "unregister":
+		unregister(os.Args[2:])
 	default:
 		usage()
 	}
@@ -98,6 +104,9 @@ Passphrase for .tok wallets: --pass or env SL_WALLET_PASS.
   supply      --rpc URL               ($SHARD minted + next block reward)
   peers       --rpc URL               (this node's known peers)
   storage     --rpc URL               (Proof-of-Storage scoreboard)
+  validators  --rpc URL               (on-chain validator registry)
+  register    --wallet w.tok --bond N [--fee N] --rpc URL   (join validator set; bond>=1000 SHARD base units)
+  unregister  --wallet w.tok [--fee N] --rpc URL            (exit, reclaim bond)
   deploy      --wallet w.tok --code prog.hex [--gas N] --rpc URL   (deploy a contract)
   call        --wallet w.tok --to <contract> [--data HEX] [--amount N] [--gas N] --rpc URL`)
 	os.Exit(2)
@@ -192,6 +201,28 @@ func send(args []string) {
 		os.Exit(1)
 	}
 	fmt.Printf("sent: %s\n", string(out))
+}
+
+// register locks a bond and joins the validator set (PoStorage minting rotation).
+func register(args []string) {
+	rpc := rpcOf(args)
+	kp, err := crypto.LoadWalletAuto(flagVal(args, "wallet"), passOf(args))
+	must(err)
+	bond := mustU64(flagVal(args, "bond"))
+	tx := types.Transaction{Kind: types.KindRegister, Amount: bond, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
+	tx.Sign(kp)
+	submit(rpc, tx)
+	fmt.Printf("registering %s with bond %d\n", kp.Address(), bond)
+}
+
+// unregister exits the validator set and reclaims the bond.
+func unregister(args []string) {
+	rpc := rpcOf(args)
+	kp, err := crypto.LoadWalletAuto(flagVal(args, "wallet"), passOf(args))
+	must(err)
+	tx := types.Transaction{Kind: types.KindUnregister, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
+	tx.Sign(kp)
+	submit(rpc, tx)
 }
 
 func rpcOf(args []string) string {

@@ -39,6 +39,16 @@ func (s *Server) ControlHandler() http.Handler {
 	mux.HandleFunc("GET /storage/scores", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, s.scores.Snapshot())
 	})
+	// On-chain validator registry (who can mint, with their bonds).
+	mux.HandleFunc("GET /validators", func(w http.ResponseWriter, r *http.Request) {
+		st := s.chain.State()
+		out := map[string]any{}
+		for _, a := range st.ActiveValidators() {
+			vi, _ := st.ValidatorInfo(a)
+			out[string(a)] = vi
+		}
+		writeJSON(w, out)
+	})
 	mux.HandleFunc("GET /peers", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, map[string]any{"self": s.store.Self(), "peers": s.store.Peers(), "count": s.store.Count()})
 	})

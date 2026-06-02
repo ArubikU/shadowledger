@@ -62,9 +62,10 @@ func New(cfg *Config) (*Node, error) {
 	var eng consensus.Engine
 	switch cfg.Consensus {
 	case "postorage":
-		// Storage gate wired as advisory (nil scoreboard) for now; on-chain
-		// proof records make it enforceable later. See docs/CONSENSUS.md.
-		eng = consensus.NewPoStorage(cfg.Validators, id.Address(), nil, 0.8)
+		// Validator set is read LIVE from the on-chain registry, so registrations
+		// change the minting rotation with no config edits. Storage gate is
+		// advisory for now (on-chain proofs make it enforceable). docs/CONSENSUS.md.
+		eng = consensus.NewPoStorage(ledger.ActiveValidators, id.Address(), nil, 0.8)
 	default:
 		eng = consensus.NewAuthority(cfg.Validators, id.Address())
 	}

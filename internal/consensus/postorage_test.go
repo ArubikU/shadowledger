@@ -18,7 +18,7 @@ func addrs(n int) []crypto.Address {
 
 func TestLeaderDeterministicAndInSet(t *testing.T) {
 	vs := addrs(5)
-	e := NewPoStorage(vs, vs[0], nil, 0.8)
+	e := NewPoStorage(StaticValidators(vs), vs[0], nil, 0.8)
 	var prev types.Hash
 	prev[0] = 0x42
 	l1 := e.LeaderFor(7, prev)
@@ -26,14 +26,20 @@ func TestLeaderDeterministicAndInSet(t *testing.T) {
 	if l1 != l2 {
 		t.Fatal("leader not deterministic")
 	}
-	if !e.set[l1] {
+	inSet := false
+	for _, v := range vs {
+		if v == l1 {
+			inSet = true
+		}
+	}
+	if !inSet {
 		t.Fatal("leader not in validator set")
 	}
 }
 
 func TestLeaderRotates(t *testing.T) {
 	vs := addrs(5)
-	e := NewPoStorage(vs, vs[0], nil, 0.8)
+	e := NewPoStorage(StaticValidators(vs), vs[0], nil, 0.8)
 	var prev types.Hash
 	seen := map[crypto.Address]int{}
 	for h := uint64(0); h < 200; h++ {
@@ -53,7 +59,7 @@ func TestAuthorizeRequiresElectedLeader(t *testing.T) {
 		kps[i], _ = crypto.Generate()
 		vs[i] = kps[i].Address()
 	}
-	e := NewPoStorage(vs, vs[0], nil, 0.8)
+	e := NewPoStorage(StaticValidators(vs), vs[0], nil, 0.8)
 	var prev types.Hash
 	prev[1] = 0x99
 	height := uint64(10)
@@ -89,7 +95,7 @@ func TestAuthorizeRequiresElectedLeader(t *testing.T) {
 
 func TestGenesisAuthorizedWithoutElection(t *testing.T) {
 	kp, _ := crypto.Generate()
-	e := NewPoStorage([]crypto.Address{kp.Address()}, kp.Address(), nil, 0.8)
+	e := NewPoStorage(StaticValidators([]crypto.Address{kp.Address()}), kp.Address(), nil, 0.8)
 	h := types.Header{Height: 0}
 	h.Sign(kp)
 	if err := e.AuthorizeHeader(&h); err != nil {
@@ -99,7 +105,7 @@ func TestGenesisAuthorizedWithoutElection(t *testing.T) {
 
 func TestSingleValidatorAlwaysLeads(t *testing.T) {
 	kp, _ := crypto.Generate()
-	e := NewPoStorage([]crypto.Address{kp.Address()}, kp.Address(), nil, 0.8)
+	e := NewPoStorage(StaticValidators([]crypto.Address{kp.Address()}), kp.Address(), nil, 0.8)
 	var prev types.Hash
 	if !e.CanProduce(1, prev) {
 		t.Fatal("single validator should always be able to produce")

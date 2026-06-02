@@ -78,11 +78,33 @@ What full Nakamoto/Ethereum security additionally needs (NOT done — do not cla
 That is months of work and external review. v0.8 is a real, tested step (decentralized minting among
 validators); it is not, and is not advertised as, equal to mainnet Bitcoin/Ethereum security.
 
+## v0.9: on-chain validator registry + bond (permissionless entry)
+
+Validators are now **on-chain state**, not config. Two transaction kinds:
+
+- `register` (`KindRegister`): locks `Amount` as a **bond** (≥ `economy.MinBond` = 1,000 SHARD) and
+  adds you to `state.Validators`. `slctl register --wallet w.tok --bond <baseunits>`.
+- `unregister` (`KindUnregister`): removes you and returns the bond.
+
+`PoStorage` reads the live set from `state.ActiveValidators()` — so **anyone who posts a bond joins
+the minting rotation**, with no config change, and every node computes the same set from identical
+chain state (deterministic → no forks over membership). Genesis seeds the registry with the founder.
+Query it: `slctl validators`.
+
+This is the **permissionless-entry** mechanism. Two things still gate turning it on for mainnet:
+
+- **Liveness:** if an elected leader is offline, that height has no block and the chain stalls —
+  there is no leader-timeout fallback / fork-choice yet. (Verified in testing.) Mainnet therefore
+  still runs `authority` until fork-choice lands.
+- **Enforceable storage:** the bond is locked but not yet *slashed* for failed storage proofs — that
+  needs on-chain proof records (next).
+
 ## Roadmap order
 
 1. ✅ Storage challenges + scoreboard (v0.6)
 2. ✅ PoStorage leader election among validators (v0.8)
-3. On-chain validator registry + storage bond (register/exit txs)
-4. On-chain storage-proof records → enforceable eligibility + reward/fee share by proof
-5. Slashing for failed proofs / equivocation
-6. Fork choice + finality, hardened P2P, audit, public testnet
+3. ✅ On-chain validator registry + storage bond — register/exit txs (v0.9)
+4. Liveness: leader-timeout fallback + fork choice (so an offline validator can't halt the chain)
+5. On-chain storage-proof records → enforceable eligibility + reward/fee share by proof
+6. Slashing for failed proofs / equivocation
+7. Finality gadget, hardened P2P, audit, public testnet

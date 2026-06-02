@@ -88,23 +88,34 @@ func (a *Authority) IsValidator() bool { return a.Self != "" && a.set[a.Self] }
 // ---- PoStorage: deterministic leader election among validators ----
 
 // PoStorage elects one leader per height by HRW over the validator set, seeded
-// by the previous block hash. Optionally gates the local node on its storage
+// by the previous block hash. The validator set is read LIVE from a provider
+// (the on-chain registry via state.ActiveValidators), so it is chain-derived and
+// identical on every node — registrations/exits change the minting rotation
+// without any config change. Optionally gates the local node on its storage
 // score (advisory).
 type PoStorage struct {
-	set      map[crypto.Address]bool
-	list     []crypto.Address
-	Self     crypto.Address
-	scores   *pos.Scoreboard // optional advisory storage gate (nil = disabled)
-	minRatio float64
+	validators func() []crypto.Address // live on-chain active validator set
+	Self       crypto.Address
+	scores     *pos.Scoreboard // optional advisory storage gate (nil = disabled)
+	minRatio   float64
 }
 
-// NewPoStorage builds a PoStorage engine. scores may be nil (no storage gate).
-func NewPoStorage(validators []crypto.Address, self crypto.Address, scores *pos.Scoreboard, minRatio float64) *PoStorage {
-	set, list := validatorSet(validators)
+// StaticValidators wraps a fixed slice as a validator provider (tests/config).
+func StaticValidators(vs []crypto.Address) func() []crypto.Address {
+	return func() []crypto.Address { return vs }
+}
+
+// NewPoStorage builds a PoStorage engine over a live validator-set provider.
+// scores may be nil (no storage gate).
+func NewPoStorage(validators func() []crypto.Address, self crypto.Address, scores *pos.Scoreboard, minRatio float64) *PoStorage {
 	if minRatio <= 0 {
 		minRatio = 0.8
 	}
-	return &PoStorage{set: set, list: list, Self: self, scores: scores, minRatio: minRatio}
+	return &PoStorage{validators: validators, Self: self, scores: scores, minRatio: minRatio}
+}
+
+func (p *PoStorage) setList() (map[crypto.Address]bool, []crypto.Address) {
+	return validatorSet(p.validators())
 }
 
 func leaderScore(prev types.Hash, v crypto.Address, height uint64) uint64 {
@@ -119,9 +130,10 @@ func leaderScore(prev types.Hash, v crypto.Address, height uint64) uint64 {
 
 // LeaderFor returns the elected validator for (height, prev).
 func (p *PoStorage) LeaderFor(height uint64, prev types.Hash) crypto.Address {
+	_, list := p.setList()
 	var best crypto.Address
 	var bestScore uint64
-	for _, v := range p.list {
+	for _, v := range list {
 		s := leaderScore(prev, v, height)
 		if best == "" || s > bestScore || (s == bestScore && v < best) {
 			best, bestScore = v, s
@@ -134,7 +146,8 @@ func (p *PoStorage) AuthorizeHeader(h *types.Header) error {
 	if err := h.VerifySig(); err != nil {
 		return err
 	}
-	if !p.set[h.Validator] {
+	set, _ := p.setList()
+	if !set[h.Validator] {
 		return ErrUnauthorizedValidator
 	}
 	if h.Height == 0 {
@@ -147,7 +160,8 @@ func (p *PoStorage) AuthorizeHeader(h *types.Header) error {
 }
 
 func (p *PoStorage) CanProduce(nextHeight uint64, prev types.Hash) bool {
-	if p.Self == "" || !p.set[p.Self] {
+	set, _ := p.setList()
+	if p.Self == "" || !set[p.Self] {
 		return false
 	}
 	if p.LeaderFor(nextHeight, prev) != p.Self {
@@ -160,4 +174,7 @@ func (p *PoStorage) CanProduce(nextHeight uint64, prev types.Hash) bool {
 	return true
 }
 
-func (p *PoStorage) IsValidator() bool { return p.Self != "" && p.set[p.Self] }
+func (p *PoStorage) IsValidator() bool {
+	set, _ := p.setList()
+	return p.Self != "" && set[p.Self]
+}

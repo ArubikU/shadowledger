@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"sort"
 	"strconv"
 	"sync"
 
@@ -47,17 +48,74 @@ func (s *State) IsContract(a crypto.Address) bool {
 	return ac != nil && len(ac.Code) > 0
 }
 
+// Validator is an on-chain registered block producer. Registration locks a Bond
+// (skin-in-the-game / sybil resistance); the bond is returned on unregister and
+// (future) slashed for failed storage proofs or equivocation.
+type Validator struct {
+	Bond   uint64 `json:"bond"`
+	Active bool   `json:"active"`
+	Since  uint64 `json:"since"` // height registered
+}
+
 // State is a thread-safe account ledger bound to a head height.
 type State struct {
-	mu       sync.RWMutex
-	Accounts map[crypto.Address]*Account `json:"accounts"`
-	Height   uint64                      `json:"height"` // height of last applied block
-	Minted   uint64                      `json:"minted"` // total $SHARD emitted (counts toward cap)
+	mu         sync.RWMutex
+	Accounts   map[crypto.Address]*Account   `json:"accounts"`
+	Validators map[crypto.Address]*Validator `json:"validators"` // on-chain validator registry
+	Height     uint64                        `json:"height"`     // height of last applied block
+	Minted     uint64                        `json:"minted"`     // total $SHARD emitted (counts toward cap)
 }
 
 // New returns an empty state.
 func New() *State {
-	return &State{Accounts: make(map[crypto.Address]*Account)}
+	return &State{
+		Accounts:   make(map[crypto.Address]*Account),
+		Validators: make(map[crypto.Address]*Validator),
+	}
+}
+
+// RegisterGenesisValidator seats a validator at genesis with no bond (bootstrap
+// authority). Used by chain.Genesis to seed the registry.
+func (s *State) RegisterGenesisValidator(a crypto.Address) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.Validators == nil {
+		s.Validators = make(map[crypto.Address]*Validator)
+	}
+	s.Validators[a] = &Validator{Bond: 0, Active: true, Since: 0}
+}
+
+// ActiveValidators returns the registered active validators, sorted.
+func (s *State) ActiveValidators() []crypto.Address {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	out := make([]crypto.Address, 0, len(s.Validators))
+	for a, v := range s.Validators {
+		if v.Active {
+			out = append(out, a)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i] < out[j] })
+	return out
+}
+
+// ValidatorInfo returns a copy of a validator record (ok=false if absent).
+func (s *State) ValidatorInfo(a crypto.Address) (Validator, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if v := s.Validators[a]; v != nil {
+		return *v, true
+	}
+	return Validator{}, false
+}
+
+func (s *State) cloneValidators() map[crypto.Address]*Validator {
+	cp := make(map[crypto.Address]*Validator, len(s.Validators))
+	for a, v := range s.Validators {
+		vc := *v
+		cp[a] = &vc
+	}
+	return cp
 }
 
 // Supply returns the total $SHARD minted so far.
@@ -88,8 +146,12 @@ func (s *State) ReplaceWith(other *State) {
 	defer s.mu.Unlock()
 	s.Accounts = make(map[crypto.Address]*Account, len(other.Accounts))
 	for a, ac := range other.Accounts {
-		cp := *ac
-		s.Accounts[a] = &cp
+		s.Accounts[a] = ac.clone()
+	}
+	s.Validators = make(map[crypto.Address]*Validator, len(other.Validators))
+	for a, v := range other.Validators {
+		vc := *v
+		s.Validators[a] = &vc
 	}
 	s.Height = other.Height
 	s.Minted = other.Minted
@@ -123,11 +185,14 @@ func (s *State) Credit(a crypto.Address, amount uint64) {
 
 // Validation errors.
 var (
-	ErrBadNonce       = errors.New("state: bad nonce")
-	ErrInsufficient   = errors.New("state: insufficient balance")
-	ErrSelfPay        = errors.New("state: from == to")
-	ErrCoinbaseInBody = errors.New("state: coinbase tx not allowed in block body")
-	ErrBadCoinbase    = errors.New("state: coinbase amount/recipient violates emission schedule")
+	ErrBadNonce         = errors.New("state: bad nonce")
+	ErrInsufficient     = errors.New("state: insufficient balance")
+	ErrSelfPay          = errors.New("state: from == to")
+	ErrCoinbaseInBody   = errors.New("state: coinbase tx not allowed in block body")
+	ErrBadCoinbase      = errors.New("state: coinbase amount/recipient violates emission schedule")
+	ErrBondTooLow       = errors.New("state: validator bond below minimum")
+	ErrAlreadyValidator = errors.New("state: already a registered validator")
+	ErrNotValidator     = errors.New("state: not a registered validator")
 )
 
 // CheckTx validates a single tx against current state without applying it.
@@ -177,6 +242,7 @@ func (s *State) ApplyBlock(b *types.Block) error {
 			saved[a] = nil
 		}
 	}
+	valBackup := s.cloneValidators()
 	rollback := func() {
 		for a, ac := range saved {
 			if ac != nil {
@@ -185,6 +251,7 @@ func (s *State) ApplyBlock(b *types.Block) error {
 				delete(s.Accounts, a)
 			}
 		}
+		s.Validators = valBackup
 	}
 
 	// A block may carry exactly one coinbase reward tx as Txs[0]. It mints the
@@ -246,6 +313,26 @@ func (s *State) ApplyBlock(b *types.Block) error {
 				to.Balance -= t.Amount             // revert value credit
 				s.acct(t.From).Balance += t.Amount // refund sender (fee still kept)
 			}
+		case types.KindRegister:
+			// Amount is the bond (already debited above); lock it in the registry.
+			if t.Amount < economy.MinBond {
+				rollback()
+				return ErrBondTooLow
+			}
+			if v := s.Validators[t.From]; v != nil && v.Active {
+				rollback()
+				return ErrAlreadyValidator
+			}
+			s.Validators[t.From] = &Validator{Bond: t.Amount, Active: true, Since: b.Header.Height}
+		case types.KindUnregister:
+			v := s.Validators[t.From]
+			if v == nil || !v.Active {
+				rollback()
+				return ErrNotValidator
+			}
+			// Return the bond; the value field (t.Amount) must be zero here.
+			s.acct(t.From).Balance += v.Bond + t.Amount
+			delete(s.Validators, t.From)
 		default: // KindTransfer
 			snap(t.To)
 			s.acct(t.To).Balance += t.Amount
@@ -381,6 +468,9 @@ func Load(path string) (*State, error) {
 	}
 	if s.Accounts == nil {
 		s.Accounts = make(map[crypto.Address]*Account)
+	}
+	if s.Validators == nil {
+		s.Validators = make(map[crypto.Address]*Validator)
 	}
 	return s, nil
 }

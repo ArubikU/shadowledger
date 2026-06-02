@@ -19,9 +19,11 @@ type Hash = merkle.Hash
 
 // Transaction kinds.
 const (
-	KindTransfer uint8 = 0 // plain value transfer
-	KindDeploy   uint8 = 1 // deploy a contract (Data = bytecode)
-	KindCall     uint8 = 2 // call a contract (To = contract, Data = input words)
+	KindTransfer   uint8 = 0 // plain value transfer
+	KindDeploy     uint8 = 1 // deploy a contract (Data = bytecode)
+	KindCall       uint8 = 2 // call a contract (To = contract, Data = input words)
+	KindRegister   uint8 = 3 // register as a validator, locking Amount as a bond
+	KindUnregister uint8 = 4 // exit the validator set, unlocking the bond
 )
 
 // Transaction is an account-model value transfer or contract operation.

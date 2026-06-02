@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.9.0 — on-chain validator registry + bond (permissionless entry)
+
+- **Validators are on-chain state** (`state.Validators`), not config. New tx kinds **register**
+  (locks `Amount` as a bond ≥ `economy.MinBond` = 1,000 SHARD) and **unregister** (returns the
+  bond). `slctl register --bond N` / `slctl unregister` / `slctl validators` / `GET /validators`.
+- **PoStorage reads the live on-chain set** (`state.ActiveValidators`) — anyone who posts a bond
+  joins the minting rotation with no config change; deterministic across nodes (no membership forks).
+  Genesis seeds the registry with the founder. Verified live: a node registered via tx and appeared
+  in the rotation.
+- Registry changes are covered by the block's atomic rollback.
+- Honest caveat (see docs/CONSENSUS.md): mainnet stays `authority` until a **leader-timeout/fork
+  choice** exists (an offline elected validator currently stalls the chain) and bonds are **slashable**.
+
 ## v0.8.0 — PoStorage leader election (decentralized minting)
 
 - **`PoStorage` consensus engine** (`internal/consensus`): one leader per height elected by HRW

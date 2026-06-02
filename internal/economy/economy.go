@@ -18,6 +18,9 @@ const (
 	InitialReward uint64 = 50 * Coin
 	// HalvingInterval halves the subsidy every this many blocks.
 	HalvingInterval uint64 = 210_000
+	// MinBond is the minimum $SHARD a node must lock to register as a validator
+	// (sybil resistance / skin-in-the-game). 1,000 SHARD.
+	MinBond uint64 = 1_000 * Coin
 )
 
 // BlockReward returns the subsidy minted for producing the block at `height`,
