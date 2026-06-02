@@ -54,8 +54,8 @@ type Chain struct {
 	// persistent side-block storage is a later step.)
 	tree         *forkchoice.Tree
 	blockByID    map[types.Hash]*types.Block
-	genesisState *state.State
-	genesisID    types.Hash
+	replayBase   *state.State // state AFTER replayBaseID (genesis, or a sync checkpoint)
+	replayBaseID types.Hash   // block whose post-state is replayBase; reorg can't go below it
 }
 
 // Config parameters for a chain. Erasure shape and replication are NOT set
@@ -82,9 +82,79 @@ func New(st *store.Store, st2 *state.State, eng consensus.Engine, bf *bloom.Filt
 		if hdr, _, err := c.store.GetHeader(c.store.Height()); err == nil {
 			c.head = hdr
 			c.hasGen = true
+			// Seed the tree with the head so AcceptBlock can attach children after
+			// a restart, and reload the head body if we kept it.
+			c.tree.Add(hdr.ID(), hdr.PrevHash, hdr.Height, 1)
+			if b := c.loadBlock(hdr.ID()); b != nil {
+				c.blockByID[hdr.ID()] = b
+			}
 		}
 	}
+	c.loadReplayBase() // restore reorg base across restarts (if persisted)
 	return c
+}
+
+// loadBlock fetches a stored block body by id (nil if absent/corrupt).
+func (c *Chain) loadBlock(id types.Hash) *types.Block {
+	raw := c.store.GetBlockRaw(id)
+	if raw == nil {
+		return nil
+	}
+	var b types.Block
+	if json.Unmarshal(raw, &b) != nil {
+		return nil
+	}
+	return &b
+}
+
+// block returns a block by id from the in-memory cache or disk.
+func (c *Chain) block(id types.Hash) *types.Block {
+	if b, ok := c.blockByID[id]; ok {
+		return b
+	}
+	if b := c.loadBlock(id); b != nil {
+		c.blockByID[id] = b
+		return b
+	}
+	return nil
+}
+
+const replayBaseFile = "replaybase.json"
+
+type replayBaseRecord struct {
+	ID    types.Hash   `json:"id"`
+	State *state.State `json:"state"`
+}
+
+func (c *Chain) saveReplayBase() {
+	if c.replayBase == nil {
+		return
+	}
+	_ = c.store.PutState(replayBaseFile, replayBaseRecord{ID: c.replayBaseID, State: c.replayBase})
+}
+
+func (c *Chain) loadReplayBase() {
+	raw := c.store.GetStateRaw(replayBaseFile)
+	if raw == nil {
+		return
+	}
+	var rec replayBaseRecord
+	if json.Unmarshal(raw, &rec) != nil || rec.State == nil {
+		return
+	}
+	c.replayBase = rec.State
+	c.replayBaseID = rec.ID
+}
+
+// SetCheckpoint sets the reorg replay base to a known post-block state (used by
+// fast-sync: the synced snapshot at the tip becomes the floor below which the
+// node won't reorg).
+func (c *Chain) SetCheckpoint(blockID types.Hash, st *state.State) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.replayBase = st.Clone()
+	c.replayBaseID = blockID
+	c.saveReplayBase()
 }
 
 // replFor returns the replication factor the network policy picks for the
@@ -195,21 +265,25 @@ func (c *Chain) Genesis(funding map[crypto.Address]uint64, genesisVal crypto.Add
 	}
 	c.head = hdr
 	c.hasGen = true
-	// Reorg engine: remember the genesis state (rewind target) + seed the tree.
-	c.genesisState = c.state.Clone()
-	c.genesisID = hdr.ID()
-	c.tree.Add(c.genesisID, types.Hash{}, 0, 1)
-	c.blockByID[c.genesisID] = blk
+	// Reorg engine: genesis state is the replay base (rewind floor) + seed tree.
+	c.replayBase = c.state.Clone()
+	c.replayBaseID = hdr.ID()
+	c.tree.Add(c.replayBaseID, types.Hash{}, 0, 1)
+	c.blockByID[c.replayBaseID] = blk
+	_ = c.store.PutBlock(c.replayBaseID, blk)
+	c.saveReplayBase()
 	return blk, nil
 }
 
-// recordBlock adds an accepted block to the fork-choice tree + body store.
-// Per-block weight is 1 for now (longest-chain); storage/availability weight is
-// the planned upgrade. Caller holds c.mu.
+// recordBlock adds an accepted block to the fork-choice tree + body store
+// (memory + disk, so reorg survives restarts and side branches). Per-block
+// weight is 1 for now (longest-chain); storage/availability weight is planned.
+// Caller holds c.mu.
 func (c *Chain) recordBlock(blk *types.Block) {
 	id := blk.Header.ID()
 	c.tree.Add(id, blk.Header.PrevHash, blk.Header.Height, 1)
 	c.blockByID[id] = blk
+	_ = c.store.PutBlock(id, blk)
 }
 
 // ProduceBlock builds, signs, persists and locally shards a new block from txs.
@@ -556,5 +630,12 @@ func (c *Chain) SyncInstall(records []HeaderRecord, snap *state.State) error {
 	c.state.ReplaceWith(snap)
 	c.head = records[len(records)-1].Header
 	c.hasGen = true
+	// The synced tip becomes the reorg replay floor (a fast-synced node can't
+	// rewind below its checkpoint, which is fine — those blocks are deep/final).
+	c.replayBase = snap.Clone()
+	c.replayBaseID = c.head.ID()
+	c.tree.Add(c.head.ID(), c.head.PrevHash, c.head.Height, 1)
+	c.blockByID[c.head.ID()] = &types.Block{Header: c.head}
+	c.saveReplayBase()
 	return nil
 }

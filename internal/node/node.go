@@ -99,7 +99,7 @@ func New(cfg *Config) (*Node, error) {
 	})
 	n.chain = ch
 
-	n.srv = p2p.NewServer(peers, cfg.Seeds, cfg.DNSSeeds, cfg.ControlAddr, ch, pool)
+	n.srv = p2p.NewServer(peers, cfg.Seeds, cfg.DNSSeeds, cfg.ControlAddr, ch, pool, cfg.Consensus == "postorage")
 	ch.SetSource(n.srv)
 	return n, nil
 }

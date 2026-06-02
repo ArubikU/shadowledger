@@ -118,14 +118,17 @@ type Server struct {
 	pool     *mempool.Pool
 	scores   *pos.Scoreboard
 	bans     *Banlist
+	reorg    bool // route gossip through fork-choice/reorg (postorage) vs linear
 	client   *http.Client
 }
 
-// NewServer builds the networking layer over a peerstore.
-func NewServer(store *Peerstore, seeds, dnsSeeds []string, dnsPort string, ch *chain.Chain, pool *mempool.Pool) *Server {
+// NewServer builds the networking layer over a peerstore. reorg=true routes
+// incoming blocks through the fork-choice/reorg path (postorage multi-validator);
+// false uses the strict linear path (single-authority).
+func NewServer(store *Peerstore, seeds, dnsSeeds []string, dnsPort string, ch *chain.Chain, pool *mempool.Pool, reorg bool) *Server {
 	return &Server{
 		store: store, seeds: seeds, dnsSeeds: dnsSeeds, dnsPort: dnsPort,
-		chain: ch, pool: pool, scores: pos.NewScoreboard(nil),
+		chain: ch, pool: pool, scores: pos.NewScoreboard(nil), reorg: reorg,
 		bans:   NewBanlist(3, 10*time.Minute, nil),
 		client: &http.Client{Timeout: 8 * time.Second},
 	}

@@ -16,6 +16,7 @@ type Params struct {
 	ChainID     uint64                    // network id bound into every tx (cross-network replay protection)
 	GenesisTime int64                     // fixed genesis timestamp (anchors round timing; same on all nodes)
 	RegPoWBits  int                       // validator-registration PoW difficulty (Sybil gate; 0 = off)
+	Consensus   string                    // "authority" | "postorage"
 	Genesis     map[crypto.Address]uint64 // premine: address -> base units (counts toward 21M cap)
 	Validators  []crypto.Address          // authorized block producers (v0 authority)
 	Seeds       []string                  // bootstrap node control URLs
@@ -34,8 +35,9 @@ func Mainnet() Params {
 	return Params{
 		Network:     "shadowledger-mainnet",
 		ChainID:     1,
-		GenesisTime: 1780000000, // fixed launch anchor (unix); deterministic across nodes
-		RegPoWBits:  20,         // ~1M hashes to register a validator (Sybil gate; sub-second)
+		GenesisTime: 1780000000,  // fixed launch anchor (unix); deterministic across nodes
+		RegPoWBits:  20,          // ~1M hashes to register a validator (Sybil gate; sub-second)
+		Consensus:   "postorage", // permissionless multi-validator with reorg fork-choice
 		Genesis: map[crypto.Address]uint64{
 			founder: 100_000_000_000_000, // 1,000,000 SHARD treasury premine
 		},

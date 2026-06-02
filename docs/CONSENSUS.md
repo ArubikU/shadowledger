@@ -2,12 +2,16 @@
 
 Direct answers to common questions, then the design and the honest gap.
 
-## Who mints today? (v0.7)
+## Who mints? (v0.23: permissionless multi-validator)
 
-**One node: the founder validator.** ShadowLedger v0–v0.7 ships a *single-authority* engine — the
-founder key signs every block; others verify the signature and apply. This is centralized: secure
-against outsiders forging blocks (they lack the key), but you must trust the founder not to censor.
-It is **not** Bitcoin/Ethereum-grade decentralization yet. Stated plainly so nobody is misled.
+Mainnet now runs **`postorage`**: any node can become a validator by locking a bond + solving the
+registration PoW (`slctl register`), entering the on-chain registry, and getting elected in the
+per-(height,prevHash,round) rotation. Competing branches are resolved by the **reorg engine**
+(heaviest chain wins; state rewinds + replays), so the network converges without coordination. The
+founder is just the genesis/bootstrap validator — not the only one.
+
+Earlier (v0–v0.22) mainnet was single-authority (founder signs every block). That path still exists
+(`consensus: authority`) for private/federated deployments.
 
 ## Is there Proof-of-Work?
 

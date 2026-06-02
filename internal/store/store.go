@@ -81,6 +81,58 @@ func (s *Store) GetLogsSet(height uint64) (types.ShardSet, bool) {
 	return set, true
 }
 
+func (s *Store) blockPath(id types.Hash) string {
+	return filepath.Join(s.dir, "bodies", hex.EncodeToString(id[:])+".json")
+}
+
+// PutBlock persists a full block body by id (for reorg replay across restarts +
+// side branches). Bounded pruning is a later concern.
+func (s *Store) PutBlock(id types.Hash, b any) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := os.MkdirAll(filepath.Join(s.dir, "bodies"), 0o755); err != nil {
+		return err
+	}
+	raw, err := json.Marshal(b)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(s.blockPath(id), raw, 0o644)
+}
+
+// GetBlockRaw returns the raw JSON of a stored block body (nil if absent).
+func (s *Store) GetBlockRaw(id types.Hash) []byte {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	raw, err := os.ReadFile(s.blockPath(id))
+	if err != nil {
+		return nil
+	}
+	return raw
+}
+
+// PutState persists a named state snapshot (e.g. the reorg replay base).
+func (s *Store) PutState(name string, v any) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	raw, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(s.dir, name), raw, 0o644)
+}
+
+// GetStateRaw returns a named state snapshot's raw JSON (nil if absent).
+func (s *Store) GetStateRaw(name string) []byte {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	raw, err := os.ReadFile(filepath.Join(s.dir, name))
+	if err != nil {
+		return nil
+	}
+	return raw
+}
+
 // PutHeader persists a header + shard set at its height.
 func (s *Store) PutHeader(h types.Header, set types.ShardSet) error {
 	s.mu.Lock()

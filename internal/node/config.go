@@ -82,6 +82,9 @@ func (c *Config) mergeMainnet() {
 	if c.BlockTimeMS == 0 {
 		c.BlockTimeMS = p.BlockTimeMS
 	}
+	if c.Consensus == "" {
+		c.Consensus = p.Consensus // mainnet = postorage
+	}
 	c.applyDefaults()
 }
 
@@ -122,9 +125,8 @@ func (c *Config) applyDefaults() {
 	if c.Advertise == "" {
 		c.Advertise = "localhost"
 	}
-	if c.Consensus == "" {
-		c.Consensus = "authority"
-	}
+	// Consensus is intentionally NOT defaulted here — mergeMainnet sets the network
+	// default (postorage), and node.New falls back to authority if still empty.
 	if c.BlockTimeMS == 0 {
 		c.BlockTimeMS = 5000
 	}

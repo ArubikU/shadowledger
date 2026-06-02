@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.23.0 — reorg wired live: mainnet is now permissionless multi-validator
+
+- **Gossip routed through the reorg engine** for postorage nodes: incoming blocks go through
+  `AcceptBlock` (fork-choice + fast-forward/reorg) instead of the strict linear path. Verified live
+  (3-node postorage: two validators rotate, V2 joined follower→validator, storage proofs pass).
+- **Reorg survives restarts + side branches:** block bodies persisted by id (`store.PutBlock`), the
+  replay base (genesis or sync checkpoint) persisted + reloaded; reorg replays from disk if needed.
+  Fast-synced nodes get a **checkpoint** (their synced tip) as the reorg floor.
+- **Fast-forward path:** linear head-extending blocks apply directly (no full replay) — only a
+  divergent heavier branch triggers a rewind.
+- **Mainnet flipped to `postorage`** (chainparams): the network is now **permissionless
+  multi-validator** — any node with a bond + registration PoW joins the minting rotation, and the
+  reorg engine keeps everyone converged. (Genesis/format unchanged → no reset; nodes auto-update.)
+
 ## v0.22.0 — reorg engine (state rewind + replay)
 
 - **`chain.AcceptBlock`** — fork-choice-aware ingestion: accepts blocks on ANY known branch (not

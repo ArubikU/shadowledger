@@ -191,7 +191,11 @@ func (s *Server) ControlHandler() http.Handler {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if err := s.chain.ApplyExternalBlock(&blk); err != nil {
+		apply := s.chain.ApplyExternalBlock
+		if s.reorg {
+			apply = s.chain.AcceptBlock // fork-choice + reorg path (postorage)
+		}
+		if err := apply(&blk); err != nil {
 			// Only strike the sender for a genuine FORGERY — not for benign gossip
 			// races (out-of-order height, prev mismatch) which honest peers hit.
 			if chain.IsForgery(err) {
