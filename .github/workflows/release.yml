@@ -39,13 +39,14 @@ jobs:
           VERSION="${{ steps.ver.outputs.version }}"
           mkdir -p dist
           targets="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64"
+          LDFLAGS="-s -w -X github.com/ArubikU/shadowledger/internal/version.Version=${VERSION}"
           for t in $targets; do
             export GOOS="${t%/*}" GOARCH="${t#*/}"
             ext=""; [ "$GOOS" = "windows" ] && ext=".exe"
             name="shadowledger-${VERSION}-${GOOS}-${GOARCH}"
             mkdir -p "build/$name"
-            CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o "build/$name/slnode$ext" ./cmd/slnode
-            CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o "build/$name/slctl$ext"  ./cmd/slctl
+            CGO_ENABLED=0 go build -trimpath -ldflags "$LDFLAGS" -o "build/$name/slnode$ext" ./cmd/slnode
+            CGO_ENABLED=0 go build -trimpath -ldflags "$LDFLAGS" -o "build/$name/slctl$ext"  ./cmd/slctl
             cp README.md LICENSE CHANGELOG.md "build/$name/"
             cp -r configs "build/$name/configs"
             if [ "$GOOS" = "windows" ]; then

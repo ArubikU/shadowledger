@@ -11,13 +11,17 @@ import (
 	"github.com/ArubikU/shadowledger/internal/crypto"
 	"github.com/ArubikU/shadowledger/internal/pos"
 	"github.com/ArubikU/shadowledger/internal/types"
+	"github.com/ArubikU/shadowledger/internal/version"
 )
 
 // ControlHandler returns the HTTP mux for the control/RPC channel (:4004).
 func (s *Server) ControlHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, map[string]any{"ok": true, "id": s.store.Self().ID, "peers": s.store.Count() - 1})
+		writeJSON(w, map[string]any{"ok": true, "id": s.store.Self().ID, "peers": s.store.Count() - 1, "version": version.Version})
+	})
+	mux.HandleFunc("GET /version", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, map[string]any{"version": version.Version, "repo": version.Repo})
 	})
 	mux.HandleFunc("GET /head", func(w http.ResponseWriter, r *http.Request) {
 		hdr, ok := s.chain.Head()

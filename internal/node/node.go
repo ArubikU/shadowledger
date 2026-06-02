@@ -19,6 +19,7 @@ import (
 	"github.com/ArubikU/shadowledger/internal/state"
 	"github.com/ArubikU/shadowledger/internal/store"
 	"github.com/ArubikU/shadowledger/internal/types"
+	"github.com/ArubikU/shadowledger/internal/version"
 )
 
 // Node is a running daemon.
@@ -150,6 +151,10 @@ func (n *Node) Run(ctx context.Context) error {
 	go serve("control/RPC", n.cfg.ControlAddr, n.ctrlHTTP)
 	go serve("shard transfer", n.cfg.ShardAddr, n.shardHTTP)
 
+	// Informational update check only — ShadowLedger NEVER auto-applies updates
+	// (auto-update would be a central kill switch; upgrades are voluntary).
+	go n.checkUpdate()
+
 	// Decentralized discovery: resolve DNS seeds + contact seeds, exchange peers.
 	if len(n.cfg.Seeds) > 0 || len(n.cfg.DNSSeeds) > 0 {
 		if learned := n.srv.Discover(); learned > 0 {
@@ -234,6 +239,18 @@ func (n *Node) maybeProduce() {
 	n.srv.BroadcastBlock(blk)
 	log.Printf("produced block height=%d txs=%d spec=K%dM%d nodes=%d id=%x",
 		blk.Header.Height, len(blk.Txs), set.Spec.K, set.Spec.M, n.peers.Count(), idShort(blk.Header.ID()))
+}
+
+// checkUpdate logs (only) if a newer release exists. No auto-apply.
+func (n *Node) checkUpdate() {
+	latest, err := version.LatestRelease(8 * time.Second)
+	if err != nil {
+		return
+	}
+	if version.IsNewer(latest, version.Version) {
+		log.Printf("update available: %s (running %s) — upgrade is voluntary; see %s/releases",
+			latest, version.Version, "https://github.com/"+version.Repo)
+	}
 }
 
 func (n *Node) persist() {

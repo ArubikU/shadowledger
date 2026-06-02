@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.11.0 — versioning + voluntary updates
+
+- **Build version** baked in (`internal/version`, injected from the git tag via release ldflags).
+  `slnode --version`, `slctl version`, `GET /version`, and `/health` now report it.
+- **Update awareness, never auto-apply:** a node checks GitHub for a newer release on startup and
+  only **logs** "update available" — upgrades stay voluntary (no central kill switch), the Bitcoin
+  model. See docs/CONSENSUS.md philosophy.
+- **Opt-in self-updater for your own node** (`scripts/sl-update.sh` + systemd timer): pulls the
+  latest release, **verifies SHA256 before swapping**, restarts the service. Removes manual redeploy
+  for a node you operate; must not be run fleet-wide. See docs/DEPLOY.md.
+
 ## v0.10.0 — peer banlist + equivocation slashing
 
 - **Local peer banlist** (`internal/p2p/banlist.go`): misbehaving peers accrue strikes (invalid

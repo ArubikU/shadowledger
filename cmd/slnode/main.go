@@ -10,11 +10,18 @@ import (
 	"syscall"
 
 	"github.com/ArubikU/shadowledger/internal/node"
+	"github.com/ArubikU/shadowledger/internal/version"
 )
 
 func main() {
 	cfgPath := flag.String("config", "node.yaml", "path to node config YAML (optional; defaults to embedded mainnet)")
+	showVer := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
+	if *showVer {
+		log.Printf("shadowledger %s", version.Version)
+		return
+	}
+	log.Printf("ShadowLedger %s", version.Version)
 
 	// Zero-config: with no config file, connect to embedded mainnet (seeds +
 	// genesis baked into the binary), like bitcoind joining Bitcoin mainnet.

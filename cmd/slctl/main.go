@@ -14,6 +14,7 @@ import (
 	"github.com/ArubikU/shadowledger/internal/chainparams"
 	"github.com/ArubikU/shadowledger/internal/crypto"
 	"github.com/ArubikU/shadowledger/internal/types"
+	"github.com/ArubikU/shadowledger/internal/version"
 )
 
 func main() {
@@ -49,6 +50,8 @@ func main() {
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/validators"))
 	case "bans":
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/bans"))
+	case "version":
+		fmt.Printf("shadowledger %s\n", version.Version)
 	case "register":
 		register(os.Args[2:])
 	case "unregister":

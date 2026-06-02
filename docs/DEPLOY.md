@@ -74,6 +74,39 @@ Default Security List → **Add Ingress Rules**:
 (AWS: security-group inbound; GCP: VPC firewall rule. Same idea.) Until this is added, the node runs
 and is reachable locally but the world cannot connect.
 
+## Auto-update (your node only, opt-in)
+
+Updates are **voluntary** in ShadowLedger — like Bitcoin, no one can push code to your node. The
+running binary only *logs* "update available"; it never self-applies. For a node **you own** you can
+opt into a checksum-verified self-updater (`scripts/sl-update.sh`):
+
+```
+sudo install -m755 scripts/sl-update.sh /usr/local/bin/sl-update.sh
+command -v restorecon >/dev/null && sudo restorecon /usr/local/bin/sl-update.sh
+
+sudo tee /etc/systemd/system/sl-update.service >/dev/null <<'U'
+[Unit]
+Description=ShadowLedger self-update
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/sl-update.sh
+U
+sudo tee /etc/systemd/system/sl-update.timer >/dev/null <<'T'
+[Unit]
+Description=Daily ShadowLedger update check
+[Timer]
+OnCalendar=daily
+Persistent=true
+[Install]
+WantedBy=timers.target
+T
+sudo systemctl daemon-reload && sudo systemctl enable --now sl-update.timer
+```
+
+It pulls the latest release, **verifies its SHA256 against `SHA256SUMS.txt` before swapping**, then
+restarts the service. Never run this fleet-wide on other people's nodes — auto-updating consensus
+code from one source is a central kill switch (see docs/CONSENSUS.md philosophy).
+
 ## Gotchas seen in the wild
 
 - **SELinux (Oracle/RHEL/Fedora):** run binaries from `/usr/local/bin` (label `bin_t`) and
