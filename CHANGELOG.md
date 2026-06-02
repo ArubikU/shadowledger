@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.16.0 — usable token/NFT/meme contracts + ChainID replay protection + security review
+
+- **Usable example contracts in `.shl`**: [contracts/token.shl](contracts/token.shl) (ERC-20-style:
+  init/transfer/balanceOf/totalSupply), [contracts/memecoin.shl](contracts/memecoin.shl) (fixed
+  21M supply + burn), plus the existing NFT. Balances keyed by address digest. Tested end-to-end
+  (deploy → init → transfer → overdraw no-op → burn → supply).
+- **ChainID replay protection**: every tx now carries a `ChainID` bound into its signature; the
+  state rejects txs from another network (`ErrBadChainID`). Mainnet ChainID = 1 (in chainparams);
+  `slctl` stamps it automatically. (Tx format change → fresh chain.)
+- **[docs/SECURITY.md](docs/SECURITY.md)**: honest security inventory, gaps by priority, threat
+  notes, and a security-ordered roadmap. TL;DR: treat mainnet as a testnet until liveness/fork-choice
+  and enforceable storage proofs land.
+
 ## v0.15.0 — SHL contract language + compiler + gas estimate
 
 - **`.shl` high-level language** with a real lexer → parser → **AST** → codegen pipeline

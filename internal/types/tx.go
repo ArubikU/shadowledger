@@ -36,16 +36,17 @@ type EquivocationEvidence struct {
 
 // Transaction is an account-model value transfer or contract operation.
 type Transaction struct {
-	From   crypto.Address `json:"from"`
-	To     crypto.Address `json:"to"`
-	Amount uint64         `json:"amount"`
-	Fee    uint64         `json:"fee"`
-	Nonce  uint64         `json:"nonce"`
-	Kind   uint8          `json:"kind"`   // 0 transfer, 1 deploy, 2 call
-	Gas    uint64         `json:"gas"`    // execution gas limit (contract txs)
-	Data   []byte         `json:"data"`   // deploy bytecode / call input
-	PubKey []byte         `json:"pubkey"` // sender ed25519 pubkey (empty for coinbase)
-	Sig    []byte         `json:"sig"`    // ed25519 over SigningBytes (empty for coinbase)
+	From    crypto.Address `json:"from"`
+	To      crypto.Address `json:"to"`
+	Amount  uint64         `json:"amount"`
+	Fee     uint64         `json:"fee"`
+	Nonce   uint64         `json:"nonce"`
+	ChainID uint64         `json:"chain_id"` // network id — prevents cross-network replay
+	Kind    uint8          `json:"kind"`     // 0 transfer, 1 deploy, 2 call
+	Gas     uint64         `json:"gas"`      // execution gas limit (contract txs)
+	Data    []byte         `json:"data"`     // deploy bytecode / call input
+	PubKey  []byte         `json:"pubkey"`   // sender ed25519 pubkey (empty for coinbase)
+	Sig     []byte         `json:"sig"`      // ed25519 over SigningBytes (empty for coinbase)
 }
 
 func putString(buf *bytes.Buffer, s string) {
@@ -76,6 +77,7 @@ func (t *Transaction) SigningBytes() []byte {
 	putU64(&b, t.Amount)
 	putU64(&b, t.Fee)
 	putU64(&b, t.Nonce)
+	putU64(&b, t.ChainID)
 	b.WriteByte(t.Kind)
 	putU64(&b, t.Gas)
 	putBytes(&b, t.Data)

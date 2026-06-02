@@ -12,6 +12,7 @@ import (
 
 	"github.com/ArubikU/shadowledger/internal/bloom"
 	"github.com/ArubikU/shadowledger/internal/chain"
+	"github.com/ArubikU/shadowledger/internal/chainparams"
 	"github.com/ArubikU/shadowledger/internal/consensus"
 	"github.com/ArubikU/shadowledger/internal/crypto"
 	"github.com/ArubikU/shadowledger/internal/mempool"
@@ -55,6 +56,7 @@ func New(cfg *Config) (*Node, error) {
 	if loaded, err := state.Load(statePath); err == nil {
 		ledger = loaded
 	}
+	ledger.SetChainID(chainparams.Mainnet().ChainID) // bind txs to this network
 	bf, err := bloom.Load(filepath.Join(cfg.DataDir, "bloom.dat"))
 	if err != nil {
 		bf = bloom.New(100000, 0.01)

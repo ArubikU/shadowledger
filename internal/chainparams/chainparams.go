@@ -13,6 +13,7 @@ import "github.com/ArubikU/shadowledger/internal/crypto"
 // Params is a complete network definition.
 type Params struct {
 	Network     string
+	ChainID     uint64                    // network id bound into every tx (cross-network replay protection)
 	Genesis     map[crypto.Address]uint64 // premine: address -> base units (counts toward 21M cap)
 	Validators  []crypto.Address          // authorized block producers (v0 authority)
 	Seeds       []string                  // bootstrap node control URLs
@@ -30,6 +31,7 @@ const founder crypto.Address = "sl0fa7cc3eacafa2ab32381ac11b4836d31229ddf2"
 func Mainnet() Params {
 	return Params{
 		Network: "shadowledger-mainnet",
+		ChainID: 1,
 		Genesis: map[crypto.Address]uint64{
 			founder: 100_000_000_000_000, // 1,000,000 SHARD treasury premine
 		},

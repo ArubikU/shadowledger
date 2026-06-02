@@ -139,6 +139,9 @@ func decodeTx(data []byte) (Transaction, error) {
 	if t.Nonce, err = readU64(r); err != nil {
 		return t, err
 	}
+	if t.ChainID, err = readU64(r); err != nil {
+		return t, err
+	}
 	kind, err := r.ReadByte()
 	if err != nil {
 		return t, err

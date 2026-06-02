@@ -79,7 +79,7 @@ func deploy(args []string) {
 	must(err)
 	code := readHexArg(args, "code")
 	tx := types.Transaction{Kind: types.KindDeploy, Data: code, Gas: mustU64opt(args, "gas", 100000), Nonce: fetchNonce(rpc, kp.Address())}
-	tx.Sign(kp)
+	signTx(&tx, kp)
 	submit(rpc, tx)
 	fmt.Printf("contract address: %s\n", types.ContractAddress(kp.Address(), tx.Nonce))
 }
@@ -101,7 +101,7 @@ func call(args []string) {
 		To: crypto.Address(flagVal(args, "to")), Kind: types.KindCall,
 		Amount: amount, Data: data, Gas: mustU64opt(args, "gas", 100000), Nonce: fetchNonce(rpc, kp.Address()),
 	}
-	tx.Sign(kp)
+	signTx(&tx, kp)
 	submit(rpc, tx)
 }
 
@@ -141,6 +141,12 @@ func flagVal(args []string, name string) string {
 		}
 	}
 	return ""
+}
+
+// signTx binds the tx to the mainnet chain id (replay protection) and signs it.
+func signTx(tx *types.Transaction, kp *crypto.KeyPair) {
+	tx.ChainID = chainparams.Mainnet().ChainID
+	tx.Sign(kp)
 }
 
 // passOf returns the wallet passphrase from --pass or the SL_WALLET_PASS env var.
@@ -211,7 +217,7 @@ func send(args []string) {
 	must(json.Unmarshal([]byte(getJSON(rpc+"/account/"+string(kp.Address()))), &acct))
 
 	tx := types.Transaction{To: to, Amount: amount, Fee: fee, Nonce: acct.Nonce}
-	tx.Sign(kp)
+	signTx(&tx, kp)
 
 	b, _ := json.Marshal(tx)
 	resp, err := http.Post(rpc+"/tx", "application/json", bytes.NewReader(b))
@@ -232,7 +238,7 @@ func register(args []string) {
 	must(err)
 	bond := mustU64(flagVal(args, "bond"))
 	tx := types.Transaction{Kind: types.KindRegister, Amount: bond, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
-	tx.Sign(kp)
+	signTx(&tx, kp)
 	submit(rpc, tx)
 	fmt.Printf("registering %s with bond %d\n", kp.Address(), bond)
 }
@@ -243,7 +249,7 @@ func unregister(args []string) {
 	kp, err := crypto.LoadWalletAuto(flagVal(args, "wallet"), passOf(args))
 	must(err)
 	tx := types.Transaction{Kind: types.KindUnregister, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
-	tx.Sign(kp)
+	signTx(&tx, kp)
 	submit(rpc, tx)
 }
 
@@ -256,7 +262,7 @@ func slash(args []string) {
 	ev, err := os.ReadFile(flagVal(args, "evidence"))
 	must(err)
 	tx := types.Transaction{Kind: types.KindSlash, Data: ev, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
-	tx.Sign(kp)
+	signTx(&tx, kp)
 	submit(rpc, tx)
 }
 

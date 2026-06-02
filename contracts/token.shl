@@ -1,0 +1,38 @@
+// token.shl — a minimal fungible token (ERC-20-style) for ShadowLedger.
+//
+// Balances are keyed by the holder's address digest: store[addrDigest] = balance.
+// Call input words: arg(0)=selector, arg(1)=address-or-recipient, arg(2)=amount.
+//   selector 0 = init        : one-time mint of the whole supply to the caller
+//   selector 1 = transfer    : send arg(2) to arg(1)
+//   selector 2 = balanceOf   : return balance of arg(1)
+//   selector 3 = totalSupply : return total supply
+//
+// Reserved metadata keys live at the top of the uint64 space so they don't
+// collide with address-digest balance keys.
+//   18446744073709551615 = initialized flag
+//   18446744073709551614 = total supply
+
+if (arg(0) == 0) {                              // init (once)
+    if (store[18446744073709551615] == 0) {
+        store[18446744073709551615] = 1;
+        store[caller()] = 1000000;
+        store[18446744073709551614] = 1000000;
+        emit(0, caller(), 1000000);             // Mint(to, amount)
+    }
+} else {
+    if (arg(0) == 1) {                          // transfer(to=arg1, amount=arg2)
+        if (store[caller()] >= arg(2)) {
+            store[caller()] = store[caller()] - arg(2);
+            store[arg(1)] = store[arg(1)] + arg(2);
+            emit(1, caller(), arg(1), arg(2));  // Transfer(from, to, amount)
+        } else {
+            return 0;                           // insufficient balance -> no-op
+        }
+    } else {
+        if (arg(0) == 2) {
+            return store[arg(1)];               // balanceOf(addr)
+        } else {
+            return store[18446744073709551614]; // totalSupply
+        }
+    }
+}

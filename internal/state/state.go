@@ -65,7 +65,15 @@ type State struct {
 	Validators map[crypto.Address]*Validator `json:"validators"` // on-chain validator registry
 	Height     uint64                        `json:"height"`     // height of last applied block
 	Minted     uint64                        `json:"minted"`     // total $SHARD emitted (counts toward cap)
+	ChainID    uint64                        `json:"chain_id"`   // network id txs must match (replay protection)
 	lastLogs   []types.Log                   // events from the most recently applied block (transient)
+}
+
+// SetChainID sets the network id transactions must carry.
+func (s *State) SetChainID(id uint64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.ChainID = id
 }
 
 // LastLogs returns the events emitted by the most recently applied block.
@@ -203,6 +211,7 @@ var (
 	ErrAlreadyValidator = errors.New("state: already a registered (or slashed) validator")
 	ErrNotValidator     = errors.New("state: not a registered validator")
 	ErrBadEvidence      = errors.New("state: invalid equivocation evidence")
+	ErrBadChainID       = errors.New("state: transaction chain id mismatch (wrong network)")
 )
 
 // applySlash verifies equivocation evidence (two validly-signed conflicting
@@ -246,6 +255,9 @@ func (s *State) CheckTx(t *types.Transaction) error {
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+	if t.ChainID != s.ChainID {
+		return ErrBadChainID
+	}
 	ac := s.Accounts[t.From]
 	var bal, nonce uint64
 	if ac != nil {
@@ -315,6 +327,10 @@ func (s *State) ApplyBlock(b *types.Block) error {
 		if err := t.VerifySig(); err != nil {
 			rollback()
 			return err
+		}
+		if t.ChainID != s.ChainID {
+			rollback()
+			return ErrBadChainID
 		}
 		from := s.acct(t.From)
 		snap(t.From)
