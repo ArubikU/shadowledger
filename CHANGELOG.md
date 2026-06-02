@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.22.0 — reorg engine (state rewind + replay)
+
+- **`chain.AcceptBlock`** — fork-choice-aware ingestion: accepts blocks on ANY known branch (not
+  just head+1), adds them to the `forkchoice` tree, and when a competing branch becomes **heavier**
+  performs a **REORG** — rewinds state to genesis and **replays the winning branch** onto a fresh
+  copy, committing only if the whole branch applies cleanly (a bad branch can't corrupt live state).
+  Consensus-safety capstone: nodes converge after a partition / equivocating producer.
+- `state.Clone` (rewind snapshots); per-block tree + in-session body store; orphans (unknown parent)
+  refused. Tested: two producers fork, the node sees branch A then heavier branch B, reorgs to B
+  with B's exact state.
+- Honest scope: v1 replays from the in-session genesis state, so live-gossip routing through
+  `AcceptBlock` + persistent side-branch bodies + genesis-state for fast-synced nodes is the final
+  integration step (mainnet stays on the linear authority path, untouched). The hard part — the
+  fork-choice + rewind/replay algorithm — is done and tested.
+
 ## v0.21.0 — fork-choice rule (deterministic heaviest-chain selection)
 
 - **`internal/forkchoice`** — a block tree + deterministic chain-selection rule: among competing

@@ -20,6 +20,7 @@ import (
 	"github.com/ArubikU/shadowledger/internal/consensus"
 	"github.com/ArubikU/shadowledger/internal/crypto"
 	"github.com/ArubikU/shadowledger/internal/erasure"
+	"github.com/ArubikU/shadowledger/internal/forkchoice"
 	"github.com/ArubikU/shadowledger/internal/netparams"
 	"github.com/ArubikU/shadowledger/internal/rendezvous"
 	"github.com/ArubikU/shadowledger/internal/state"
@@ -47,6 +48,14 @@ type Chain struct {
 	head   types.Header
 	hasGen bool
 	source ShardSource
+
+	// Reorg engine: block tree for fork choice + in-session block bodies for
+	// replay + the genesis state to rewind to. (v1: in-memory, this-session;
+	// persistent side-block storage is a later step.)
+	tree         *forkchoice.Tree
+	blockByID    map[types.Hash]*types.Block
+	genesisState *state.State
+	genesisID    types.Hash
 }
 
 // Config parameters for a chain. Erasure shape and replication are NOT set
@@ -64,6 +73,7 @@ func New(st *store.Store, st2 *state.State, eng consensus.Engine, bf *bloom.Filt
 		store: st, state: st2, engine: eng, bloom: bf,
 		selfID: cfg.SelfID, members: cfg.Members,
 		blockTime: cfg.BlockTimeSec, genesisTS: cfg.GenesisTime,
+		tree: forkchoice.New(), blockByID: map[types.Hash]*types.Block{},
 	}
 	if c.blockTime < 1 {
 		c.blockTime = 1
@@ -185,7 +195,21 @@ func (c *Chain) Genesis(funding map[crypto.Address]uint64, genesisVal crypto.Add
 	}
 	c.head = hdr
 	c.hasGen = true
+	// Reorg engine: remember the genesis state (rewind target) + seed the tree.
+	c.genesisState = c.state.Clone()
+	c.genesisID = hdr.ID()
+	c.tree.Add(c.genesisID, types.Hash{}, 0, 1)
+	c.blockByID[c.genesisID] = blk
 	return blk, nil
+}
+
+// recordBlock adds an accepted block to the fork-choice tree + body store.
+// Per-block weight is 1 for now (longest-chain); storage/availability weight is
+// the planned upgrade. Caller holds c.mu.
+func (c *Chain) recordBlock(blk *types.Block) {
+	id := blk.Header.ID()
+	c.tree.Add(id, blk.Header.PrevHash, blk.Header.Height, 1)
+	c.blockByID[id] = blk
 }
 
 // ProduceBlock builds, signs, persists and locally shards a new block from txs.
@@ -242,6 +266,7 @@ func (c *Chain) ProduceBlock(txs []types.Transaction, kp *crypto.KeyPair, round 
 	}
 	c.persistLogs(&hdr)
 	c.head = hdr
+	c.recordBlock(blk)
 	return blk, set, nil
 }
 
@@ -293,6 +318,7 @@ func (c *Chain) ApplyExternalBlock(blk *types.Block) error {
 	}
 	c.persistLogs(hdr)
 	c.head = *hdr
+	c.recordBlock(blk)
 	return nil
 }
 

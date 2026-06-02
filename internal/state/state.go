@@ -174,6 +174,26 @@ func (s *State) SetMinted(v uint64) {
 	s.Minted = v
 }
 
+// Clone returns a deep copy of the state (for reorg: snapshot a point to rewind
+// to, replay a branch on the copy, then swap it in only if it's valid).
+func (s *State) Clone() *State {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	cp := New()
+	for a, ac := range s.Accounts {
+		cp.Accounts[a] = ac.clone()
+	}
+	for a, v := range s.Validators {
+		vc := *v
+		cp.Validators[a] = &vc
+	}
+	cp.Height = s.Height
+	cp.Minted = s.Minted
+	cp.ChainID = s.ChainID
+	cp.RegPoWBits = s.RegPoWBits
+	return cp
+}
+
 // ReplaceWith copies another state's contents in place (used by sync), keeping
 // this pointer valid for the mempool and chain that already reference it.
 func (s *State) ReplaceWith(other *State) {

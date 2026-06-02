@@ -145,9 +145,13 @@ The intended fork-choice fits ShadowLedger's thesis: the canonical chain is the 
 The deterministic rule is implemented + tested: a block tree whose canonical tip is the one with the
 **heaviest cumulative weight** (ties → lowest block id), with `CommonAncestor` for the rewind point.
 Per-block weight is pluggable, meant to be storage/availability weight (heaviest = most-available).
-Every node computes the identical tip → convergence without coordination. **Remaining:** wire it into
-the chain so a better tip triggers state-rewind-to-ancestor + replay (needs per-block state
-snapshots / body replay) — the reorg engine proper; its selection rule is now done.
+Every node computes the identical tip → convergence without coordination. **Reorg engine (v0.22):** `chain.AcceptBlock` now does it — accepts blocks on any known branch into
+the tree and, when a branch becomes heavier, **rewinds state and replays the winning branch** onto a
+fresh copy of the genesis state, committing only if it applies cleanly. Tested (two producers fork →
+node reorgs to the heavier branch with its exact state). **Final integration left:** route live
+postorage gossip through `AcceptBlock`, persist side-branch bodies, and give fast-synced nodes a
+genesis (or checkpoint) state to rewind to. The algorithm is done; mainnet stays on the linear
+authority path until that wiring + the switch to postorage.
 6. On-chain storage-proof records → enforceable eligibility + reward/fee share + slashing of failed
    proofs (storage-failure slashing; equivocation already done)
 7. Finality gadget, hardened P2P, audit, public testnet
