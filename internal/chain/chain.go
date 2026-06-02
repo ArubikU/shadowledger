@@ -103,6 +103,16 @@ func (c *Chain) Height() uint64 {
 	return c.head.Height
 }
 
+// HeadID returns the current head block id (zero hash before genesis).
+func (c *Chain) HeadID() types.Hash {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	if !c.hasGen {
+		return types.Hash{}
+	}
+	return c.head.ID()
+}
+
 // State exposes the account ledger.
 func (c *Chain) State() *state.State { return c.state }
 

@@ -25,6 +25,7 @@ type Config struct {
 	Validators  []crypto.Address  `yaml:"validators"`   // authorized producer addresses
 	Seeds       []string          `yaml:"seeds"`        // bootstrap control URLs (entry points)
 	DNSSeeds    []string          `yaml:"dns_seeds"`    // DNS seed hostnames (A/AAAA list live node IPs)
+	Consensus   string            `yaml:"consensus"`    // "authority" (default) | "postorage"
 	BlockTimeMS int               `yaml:"block_time_ms"`
 	Genesis     map[string]uint64 `yaml:"genesis"` // address -> funding (producer bootstrap)
 }
@@ -120,6 +121,9 @@ func (c *Config) applyDefaults() {
 	}
 	if c.Advertise == "" {
 		c.Advertise = "localhost"
+	}
+	if c.Consensus == "" {
+		c.Consensus = "authority"
 	}
 	if c.BlockTimeMS == 0 {
 		c.BlockTimeMS = 5000

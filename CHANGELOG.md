@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.8.0 — PoStorage leader election (decentralized minting)
+
+- **`PoStorage` consensus engine** (`internal/consensus`): one leader per height elected by HRW
+  `SHA-256(prevHash ‖ addr ‖ height)` over the validator set. Minting **rotates** among validators
+  instead of a single authority; deterministic from on-chain data so there's exactly one valid
+  leader per height (no forks from disagreement). Genesis is exempt from election.
+- Storage-eligibility gate (`pos.Scoreboard.Eligible`) wired as **advisory** — a node won't try to
+  lead if it's failing storage proofs. Enforceable on-chain proofs + slashing are the documented
+  next step.
+- Engine interface generalized (`LeaderFor(height, prev)`, `CanProduce(next, prev)`, `IsValidator`);
+  selectable via `consensus: authority|postorage` (default `authority`).
+- New doc [docs/CONSENSUS.md](docs/CONSENSUS.md): who mints, why no PoW, and the honest gap to
+  Bitcoin/Ethereum-grade security (permissionless entry, on-chain proofs, slashing, fork choice).
+
 ## v0.7.0 — zero-config mainnet
 
 - **Embedded chain params** (`internal/chainparams`): genesis premine, validators and bootstrap

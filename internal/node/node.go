@@ -31,7 +31,7 @@ type Node struct {
 	pool      *mempool.Pool
 	srv       *p2p.Server
 	peers     *p2p.Peerstore
-	eng       *consensus.Authority
+	eng       consensus.Engine
 	bloom     *bloom.Filter
 	statePath string
 
@@ -59,7 +59,15 @@ func New(cfg *Config) (*Node, error) {
 		bf = bloom.New(100000, 0.01)
 	}
 
-	eng := consensus.NewAuthority(cfg.Validators, id.Address())
+	var eng consensus.Engine
+	switch cfg.Consensus {
+	case "postorage":
+		// Storage gate wired as advisory (nil scoreboard) for now; on-chain
+		// proof records make it enforceable later. See docs/CONSENSUS.md.
+		eng = consensus.NewPoStorage(cfg.Validators, id.Address(), nil, 0.8)
+	default:
+		eng = consensus.NewAuthority(cfg.Validators, id.Address())
+	}
 	pool := mempool.New(ledger, 50000)
 
 	self := p2p.Peer{
@@ -191,7 +199,7 @@ func (n *Node) loops(ctx context.Context) {
 			return
 		case <-discover.C:
 			n.srv.Discover()
-			if !n.eng.CanProduce(0) {
+			if !n.eng.IsValidator() {
 				n.trySync() // followers keep catching up
 			}
 		case <-save.C:
@@ -207,7 +215,7 @@ func (n *Node) loops(ctx context.Context) {
 }
 
 func (n *Node) maybeProduce() {
-	if !n.eng.CanProduce(n.chain.Height() + 1) {
+	if !n.eng.CanProduce(n.chain.Height()+1, n.chain.HeadID()) {
 		return
 	}
 	txs := n.pool.Reap(1000)

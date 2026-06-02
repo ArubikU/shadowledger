@@ -111,6 +111,7 @@ ShadowLedger is built for the cloud/open internet (no LAN-only mode). A node bin
 
 [SPEC-CORE-V1.md](docs/SPEC-CORE-V1.md) · [ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
 [SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md) · [PROOF-OF-STORAGE.md](docs/PROOF-OF-STORAGE.md) ·
+[CONSENSUS.md](docs/CONSENSUS.md) ·
 [DEPLOY.md](docs/DEPLOY.md) ·
 [GAPS-AND-DESIGN.md](docs/GAPS-AND-DESIGN.md) (PoW decision, discovery, onboarding, roadmap) ·
 [CHANGELOG.md](CHANGELOG.md)

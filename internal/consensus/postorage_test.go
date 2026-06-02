@@ -1,0 +1,107 @@
+package consensus
+
+import (
+	"testing"
+
+	"github.com/ArubikU/shadowledger/internal/crypto"
+	"github.com/ArubikU/shadowledger/internal/types"
+)
+
+func addrs(n int) []crypto.Address {
+	out := make([]crypto.Address, n)
+	for i := 0; i < n; i++ {
+		kp, _ := crypto.Generate()
+		out[i] = kp.Address()
+	}
+	return out
+}
+
+func TestLeaderDeterministicAndInSet(t *testing.T) {
+	vs := addrs(5)
+	e := NewPoStorage(vs, vs[0], nil, 0.8)
+	var prev types.Hash
+	prev[0] = 0x42
+	l1 := e.LeaderFor(7, prev)
+	l2 := e.LeaderFor(7, prev)
+	if l1 != l2 {
+		t.Fatal("leader not deterministic")
+	}
+	if !e.set[l1] {
+		t.Fatal("leader not in validator set")
+	}
+}
+
+func TestLeaderRotates(t *testing.T) {
+	vs := addrs(5)
+	e := NewPoStorage(vs, vs[0], nil, 0.8)
+	var prev types.Hash
+	seen := map[crypto.Address]int{}
+	for h := uint64(0); h < 200; h++ {
+		seen[e.LeaderFor(h, prev)]++
+	}
+	// Every validator should win at least once over 200 heights (rotation).
+	if len(seen) < len(vs) {
+		t.Fatalf("only %d/%d validators ever led — not rotating", len(seen), len(vs))
+	}
+}
+
+func TestAuthorizeRequiresElectedLeader(t *testing.T) {
+	// Build validators from known keypairs so we can sign.
+	kps := make([]*crypto.KeyPair, 4)
+	vs := make([]crypto.Address, 4)
+	for i := range kps {
+		kps[i], _ = crypto.Generate()
+		vs[i] = kps[i].Address()
+	}
+	e := NewPoStorage(vs, vs[0], nil, 0.8)
+	var prev types.Hash
+	prev[1] = 0x99
+	height := uint64(10)
+	leader := e.LeaderFor(height, prev)
+
+	// Header from the elected leader → authorized.
+	var leaderKP *crypto.KeyPair
+	for i, v := range vs {
+		if v == leader {
+			leaderKP = kps[i]
+		}
+	}
+	h := types.Header{Height: height, PrevHash: prev}
+	h.Sign(leaderKP)
+	if err := e.AuthorizeHeader(&h); err != nil {
+		t.Fatalf("elected leader rejected: %v", err)
+	}
+
+	// Header from a non-leader validator → ErrNotLeader.
+	var other *crypto.KeyPair
+	for i, v := range vs {
+		if v != leader {
+			other = kps[i]
+			break
+		}
+	}
+	h2 := types.Header{Height: height, PrevHash: prev}
+	h2.Sign(other)
+	if err := e.AuthorizeHeader(&h2); err != ErrNotLeader {
+		t.Fatalf("want ErrNotLeader, got %v", err)
+	}
+}
+
+func TestGenesisAuthorizedWithoutElection(t *testing.T) {
+	kp, _ := crypto.Generate()
+	e := NewPoStorage([]crypto.Address{kp.Address()}, kp.Address(), nil, 0.8)
+	h := types.Header{Height: 0}
+	h.Sign(kp)
+	if err := e.AuthorizeHeader(&h); err != nil {
+		t.Fatalf("genesis rejected: %v", err)
+	}
+}
+
+func TestSingleValidatorAlwaysLeads(t *testing.T) {
+	kp, _ := crypto.Generate()
+	e := NewPoStorage([]crypto.Address{kp.Address()}, kp.Address(), nil, 0.8)
+	var prev types.Hash
+	if !e.CanProduce(1, prev) {
+		t.Fatal("single validator should always be able to produce")
+	}
+}
