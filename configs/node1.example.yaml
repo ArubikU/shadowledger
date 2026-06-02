@@ -15,9 +15,10 @@ node_key: ./data/node1/keys/node.json
 validators:
   - sl_REPLACE_WITH_NODE1_ADDRESS
 
-# This is the bootstrap node, so it has no seeds. Others will seed off it.
+# This is the bootstrap node, so it has no seeds. Others seed off it (point their
+# `seeds:` at this node's public control URL, or run a DNS seed that resolves to it).
 seeds: []
-lan_discovery: true           # auto-discover peers on the LAN
+dns_seeds: []                 # DNS seed hostnames whose A/AAAA records list node IPs
 
 block_time_ms: 2000
 

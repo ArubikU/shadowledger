@@ -80,7 +80,7 @@ func New(cfg *Config) (*Node, error) {
 	})
 	n.chain = ch
 
-	n.srv = p2p.NewServer(peers, cfg.Seeds, ch, pool)
+	n.srv = p2p.NewServer(peers, cfg.Seeds, cfg.DNSSeeds, cfg.ControlAddr, ch, pool)
 	ch.SetSource(n.srv)
 	return n, nil
 }
@@ -141,14 +141,11 @@ func (n *Node) Run(ctx context.Context) error {
 	go serve("control/RPC", n.cfg.ControlAddr, n.ctrlHTTP)
 	go serve("shard transfer", n.cfg.ShardAddr, n.shardHTTP)
 
-	// Decentralized discovery: contact seeds, exchange peers, optional LAN scan.
-	if len(n.cfg.Seeds) > 0 {
+	// Decentralized discovery: resolve DNS seeds + contact seeds, exchange peers.
+	if len(n.cfg.Seeds) > 0 || len(n.cfg.DNSSeeds) > 0 {
 		if learned := n.srv.Discover(); learned > 0 {
 			log.Printf("discovery: learned %d peer(s) from seeds", learned)
 		}
-	}
-	if n.cfg.LANDiscover {
-		go n.srv.RunLANDiscovery(ctx)
 	}
 
 	// Late-joiner fast sync from the best peer (if any and we are behind).
@@ -185,6 +182,8 @@ func (n *Node) loops(ctx context.Context) {
 	defer discover.Stop()
 	save := time.NewTicker(10 * time.Second)
 	defer save.Stop()
+	audit := time.NewTicker(15 * time.Second)
+	defer audit.Stop()
 
 	for {
 		select {
@@ -197,6 +196,10 @@ func (n *Node) loops(ctx context.Context) {
 			}
 		case <-save.C:
 			n.persist()
+		case <-audit.C:
+			if p, m := n.srv.AuditRound(); p+m > 0 {
+				log.Printf("proof-of-storage: %d passed, %d missed", p, m)
+			}
 		case <-block.C:
 			n.maybeProduce()
 		}

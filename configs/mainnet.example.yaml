@@ -22,7 +22,7 @@ validators:
   - sl0fa7cc3eacafa2ab32381ac11b4836d31229ddf2   # founder/treasury (block authority)
 
 seeds: []              # bootstrap node has no seeds; others seed off its public addr
-lan_discovery: false   # public node uses seeds, not LAN multicast
+dns_seeds: []          # publish this node's IP under a DNS seed so newcomers find it
 block_time_ms: 5000
 
 # Genesis premine to the founder/treasury (base units; 1 SHARD = 100,000,000 units).

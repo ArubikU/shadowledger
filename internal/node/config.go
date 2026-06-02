@@ -16,13 +16,13 @@ import (
 // validators, and how to find the network.
 type Config struct {
 	DataDir     string            `yaml:"data_dir"`
-	ControlAddr string            `yaml:"control_addr"`  // e.g. ":4004"
-	ShardAddr   string            `yaml:"shard_addr"`    // e.g. ":4005"
-	Advertise   string            `yaml:"advertise"`     // host others reach us at (default localhost)
-	NodeKey     string            `yaml:"node_key"`      // path to identity wallet json
-	Validators  []crypto.Address  `yaml:"validators"`    // authorized producer addresses
-	Seeds       []string          `yaml:"seeds"`         // bootstrap control URLs (entry points)
-	LANDiscover bool              `yaml:"lan_discovery"` // multicast peer discovery on the LAN
+	ControlAddr string            `yaml:"control_addr"` // e.g. ":4004"
+	ShardAddr   string            `yaml:"shard_addr"`   // e.g. ":4005"
+	Advertise   string            `yaml:"advertise"`    // host others reach us at (default localhost)
+	NodeKey     string            `yaml:"node_key"`     // path to identity wallet json
+	Validators  []crypto.Address  `yaml:"validators"`   // authorized producer addresses
+	Seeds       []string          `yaml:"seeds"`        // bootstrap control URLs (entry points)
+	DNSSeeds    []string          `yaml:"dns_seeds"`    // DNS seed hostnames (A/AAAA list live node IPs)
 	BlockTimeMS int               `yaml:"block_time_ms"`
 	Genesis     map[string]uint64 `yaml:"genesis"` // address -> funding (producer bootstrap)
 }

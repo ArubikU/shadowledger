@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.6.0 — Proof-of-Storage, DNS seeds, internet-only
+
+- **Proof-of-Storage** (`internal/pos`): holders answer random shard challenges
+  `H(nonce ‖ shardBytes)` over `GET /prove/{block}/{index}/{nonce}`. A per-node scoreboard tracks
+  pass/miss with an `Eligible(minRatio)` gate; periodic auditor challenges shard co-holders.
+  `slctl storage` / `GET /storage/scores`. See [docs/PROOF-OF-STORAGE.md](docs/PROOF-OF-STORAGE.md).
+- **DNS seed discovery** — `dns_seeds:` hostnames whose A/AAAA records list live node IPs
+  (Bitcoin-style bootstrap), resolved each discovery round.
+- **Removed LAN multicast** — ShadowLedger targets the cloud/open internet, not local-only nets.
+  Discovery is DNS seeds + explicit seeds + peer-exchange gossip.
+
 ## v0.5.0 — contract-to-contract calls
 
 - **`CALL` opcode** — a contract can invoke another contract: push target id (callee `AddrDigest`),

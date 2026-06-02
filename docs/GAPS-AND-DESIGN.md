@@ -42,21 +42,22 @@ now implemented (see §2).
 
 ## 3. Peer discovery without a central server
 
-There is **no central server**. A node finds the network three ways, all decentralized:
+There is **no central server**. A node finds the network the same way Bitcoin does:
 
-1. **Seeds (bootstrap entry points).** `seeds:` in config is a list of *control URLs* of any
-   already-running nodes. These are NOT a central authority — they're just "someone you can ask
-   first," exactly like Bitcoin's DNS seeds / hardcoded seed nodes. Anyone can be a seed; you can
-   point at a friend's node, a community node, your own second machine, whatever.
-2. **Peer exchange (PEX / gossip).** On `POST /hello`, a node sends its own descriptor and gets
-   back *everyone the peer knows*. So contacting one seed transitively reveals the whole reachable
-   graph. The `Discover()` loop re-runs every 20s, so the peer set converges and self-heals.
-3. **LAN multicast (optional "scan").** With `lan_discovery: true`, nodes beacon their descriptor
-   on UDP multicast `239.255.42.99:48999` and handshake with anyone they hear — zero-config
-   discovery for machines on the same network, no seeds needed. (Internet peers still need a seed
-   as the first hop; multicast doesn't cross routers.)
+1. **DNS seeds.** `dns_seeds:` is a list of *hostnames* whose A/AAAA records resolve to the IPs of
+   live nodes (`net.LookupHost`). The node dials each resolved IP at the conventional control port.
+   This is exactly Bitcoin's DNS-seed bootstrap: the DNS operator publishes IPs but holds no
+   authority over consensus — it's only a phone book for the first hop. Anyone can run one.
+2. **Explicit seeds (bootstrap entry points).** `seeds:` is a list of *control URLs* of any
+   already-running nodes — "someone you can ask first." Point at a community node, a friend's node,
+   your own second machine, whatever.
+3. **Peer exchange (PEX / gossip).** On `POST /hello`, a node sends its own descriptor and gets
+   back *everyone the peer knows*. Contacting one seed (DNS-resolved or explicit) transitively
+   reveals the whole reachable graph. The `Discover()` loop re-runs every 20s, so the peer set
+   converges and self-heals.
 
-So: **it gossips, and optionally scans the LAN — it does not poll a central registry.**
+So: **it resolves DNS seeds and gossips — it does not poll a central registry.** There is no
+LAN-only mode; ShadowLedger is built for the open internet.
 
 ## 4. How does someone turn their computer into a node?
 
@@ -75,14 +76,15 @@ validators:                            # who you accept blocks from (the network
   - sl<validator-address>
 seeds:
   - http://some-existing-node:4004     # entry point; not central
-lan_discovery: true                    # also auto-find peers on your LAN
+dns_seeds:                             # or resolve live node IPs from a hostname
+  - seed.shadowledger.example
 EOF
 
 # 3. run it — first launch auto-creates your node identity keypair
 ./slnode --config node.yaml
 ```
 
-On startup the node: creates its identity key if absent → discovers peers via seeds/LAN →
+On startup the node: creates its identity key if absent → discovers peers via DNS/explicit seeds →
 **fast-syncs** the verified header chain + a state snapshot from the best peer → then participates
 (stores its rendezvous-assigned shards from new blocks, serves shards, relays gossip). No genesis
 config needed for a joiner — it gets the chain from the network (§5).

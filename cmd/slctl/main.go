@@ -38,6 +38,8 @@ func main() {
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/supply"))
 	case "peers":
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/peers"))
+	case "storage":
+		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/storage/scores"))
 	case "deploy":
 		deploy(os.Args[2:])
 	case "call":
@@ -94,6 +96,7 @@ Passphrase for .tok wallets: --pass or env SL_WALLET_PASS.
   reconstruct --height N --rpc URL    (slow-path: rebuild body from shards)
   supply      --rpc URL               ($SHARD minted + next block reward)
   peers       --rpc URL               (this node's known peers)
+  storage     --rpc URL               (Proof-of-Storage scoreboard)
   deploy      --wallet w.tok --code prog.hex [--gas N] --rpc URL   (deploy a contract)
   call        --wallet w.tok --to <contract> [--data HEX] [--amount N] [--gas N] --rpc URL`)
 	os.Exit(2)

@@ -2,14 +2,17 @@ package p2p
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 
 	"github.com/ArubikU/shadowledger/internal/chain"
 	"github.com/ArubikU/shadowledger/internal/netparams"
+	"github.com/ArubikU/shadowledger/internal/pos"
 	"github.com/ArubikU/shadowledger/internal/rendezvous"
 	"github.com/ArubikU/shadowledger/internal/state"
 	"github.com/ArubikU/shadowledger/internal/types"
@@ -113,12 +116,45 @@ func (s *Server) sayHello(controlURL string) (int, error) {
 	return learned, nil
 }
 
-// Discover runs one discovery round: handshake with all seeds and known peers,
-// absorbing any new peers they report (transitive peer exchange).
+// resolveDNSSeeds turns DNS seed hostnames into control URLs. Each seed's
+// A/AAAA records list live node IPs (Bitcoin's DNS-seed model); we assume the
+// conventional control port for them.
+func (s *Server) resolveDNSSeeds() []string {
+	var urls []string
+	for _, host := range s.dnsSeeds {
+		ips, err := net.LookupHost(host)
+		if err != nil {
+			continue
+		}
+		for _, ip := range ips {
+			if h, _, e := net.SplitHostPort(ip); e == nil {
+				ip = h // LookupHost shouldn't include a port, but be safe
+			}
+			if isIPv6(ip) {
+				urls = append(urls, fmt.Sprintf("http://[%s]%s", ip, s.dnsPort))
+			} else {
+				urls = append(urls, fmt.Sprintf("http://%s%s", ip, s.dnsPort))
+			}
+		}
+	}
+	return urls
+}
+
+func isIPv6(ip string) bool {
+	p := net.ParseIP(ip)
+	return p != nil && p.To4() == nil
+}
+
+// Discover runs one discovery round: resolve DNS seeds, then handshake with all
+// seeds and known peers, absorbing any new peers they report (peer exchange).
+// No central server is involved — seeds are just entry points.
 func (s *Server) Discover() int {
 	targets := map[string]bool{}
 	for _, seed := range s.seeds {
 		targets[seed] = true
+	}
+	for _, url := range s.resolveDNSSeeds() {
+		targets[url] = true
 	}
 	for _, p := range s.store.Peers() {
 		targets[p.Control] = true
@@ -163,6 +199,67 @@ func (s *Server) fetchSnapshot(controlURL string) (*state.State, error) {
 		return nil, err
 	}
 	return snap, nil
+}
+
+// AuditRound runs one Proof-of-Storage challenge round. For each shard this
+// node holds at the current head, it challenges the OTHER assigned holders
+// (co-holders) with a fresh random nonce and verifies their proof against the
+// bytes it holds. Honest holders score a pass; missing/wrong/timeout score a
+// miss. Returns (passes, misses) issued this round.
+func (s *Server) AuditRound() (int, int) {
+	head, ok := s.chain.Head()
+	if !ok {
+		return 0, 0
+	}
+	blockID := head.ID()
+	members := s.MemberIDs()
+	repl := netparams.Replication(len(members))
+	self := s.store.Self().ID
+	idHex := hex.EncodeToString(blockID[:])
+	passes, misses := 0, 0
+
+	for _, idx := range s.chain.Store().HeldShards(blockID) {
+		data, err := s.chain.Store().GetShard(blockID, idx)
+		if err != nil {
+			continue
+		}
+		for _, holder := range rendezvous.Holders(members, blockID, idx, repl) {
+			if holder == self {
+				continue
+			}
+			url := s.store.shardURLFor(holder)
+			if url == "" {
+				continue
+			}
+			var nonce types.Hash
+			rand.Read(nonce[:])
+			want := pos.Challenge(nonce, data)
+			got, perr := s.proveShard(url, idHex, idx, nonce)
+			if perr == nil && got == want {
+				s.scores.Pass(holder)
+				passes++
+			} else {
+				s.scores.Miss(holder)
+				misses++
+			}
+		}
+	}
+	return passes, misses
+}
+
+// proveShard asks a holder for H(nonce || shardBytes) over the shard channel.
+func (s *Server) proveShard(shardURL, blockHex string, index int, nonce types.Hash) (types.Hash, error) {
+	var out types.Hash
+	b, err := s.get(fmt.Sprintf("%s/prove/%s/%d/%s", shardURL, blockHex, index, hex.EncodeToString(nonce[:])))
+	if err != nil {
+		return out, err
+	}
+	raw, err := hex.DecodeString(string(bytes.TrimSpace(b)))
+	if err != nil || len(raw) != 32 {
+		return out, fmt.Errorf("p2p: bad proof response")
+	}
+	copy(out[:], raw)
+	return out, nil
 }
 
 // SyncFrom fast-syncs the local chain from the best-known peer if it is ahead.

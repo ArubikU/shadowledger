@@ -16,12 +16,18 @@ recycled, not minted.
 shape (K data / M parity) and replication from the live node count (`internal/netparams`); the
 producer stamps the chosen shape into each block header.
 
-**Decentralized, no central server:** nodes find each other via bootstrap **seeds** (any running
-node), transitive **peer-exchange** gossip, and optional **LAN multicast**. A fresh node
-**fast-syncs** a verified header chain + state snapshot, then participates.
+**Decentralized, no central server:** nodes find each other via **DNS seeds** (hostnames whose
+A/AAAA records list live node IPs, Bitcoin-style) and explicit bootstrap **seeds**, then transitive
+**peer-exchange** gossip. A fresh node **fast-syncs** a verified header chain + state snapshot, then
+participates. Built for the open internet — no LAN-only mode.
 
-**Smart contracts:** a small deterministic stack VM with gas + per-contract storage. Deploy and
-call on-chain code (`slctl deploy` / `slctl call`). See [docs/SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md).
+**Proof-of-Storage:** holders must answer random shard challenges (`H(nonce ‖ shardBytes)`); a
+per-node scoreboard tracks pass/miss and gates block-production eligibility. See
+[docs/PROOF-OF-STORAGE.md](docs/PROOF-OF-STORAGE.md).
+
+**Smart contracts:** a small deterministic stack VM with gas + per-contract storage, including
+contract-to-contract calls. Deploy and call on-chain code (`slctl deploy` / `slctl call`). See
+[docs/SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md).
 
 ## Why
 
@@ -82,21 +88,23 @@ slctl supply --rpc http://localhost:4004     # $SHARD minted + next reward
 slctl peers  --rpc http://localhost:4004     # discovered peers
 ```
 
-## Running on the public internet (not just LAN)
+## Running on the public internet
 
-A node binds all interfaces (`:4004` control, `:4005` shard). To be reachable by others:
+ShadowLedger is built for the cloud/open internet (no LAN-only mode). A node binds all interfaces
+(`:4004` control, `:4005` shard). To be reachable by others:
 
-1. Set `advertise:` in config to your public host/IP (and forward both ports on your router/cloud
-   firewall, or run on a VPS with a public IP). This is the same requirement as a Bitcoin full node.
-2. New nodes join by listing any reachable node under `seeds:` — peer-exchange spreads the rest.
-   On the same LAN, `lan_discovery: true` finds peers with zero config.
+1. Set `advertise:` to your public host/IP and forward both ports (or run on a VPS with a public
+   IP). Same requirement as a Bitcoin full node.
+2. Newcomers find the network by either listing a reachable node under `seeds:`, or pointing
+   `dns_seeds:` at a hostname whose A/AAAA records resolve to live node IPs (Bitcoin's DNS-seed
+   model). Peer-exchange gossip spreads the rest.
 
-> Honest caveat: there is no automatic NAT hole-punching yet (libp2p-style) — you forward a port.
-> See [docs/GAPS-AND-DESIGN.md](docs/GAPS-AND-DESIGN.md) §3–6.
+> Honest caveat: no automatic NAT hole-punching yet (libp2p-style) — you forward a port.
+> See [docs/GAPS-AND-DESIGN.md](docs/GAPS-AND-DESIGN.md).
 
 ## Docs
 
 [SPEC-CORE-V1.md](docs/SPEC-CORE-V1.md) · [ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
-[SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md) ·
+[SMART-CONTRACTS.md](docs/SMART-CONTRACTS.md) · [PROOF-OF-STORAGE.md](docs/PROOF-OF-STORAGE.md) ·
 [GAPS-AND-DESIGN.md](docs/GAPS-AND-DESIGN.md) (PoW decision, discovery, onboarding, roadmap) ·
 [CHANGELOG.md](CHANGELOG.md)

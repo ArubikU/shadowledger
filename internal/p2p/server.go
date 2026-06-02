@@ -8,6 +8,7 @@ import (
 
 	"github.com/ArubikU/shadowledger/internal/chain"
 	"github.com/ArubikU/shadowledger/internal/crypto"
+	"github.com/ArubikU/shadowledger/internal/pos"
 	"github.com/ArubikU/shadowledger/internal/types"
 )
 
@@ -33,6 +34,10 @@ func (s *Server) ControlHandler() http.Handler {
 	mux.HandleFunc("GET /supply", func(w http.ResponseWriter, r *http.Request) {
 		st := s.chain.State()
 		writeJSON(w, map[string]any{"minted": st.Supply(), "next_reward": st.NextReward(s.chain.Height() + 1)})
+	})
+	// Proof-of-Storage scoreboard: per-node challenge pass/miss history.
+	mux.HandleFunc("GET /storage/scores", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, s.scores.Snapshot())
 	})
 	mux.HandleFunc("GET /peers", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, map[string]any{"self": s.store.Self(), "peers": s.store.Peers(), "count": s.store.Count()})
@@ -166,6 +171,34 @@ func (s *Server) ShardHandler() http.Handler {
 		}
 		w.Header().Set("Content-Type", "application/octet-stream")
 		w.Write(data)
+	})
+	// Proof-of-Storage: H(nonce || shardBytes) if this node holds the shard.
+	mux.HandleFunc("GET /prove/{block}/{index}/{nonce}", func(w http.ResponseWriter, r *http.Request) {
+		raw, err := hex.DecodeString(r.PathValue("block"))
+		if err != nil || len(raw) != 32 {
+			http.Error(w, "bad block id", http.StatusBadRequest)
+			return
+		}
+		idx, err := strconv.Atoi(r.PathValue("index"))
+		if err != nil {
+			http.Error(w, "bad index", http.StatusBadRequest)
+			return
+		}
+		nraw, err := hex.DecodeString(r.PathValue("nonce"))
+		if err != nil || len(nraw) != 32 {
+			http.Error(w, "bad nonce", http.StatusBadRequest)
+			return
+		}
+		var blockID, nonce types.Hash
+		copy(blockID[:], raw)
+		copy(nonce[:], nraw)
+		data, err := s.chain.Store().GetShard(blockID, idx)
+		if err != nil {
+			http.Error(w, "not held", http.StatusNotFound)
+			return
+		}
+		proof := pos.Challenge(nonce, data)
+		w.Write([]byte(hex.EncodeToString(proof[:])))
 	})
 	mux.HandleFunc("GET /have/{block}", func(w http.ResponseWriter, r *http.Request) {
 		raw, err := hex.DecodeString(r.PathValue("block"))

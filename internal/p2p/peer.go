@@ -1,7 +1,8 @@
 // Package p2p provides ShadowLedger's networking: a control/RPC channel and a
-// shard-transfer channel, decentralized peer discovery (seeds + peer exchange +
-// optional LAN multicast, NO central server), and the client that reconstructs
-// block bodies by pulling K-of-(K+M) shards from rendezvous-ranked holders.
+// shard-transfer channel, decentralized peer discovery (DNS seeds + explicit
+// seeds + peer exchange, NO central server), Proof-of-Storage shard challenges,
+// and the client that reconstructs block bodies by pulling K-of-(K+M) shards
+// from rendezvous-ranked holders.
 package p2p
 
 import (
@@ -12,6 +13,7 @@ import (
 
 	"github.com/ArubikU/shadowledger/internal/chain"
 	"github.com/ArubikU/shadowledger/internal/mempool"
+	"github.com/ArubikU/shadowledger/internal/pos"
 )
 
 // Peer identifies another node and its two endpoints.
@@ -22,8 +24,8 @@ type Peer struct {
 }
 
 // Peerstore is a thread-safe, dynamically-growing set of known peers. There is
-// no central registry: peers are learned from seeds, peer-exchange and LAN
-// beacons, and the set converges as gossip spreads.
+// no central registry: peers are learned from DNS seeds, explicit seeds and
+// peer-exchange, and the set converges as gossip spreads.
 type Peerstore struct {
 	mu   sync.RWMutex
 	self Peer
@@ -108,20 +110,35 @@ func (ps *Peerstore) shardURLFor(id string) string {
 
 // Server hosts both channels and brokers gossip, discovery and shard fetches.
 type Server struct {
-	store  *Peerstore
-	seeds  []string // bootstrap control URLs (entry points, not a central server)
-	chain  *chain.Chain
-	pool   *mempool.Pool
-	client *http.Client
+	store    *Peerstore
+	seeds    []string // bootstrap control URLs (explicit entry points)
+	dnsSeeds []string // DNS seed hostnames; A/AAAA records list live node IPs
+	dnsPort  string   // control port assumed for DNS-resolved peers (e.g. ":4004")
+	chain    *chain.Chain
+	pool     *mempool.Pool
+	scores   *pos.Scoreboard
+	client   *http.Client
 }
 
 // NewServer builds the networking layer over a peerstore.
-func NewServer(store *Peerstore, seeds []string, ch *chain.Chain, pool *mempool.Pool) *Server {
+func NewServer(store *Peerstore, seeds, dnsSeeds []string, dnsPort string, ch *chain.Chain, pool *mempool.Pool) *Server {
 	return &Server{
-		store: store, seeds: seeds, chain: ch, pool: pool,
+		store: store, seeds: seeds, dnsSeeds: dnsSeeds, dnsPort: dnsPort,
+		chain: ch, pool: pool, scores: pos.NewScoreboard(nil),
 		client: &http.Client{Timeout: 8 * time.Second},
 	}
 }
 
 // MemberIDs exposes the rendezvous membership set.
 func (s *Server) MemberIDs() []string { return s.store.MemberIDs() }
+
+// Scores exposes the Proof-of-Storage scoreboard.
+func (s *Server) Scores() *pos.Scoreboard { return s.scores }
+
+// short truncates a node id for logging.
+func short(id string) string {
+	if len(id) > 10 {
+		return id[:10]
+	}
+	return id
+}

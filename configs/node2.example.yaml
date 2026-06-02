@@ -18,6 +18,9 @@ validators:
 # first peer to ask. Peer-exchange discovers the rest.
 seeds:
   - http://localhost:4004
-lan_discovery: true
+# Alternatively (or additionally) discover via DNS seeds — hostnames whose
+# A/AAAA records resolve to live node IPs (control port assumed = control_addr):
+dns_seeds: []
+#   - seed.shadowledger.example
 
 block_time_ms: 2000
