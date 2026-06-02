@@ -92,10 +92,11 @@ func New(cfg *Config) (*Node, error) {
 		bt = 1
 	}
 	ch := chain.New(st, ledger, eng, bf, chain.Config{
-		SelfID:       string(id.Address()),
-		Members:      peers.MemberIDs, // live, growing membership for rendezvous
-		BlockTimeSec: bt,
-		GenesisTime:  chainparams.Mainnet().GenesisTime,
+		SelfID:        string(id.Address()),
+		Members:       peers.MemberIDs, // live, growing membership for rendezvous
+		BlockTimeSec:  bt,
+		GenesisTime:   chainparams.Mainnet().GenesisTime,
+		FinalityDepth: chainparams.Mainnet().FinalityDepth,
 	})
 	n.chain = ch
 

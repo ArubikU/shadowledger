@@ -52,19 +52,22 @@ type Chain struct {
 	// Reorg engine: block tree for fork choice + in-session block bodies for
 	// replay + the genesis state to rewind to. (v1: in-memory, this-session;
 	// persistent side-block storage is a later step.)
-	tree         *forkchoice.Tree
-	blockByID    map[types.Hash]*types.Block
-	replayBase   *state.State // state AFTER replayBaseID (genesis, or a sync checkpoint)
-	replayBaseID types.Hash   // block whose post-state is replayBase; reorg can't go below it
+	tree             *forkchoice.Tree
+	blockByID        map[types.Hash]*types.Block
+	replayBase       *state.State // state AFTER replayBaseID (genesis, sync checkpoint, or last finalized)
+	replayBaseID     types.Hash   // block whose post-state is replayBase; reorg can't go below it
+	replayBaseHeight uint64       // height of replayBaseID
+	finalityDepth    uint64       // head-F is finalized (replay base advances to it); 0 = off
 }
 
 // Config parameters for a chain. Erasure shape and replication are NOT set
 // here — they are derived from the live node count by package netparams.
 type Config struct {
-	SelfID       string
-	Members      func() []string
-	BlockTimeSec int64 // seconds per consensus round (leader-timeout fallback)
-	GenesisTime  int64 // fixed genesis block timestamp (must be identical on all nodes)
+	SelfID        string
+	Members       func() []string
+	BlockTimeSec  int64 // seconds per consensus round (leader-timeout fallback)
+	GenesisTime   int64 // fixed genesis block timestamp (must be identical on all nodes)
+	FinalityDepth int   // blocks behind head that become irreversible (0 = off)
 }
 
 // New builds a chain over an opened store and state.
@@ -73,7 +76,8 @@ func New(st *store.Store, st2 *state.State, eng consensus.Engine, bf *bloom.Filt
 		store: st, state: st2, engine: eng, bloom: bf,
 		selfID: cfg.SelfID, members: cfg.Members,
 		blockTime: cfg.BlockTimeSec, genesisTS: cfg.GenesisTime,
-		tree: forkchoice.New(), blockByID: map[types.Hash]*types.Block{},
+		finalityDepth: uint64(cfg.FinalityDepth),
+		tree:          forkchoice.New(), blockByID: map[types.Hash]*types.Block{},
 	}
 	if c.blockTime < 1 {
 		c.blockTime = 1
@@ -122,15 +126,16 @@ func (c *Chain) block(id types.Hash) *types.Block {
 const replayBaseFile = "replaybase.json"
 
 type replayBaseRecord struct {
-	ID    types.Hash   `json:"id"`
-	State *state.State `json:"state"`
+	ID     types.Hash   `json:"id"`
+	Height uint64       `json:"height"`
+	State  *state.State `json:"state"`
 }
 
 func (c *Chain) saveReplayBase() {
 	if c.replayBase == nil {
 		return
 	}
-	_ = c.store.PutState(replayBaseFile, replayBaseRecord{ID: c.replayBaseID, State: c.replayBase})
+	_ = c.store.PutState(replayBaseFile, replayBaseRecord{ID: c.replayBaseID, Height: c.replayBaseHeight, State: c.replayBase})
 }
 
 func (c *Chain) loadReplayBase() {
@@ -144,6 +149,55 @@ func (c *Chain) loadReplayBase() {
 	}
 	c.replayBase = rec.State
 	c.replayBaseID = rec.ID
+	c.replayBaseHeight = rec.Height
+}
+
+// Finalized returns the height below which blocks are irreversible (the replay
+// base / finality floor). 0 if no finality.
+func (c *Chain) Finalized() uint64 {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.replayBaseHeight
+}
+
+// advanceFinality moves the replay base (reorg floor) forward to head-F by
+// replaying the now-final canonical blocks onto it, making them irreversible.
+// Caller holds c.mu.
+func (c *Chain) advanceFinality() {
+	if c.finalityDepth == 0 || c.replayBase == nil || c.head.Height < c.finalityDepth {
+		return
+	}
+	target := c.head.Height - c.finalityDepth
+	if target <= c.replayBaseHeight {
+		return
+	}
+	// Collect canonical blocks (replayBaseHeight, target] by walking head→base.
+	var rev []*types.Block
+	for id := c.head.ID(); id != c.replayBaseID; {
+		b := c.block(id)
+		if b == nil {
+			return // missing body; can't advance finality this round
+		}
+		if b.Header.Height <= target {
+			rev = append(rev, b)
+		}
+		id = b.Header.PrevHash
+		if id == (types.Hash{}) {
+			return
+		}
+	}
+	ns := c.replayBase.Clone()
+	for i := len(rev) - 1; i >= 0; i-- { // ascending order
+		if err := ns.ApplyBlock(rev[i]); err != nil {
+			return // shouldn't happen on the canonical chain; bail safely
+		}
+	}
+	c.replayBase = ns
+	if len(rev) > 0 {
+		c.replayBaseID = rev[0].Header.ID()
+		c.replayBaseHeight = rev[0].Header.Height
+	}
+	c.saveReplayBase()
 }
 
 // SetCheckpoint sets the reorg replay base to a known post-block state (used by
@@ -154,6 +208,7 @@ func (c *Chain) SetCheckpoint(blockID types.Hash, st *state.State) {
 	defer c.mu.Unlock()
 	c.replayBase = st.Clone()
 	c.replayBaseID = blockID
+	c.replayBaseHeight = st.Height
 	c.saveReplayBase()
 }
 
@@ -268,6 +323,7 @@ func (c *Chain) Genesis(funding map[crypto.Address]uint64, genesisVal crypto.Add
 	// Reorg engine: genesis state is the replay base (rewind floor) + seed tree.
 	c.replayBase = c.state.Clone()
 	c.replayBaseID = hdr.ID()
+	c.replayBaseHeight = 0
 	c.tree.Add(c.replayBaseID, types.Hash{}, 0, 1)
 	c.blockByID[c.replayBaseID] = blk
 	_ = c.store.PutBlock(c.replayBaseID, blk)
@@ -341,6 +397,7 @@ func (c *Chain) ProduceBlock(txs []types.Transaction, kp *crypto.KeyPair, round 
 	c.persistLogs(&hdr)
 	c.head = hdr
 	c.recordBlock(blk)
+	c.advanceFinality()
 	return blk, set, nil
 }
 
@@ -393,6 +450,7 @@ func (c *Chain) ApplyExternalBlock(blk *types.Block) error {
 	c.persistLogs(hdr)
 	c.head = *hdr
 	c.recordBlock(blk)
+	c.advanceFinality()
 	return nil
 }
 
@@ -634,6 +692,7 @@ func (c *Chain) SyncInstall(records []HeaderRecord, snap *state.State) error {
 	// rewind below its checkpoint, which is fine — those blocks are deep/final).
 	c.replayBase = snap.Clone()
 	c.replayBaseID = c.head.ID()
+	c.replayBaseHeight = c.head.Height
 	c.tree.Add(c.head.ID(), c.head.PrevHash, c.head.Height, 1)
 	c.blockByID[c.head.ID()] = &types.Block{Header: c.head}
 	c.saveReplayBase()

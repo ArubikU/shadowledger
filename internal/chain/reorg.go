@@ -100,6 +100,7 @@ func (c *Chain) reorgToBest() error {
 		}
 		if n := len(suffix); n > 0 {
 			c.head = suffix[n-1].Header
+			c.advanceFinality()
 		}
 		return nil
 	}
@@ -124,6 +125,7 @@ func (c *Chain) reorgToBest() error {
 	}
 	if n := len(branch); n > 0 {
 		c.head = branch[n-1].Header
+		c.advanceFinality()
 	}
 	return nil
 }

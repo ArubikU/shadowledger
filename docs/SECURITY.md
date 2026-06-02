@@ -51,8 +51,13 @@ This is a young project (v0.x) — **do not put real value on mainnet**. Treat i
   (7 attack variants, all rejected). An outsider cannot insert a block.
 - **Forged history:** a validator cannot rewrite past blocks (prev-hash chain + signatures), nor
   forge events (LogsRoot), nor mint outside the schedule (coinbase check). It *can* censor or stall
-  (single authority today) — addressed by gaps #1/#2. A bonded attacker building a competing VALID
-  chain is the fork-choice/finality gap (#1).
+  (single authority today) — addressed by gaps #1/#2.
+- **Deep reorg / long-range rewrite: bounded by finality (v0.24).** A block `FinalityDepth` deep
+  (16 on mainnet) is irreversible — the reorg engine rewinds only down to the replay base, which
+  advances to `head − FinalityDepth` and never moves back. A bonded attacker's competing branch that
+  forks below the finalized height can't reach the replay base to replay from, so the reorg is
+  refused: finalized history can't be erased even by a heavier branch. Above the floor, the heaviest
+  valid branch still wins (normal convergence).
 - **Lying shard server:** detected by the committed shard hash; the liar is skipped and struck
   (banlist).
 - **Cross-network replay:** blocked by ChainID. **Same-network replay:** blocked by nonce.

@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.24.0 — finality (hard irreversibility)
+
+- **Depth-based finality:** blocks `FinalityDepth` behind the head (16 on mainnet) become
+  **irreversible**. The chain tracks a *replay base* (the reorg rewind floor); `advanceFinality`
+  walks head→base, replays every block at height ≤ `head-F` onto a base clone, and advances the
+  base + persists it. Once advanced, the floor never moves back.
+- **Reorg can't rewind below the finalized height.** A divergent branch reorg walks down to the
+  replay base (`walkDown(best, replayBaseID)`); a fork that diverges *below* the finalized floor
+  can't reach the base → `ok=false` → the reorg is refused and the head is kept. Deep history is
+  locked. So a heavier-but-ancient branch can no longer erase finalized blocks.
+- Wired into all three head-advancing paths: `ProduceBlock`, `ApplyExternalBlock`, and both the
+  fast-forward and divergent branches of `reorgToBest`.
+- `Finalized()` exposes the finalized height; replay base (id/height/state) persisted + reloaded so
+  finality survives restarts. Tested: 6 blocks @ F=3 → finalized height 3, reorg floor at 3.
+- `FinalityDepth` is a chainparam (0 = off); mainnet ships 16.
+
 ## v0.23.0 — reorg wired live: mainnet is now permissionless multi-validator
 
 - **Gossip routed through the reorg engine** for postorage nodes: incoming blocks go through

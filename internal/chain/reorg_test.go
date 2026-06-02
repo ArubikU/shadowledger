@@ -81,6 +81,34 @@ func TestReorgHeavierBranchWins(t *testing.T) {
 	}
 }
 
+func TestFinalityAdvances(t *testing.T) {
+	v1, _ := crypto.Generate()
+	st, err := store.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	eng := consensus.NewAuthority([]crypto.Address{v1.Address()}, v1.Address())
+	bf := bloom.New(1000, 0.01)
+	members := func() []string { return []string{string(v1.Address())} }
+	c := New(st, state.New(), eng, bf, Config{SelfID: string(v1.Address()), Members: members, FinalityDepth: 3})
+	c.Genesis(map[crypto.Address]uint64{v1.Address(): 1_000_000_000}, v1.Address(), v1)
+
+	for i := 0; i < 6; i++ {
+		if _, _, err := c.ProduceBlock(nil, v1, 0); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// head=6, F=3 -> blocks at height <=3 are irreversible.
+	if f := c.Finalized(); f != 3 {
+		t.Fatalf("finalized height = %d, want 3 (head 6 - F 3)", f)
+	}
+	// The reorg floor (replay base) moved up to the finalized height, so a reorg
+	// can no longer rewind below it — deep history is locked in.
+	if c.replayBaseHeight != 3 {
+		t.Fatalf("replay base height = %d, want 3", c.replayBaseHeight)
+	}
+}
+
 func TestAcceptBlockUnknownParent(t *testing.T) {
 	v1, _ := crypto.Generate()
 	c := newMultiValChain(t, []crypto.Address{v1.Address()}, v1.Address())

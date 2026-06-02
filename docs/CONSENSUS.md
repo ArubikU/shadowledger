@@ -13,6 +13,15 @@ founder is just the genesis/bootstrap validator — not the only one.
 Earlier (v0–v0.22) mainnet was single-authority (founder signs every block). That path still exists
 (`consensus: authority`) for private/federated deployments.
 
+## Is anything final? (v0.24: depth-based finality)
+
+Yes. A block `FinalityDepth` deep (16 on mainnet) is **irreversible** — no reorg can rewind below it.
+The chain keeps a *replay base* (the rewind floor for reorgs); as the head advances, `advanceFinality`
+moves that floor up to `head − FinalityDepth` and persists it, never moving back. A reorg rewinds only
+down to the replay base, so a competing branch that forks *below* the finalized height literally can't
+be applied (it can't reach the base to replay from) and is refused. This bounds how far history can ever
+change to the last `FinalityDepth` blocks: ~80s at a 5s block time. `Finalized()` reports the height.
+
 ## Is there Proof-of-Work?
 
 **Yes, but only as a Sybil gate — never to mine blocks.** A node must solve a one-time PoW puzzle to
@@ -123,9 +132,13 @@ This is the **permissionless-entry** mechanism. Two things still gate turning it
    offline for one block-time, round 1 elects a different validator who may produce. Headers carry
    `Round`; `ApplyExternalBlock` validates round-timing (`ts >= prevTs + round*blockTime`, not far
    future) so a high round can't be claimed early. Genesis uses a fixed timestamp to anchor timing.
-   **Remaining:** true reorg-based fork choice — today it's first-valid-block-per-height-wins (no
-   reorg), so a network partition could leave nodes on different tips until manual intervention.
-   Heaviest-chain reorg + finality is the next consensus item.
+6. ✅ Fork choice (v0.21, `internal/forkchoice`): deterministic heaviest-chain tip selection.
+7. ✅ Reorg engine (v0.22) + wired live (v0.23): state rewind to the replay base + replay of the
+   heaviest branch; a partition resolves automatically once the heavier branch is seen.
+8. ✅ Finality (v0.24): blocks `FinalityDepth` deep are irreversible — the replay base (reorg floor)
+   advances to `head − FinalityDepth` and never moves back, so no reorg can rewind finalized history.
+   **Remaining:** storage-weighted fork choice (today weight = chain length; deterministic
+   storage-proof weighting needs on-chain proof records) + external audit.
 
 ## Fork choice by availability (the design, v0.19 building block)
 
