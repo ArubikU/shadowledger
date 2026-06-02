@@ -47,10 +47,14 @@ func main() {
 		call(os.Args[2:])
 	case "validators":
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/validators"))
+	case "bans":
+		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/bans"))
 	case "register":
 		register(os.Args[2:])
 	case "unregister":
 		unregister(os.Args[2:])
+	case "slash":
+		slash(os.Args[2:])
 	default:
 		usage()
 	}
@@ -107,6 +111,8 @@ Passphrase for .tok wallets: --pass or env SL_WALLET_PASS.
   validators  --rpc URL               (on-chain validator registry)
   register    --wallet w.tok --bond N [--fee N] --rpc URL   (join validator set; bond>=1000 SHARD base units)
   unregister  --wallet w.tok [--fee N] --rpc URL            (exit, reclaim bond)
+  slash       --wallet w.tok --evidence ev.json --rpc URL   (report equivocation; earn 10% of bond)
+  bans        --rpc URL               (locally banned peers)
   deploy      --wallet w.tok --code prog.hex [--gas N] --rpc URL   (deploy a contract)
   call        --wallet w.tok --to <contract> [--data HEX] [--amount N] [--gas N] --rpc URL`)
 	os.Exit(2)
@@ -221,6 +227,19 @@ func unregister(args []string) {
 	kp, err := crypto.LoadWalletAuto(flagVal(args, "wallet"), passOf(args))
 	must(err)
 	tx := types.Transaction{Kind: types.KindUnregister, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
+	tx.Sign(kp)
+	submit(rpc, tx)
+}
+
+// slash reports validator equivocation. --evidence is a JSON file {"a":<header>,"b":<header>}
+// of two conflicting signed headers; the reporter earns 10% of the slashed bond.
+func slash(args []string) {
+	rpc := rpcOf(args)
+	kp, err := crypto.LoadWalletAuto(flagVal(args, "wallet"), passOf(args))
+	must(err)
+	ev, err := os.ReadFile(flagVal(args, "evidence"))
+	must(err)
+	tx := types.Transaction{Kind: types.KindSlash, Data: ev, Fee: mustU64opt(args, "fee", 0), Nonce: fetchNonce(rpc, kp.Address())}
 	tx.Sign(kp)
 	submit(rpc, tx)
 }

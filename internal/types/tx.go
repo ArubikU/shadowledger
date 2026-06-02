@@ -24,7 +24,15 @@ const (
 	KindCall       uint8 = 2 // call a contract (To = contract, Data = input words)
 	KindRegister   uint8 = 3 // register as a validator, locking Amount as a bond
 	KindUnregister uint8 = 4 // exit the validator set, unlocking the bond
+	KindSlash      uint8 = 5 // report equivocation; Data = two conflicting signed headers
 )
+
+// EquivocationEvidence is two conflicting headers signed by the same validator
+// at the same height — provable double-signing, carried in a KindSlash tx.Data.
+type EquivocationEvidence struct {
+	A Header `json:"a"`
+	B Header `json:"b"`
+}
 
 // Transaction is an account-model value transfer or contract operation.
 type Transaction struct {

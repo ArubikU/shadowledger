@@ -3,6 +3,7 @@ package p2p
 import (
 	"encoding/hex"
 	"encoding/json"
+	"net"
 	"net/http"
 	"strconv"
 
@@ -141,13 +142,40 @@ func (s *Server) ControlHandler() http.Handler {
 			return
 		}
 		if err := s.chain.ApplyExternalBlock(&blk); err != nil {
+			// Invalid block from this peer: strike its IP (DoS hygiene).
+			if banned := s.bans.Strike(clientIP(r)); banned {
+				http.Error(w, "banned", http.StatusForbidden)
+				return
+			}
 			http.Error(w, err.Error(), http.StatusConflict)
 			return
 		}
 		s.pool.Remove(blk.Txs)
 		w.WriteHeader(http.StatusAccepted)
 	})
-	return limitBody(mux, 64<<20) // 64 MiB cap on control requests
+	mux.HandleFunc("GET /bans", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, s.bans.Snapshot())
+	})
+	return limitBody(s.banGate(mux), 64<<20) // 64 MiB cap + banlist gate
+}
+
+// banGate rejects requests from currently-banned IPs.
+func (s *Server) banGate(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s.bans.Banned(clientIP(r)) {
+			http.Error(w, "banned", http.StatusForbidden)
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
+}
+
+func clientIP(r *http.Request) string {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return host
 }
 
 // limitBody caps request body size to guard an internet-facing node.
@@ -220,7 +248,7 @@ func (s *Server) ShardHandler() http.Handler {
 		copy(blockID[:], raw)
 		writeJSON(w, map[string]any{"have": s.chain.Store().HeldShards(blockID)})
 	})
-	return mux
+	return s.banGate(mux)
 }
 
 func writeJSON(w http.ResponseWriter, v any) {

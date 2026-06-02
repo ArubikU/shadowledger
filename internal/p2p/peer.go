@@ -117,6 +117,7 @@ type Server struct {
 	chain    *chain.Chain
 	pool     *mempool.Pool
 	scores   *pos.Scoreboard
+	bans     *Banlist
 	client   *http.Client
 }
 
@@ -125,6 +126,7 @@ func NewServer(store *Peerstore, seeds, dnsSeeds []string, dnsPort string, ch *c
 	return &Server{
 		store: store, seeds: seeds, dnsSeeds: dnsSeeds, dnsPort: dnsPort,
 		chain: ch, pool: pool, scores: pos.NewScoreboard(nil),
+		bans:   NewBanlist(3, 10*time.Minute, nil),
 		client: &http.Client{Timeout: 8 * time.Second},
 	}
 }
@@ -134,6 +136,9 @@ func (s *Server) MemberIDs() []string { return s.store.MemberIDs() }
 
 // Scores exposes the Proof-of-Storage scoreboard.
 func (s *Server) Scores() *pos.Scoreboard { return s.scores }
+
+// Bans exposes the local peer banlist.
+func (s *Server) Bans() *Banlist { return s.bans }
 
 // short truncates a node id for logging.
 func short(id string) string {

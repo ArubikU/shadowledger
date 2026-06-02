@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.10.0 — peer banlist + equivocation slashing
+
+- **Local peer banlist** (`internal/p2p/banlist.go`): misbehaving peers accrue strikes (invalid
+  gossip block → strike sender IP; holder serving a shard that fails its committed hash → strike that
+  node id) and are temp-banned with exponential backoff; bans self-expire. Banned IPs are rejected at
+  both HTTP channels; banned peers skipped in broadcast/discover/shard-fetch. `slctl bans` /
+  `GET /bans`. Local DoS hygiene — not consensus.
+- **On-chain equivocation slashing** (real economic security): new `KindSlash` tx carries two
+  conflicting headers signed by the same validator at the same height (provable double-signing).
+  Verified on-chain → the validator's **bond is burned** (10% bounty to the reporter), the validator
+  is set inactive and **permanently barred** from re-registering. `slctl slash --evidence ev.json`.
+- Honest scope: this slashes **equivocation** (verifiable with no extra infra). Slashing **failed
+  storage proofs** still needs on-chain proof records (next). Fully tested.
+
 ## v0.9.0 — on-chain validator registry + bond (permissionless entry)
 
 - **Validators are on-chain state** (`state.Validators`), not config. New tx kinds **register**

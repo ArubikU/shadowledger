@@ -52,9 +52,10 @@ func (s *State) IsContract(a crypto.Address) bool {
 // (skin-in-the-game / sybil resistance); the bond is returned on unregister and
 // (future) slashed for failed storage proofs or equivocation.
 type Validator struct {
-	Bond   uint64 `json:"bond"`
-	Active bool   `json:"active"`
-	Since  uint64 `json:"since"` // height registered
+	Bond    uint64 `json:"bond"`
+	Active  bool   `json:"active"`
+	Since   uint64 `json:"since"`             // height registered
+	Slashed bool   `json:"slashed,omitempty"` // permanently barred after equivocation
 }
 
 // State is a thread-safe account ledger bound to a head height.
@@ -191,9 +192,41 @@ var (
 	ErrCoinbaseInBody   = errors.New("state: coinbase tx not allowed in block body")
 	ErrBadCoinbase      = errors.New("state: coinbase amount/recipient violates emission schedule")
 	ErrBondTooLow       = errors.New("state: validator bond below minimum")
-	ErrAlreadyValidator = errors.New("state: already a registered validator")
+	ErrAlreadyValidator = errors.New("state: already a registered (or slashed) validator")
 	ErrNotValidator     = errors.New("state: not a registered validator")
+	ErrBadEvidence      = errors.New("state: invalid equivocation evidence")
 )
+
+// applySlash verifies equivocation evidence (two validly-signed conflicting
+// headers by the same validator at the same height) and slashes that
+// validator's bond: a cut rewards the reporter (t.From), the rest is burned, and
+// the validator is permanently barred. Caller holds s.mu and provides snap.
+func (s *State) applySlash(t *types.Transaction, snap func(crypto.Address)) error {
+	var ev types.EquivocationEvidence
+	if err := json.Unmarshal(t.Data, &ev); err != nil {
+		return ErrBadEvidence
+	}
+	// Both headers must be validly signed by the SAME validator, at the SAME
+	// height, but be DIFFERENT blocks — i.e. provable double-signing.
+	if err := ev.A.VerifySig(); err != nil {
+		return ErrBadEvidence
+	}
+	if err := ev.B.VerifySig(); err != nil {
+		return ErrBadEvidence
+	}
+	if ev.A.Validator != ev.B.Validator || ev.A.Height != ev.B.Height || ev.A.ID() == ev.B.ID() {
+		return ErrBadEvidence
+	}
+	v := s.Validators[ev.A.Validator]
+	if v == nil || !v.Active {
+		return ErrNotValidator // nothing to slash
+	}
+	reward := v.Bond / 10 // 10% bounty to the reporter; remainder burned
+	snap(t.From)
+	s.acct(t.From).Balance += reward
+	s.Validators[ev.A.Validator] = &Validator{Bond: 0, Active: false, Since: v.Since, Slashed: true}
+	return nil
+}
 
 // CheckTx validates a single tx against current state without applying it.
 func (s *State) CheckTx(t *types.Transaction) error {
@@ -319,11 +352,16 @@ func (s *State) ApplyBlock(b *types.Block) error {
 				rollback()
 				return ErrBondTooLow
 			}
-			if v := s.Validators[t.From]; v != nil && v.Active {
+			if v := s.Validators[t.From]; v != nil && (v.Active || v.Slashed) {
 				rollback()
-				return ErrAlreadyValidator
+				return ErrAlreadyValidator // active, or permanently slashed
 			}
 			s.Validators[t.From] = &Validator{Bond: t.Amount, Active: true, Since: b.Header.Height}
+		case types.KindSlash:
+			if err := s.applySlash(t, snap); err != nil {
+				rollback()
+				return err
+			}
 		case types.KindUnregister:
 			v := s.Validators[t.From]
 			if v == nil || !v.Active {

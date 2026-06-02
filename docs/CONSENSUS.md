@@ -104,7 +104,9 @@ This is the **permissionless-entry** mechanism. Two things still gate turning it
 1. ✅ Storage challenges + scoreboard (v0.6)
 2. ✅ PoStorage leader election among validators (v0.8)
 3. ✅ On-chain validator registry + storage bond — register/exit txs (v0.9)
-4. Liveness: leader-timeout fallback + fork choice (so an offline validator can't halt the chain)
-5. On-chain storage-proof records → enforceable eligibility + reward/fee share by proof
-6. Slashing for failed proofs / equivocation
+4. ✅ Equivocation slashing — KindSlash burns the bond of a validator that double-signs, 10% bounty
+   to the reporter, permanent bar (v0.10). Local peer banlist for DoS hygiene (v0.10).
+5. Liveness: leader-timeout fallback + fork choice (so an offline validator can't halt the chain)
+6. On-chain storage-proof records → enforceable eligibility + reward/fee share + slashing of failed
+   proofs (storage-failure slashing; equivocation already done)
 7. Finality gadget, hardened P2P, audit, public testnet

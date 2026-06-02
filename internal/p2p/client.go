@@ -11,6 +11,7 @@ import (
 	"net/http"
 
 	"github.com/ArubikU/shadowledger/internal/chain"
+	"github.com/ArubikU/shadowledger/internal/erasure"
 	"github.com/ArubikU/shadowledger/internal/netparams"
 	"github.com/ArubikU/shadowledger/internal/pos"
 	"github.com/ArubikU/shadowledger/internal/rendezvous"
@@ -30,6 +31,9 @@ func (s *Server) FetchShard(blockID types.Hash, index int, set types.ShardSet) (
 	idHex := hex.EncodeToString(blockID[:])
 	var lastErr error
 	for _, h := range holders {
+		if s.bans.Banned(h) {
+			continue
+		}
 		url := s.store.shardURLFor(h)
 		if url == "" {
 			continue
@@ -37,6 +41,12 @@ func (s *Server) FetchShard(blockID types.Hash, index int, set types.ShardSet) (
 		data, err := s.get(fmt.Sprintf("%s/shard/%s/%d", url, idHex, index))
 		if err != nil {
 			lastErr = err
+			continue
+		}
+		// Verify against the committed shard hash; strike holders serving garbage.
+		if !erasure.VerifyShard(set, index, data) {
+			s.bans.Strike(h)
+			lastErr = fmt.Errorf("p2p: holder %s served invalid shard %d", short(h), index)
 			continue
 		}
 		return data, nil
@@ -80,16 +90,22 @@ func (s *Server) postJSON(url string, in, out any) error {
 	return nil
 }
 
-// BroadcastBlock gossips a full block to all known peers' control channels.
+// BroadcastBlock gossips a full block to all known (non-banned) peers.
 func (s *Server) BroadcastBlock(blk *types.Block) {
 	for _, p := range s.store.Peers() {
+		if s.bans.Banned(p.ID) {
+			continue
+		}
 		_ = s.postJSON(p.Control+"/gossip/block", blk, nil)
 	}
 }
 
-// BroadcastTx gossips a tx to all known peers' control channels.
+// BroadcastTx gossips a tx to all known (non-banned) peers.
 func (s *Server) BroadcastTx(tx types.Transaction) {
 	for _, p := range s.store.Peers() {
+		if s.bans.Banned(p.ID) {
+			continue
+		}
 		_ = s.postJSON(p.Control+"/gossip/tx", tx, nil)
 	}
 }
@@ -157,6 +173,9 @@ func (s *Server) Discover() int {
 		targets[url] = true
 	}
 	for _, p := range s.store.Peers() {
+		if s.bans.Banned(p.ID) {
+			continue
+		}
 		targets[p.Control] = true
 	}
 	total := 0
