@@ -112,6 +112,21 @@ func (s *Server) ControlHandler() http.Handler {
 	mux.HandleFunc("GET /state/snapshot", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, s.chain.State())
 	})
+	// Proof-of-Availability: reconstruct the block from pooled shards and check
+	// it against the validator's signed commitment.
+	mux.HandleFunc("GET /verify/{height}", func(w http.ResponseWriter, r *http.Request) {
+		h, err := strconv.ParseUint(r.PathValue("height"), 10, 64)
+		if err != nil {
+			http.Error(w, "bad height", http.StatusBadRequest)
+			return
+		}
+		avail, err := s.chain.VerifyAvailable(h)
+		if err != nil {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		writeJSON(w, map[string]any{"height": h, "available": avail})
+	})
 	mux.HandleFunc("GET /reconstruct/{height}", func(w http.ResponseWriter, r *http.Request) {
 		h, err := strconv.ParseUint(r.PathValue("height"), 10, 64)
 		if err != nil {

@@ -432,6 +432,34 @@ func (c *Chain) Logs(height uint64) []byte {
 	return out
 }
 
+// VerifyAvailable proves a block is DATA-AVAILABLE: it reconstructs the body
+// from pooled shards (local + fetched from peers) and checks the reconstruction
+// against the validator's signed commitments (BodyHash + MerkleRoot). This is
+// the "pool the fragments, reconstruct, compare to the committed hash" check —
+// the building block of availability-weighted fork choice. A block that cannot
+// be reconstructed to its commitment is withheld/corrupt = NOT available.
+func (c *Chain) VerifyAvailable(height uint64) (bool, error) {
+	hdr, set, err := c.store.GetHeader(height)
+	if err != nil {
+		return false, err
+	}
+	body, err := c.reconstructShards(hdr.ID(), set)
+	if err != nil {
+		return false, nil // not enough valid shards in the pool → unavailable
+	}
+	if types.BodyHash(body) != hdr.BodyHash {
+		return false, nil // reconstruction doesn't match the signed commitment
+	}
+	txs, err := types.DecodeTxs(body)
+	if err != nil {
+		return false, nil
+	}
+	if types.MerkleRootOf(txs) != hdr.MerkleRoot {
+		return false, nil
+	}
+	return true, nil
+}
+
 // HeaderAt returns the stored header + shard set at height.
 func (c *Chain) HeaderAt(height uint64) (types.Header, types.ShardSet, error) {
 	return c.store.GetHeader(height)

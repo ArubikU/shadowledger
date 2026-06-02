@@ -196,6 +196,30 @@ func TestRejectMaliciousBlocks(t *testing.T) {
 	}
 }
 
+// TestVerifyAvailable proves the proof-of-availability check: a block whose
+// fragments reconstruct to the committed hash is "available"; a missing one is not.
+func TestVerifyAvailable(t *testing.T) {
+	val, _ := crypto.Generate()
+	c := newTestChain(t, val)
+	if _, err := c.Genesis(map[crypto.Address]uint64{val.Address(): 1_000_000_000}, val.Address(), val); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := c.ProduceBlock(nil, val, 0); err != nil {
+		t.Fatal(err)
+	}
+	// Genesis and the produced block reconstruct to their committed commitments.
+	for _, h := range []uint64{0, 1} {
+		ok, err := c.VerifyAvailable(h)
+		if err != nil || !ok {
+			t.Fatalf("height %d: available=%v err=%v (want available)", h, ok, err)
+		}
+	}
+	// A height that was never produced has no shards → not available.
+	if ok, _ := c.VerifyAvailable(99); ok {
+		t.Fatal("nonexistent height reported available")
+	}
+}
+
 func TestRejectBadNonce(t *testing.T) {
 	val, _ := crypto.Generate()
 	alice, _ := crypto.Generate()

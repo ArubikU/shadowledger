@@ -37,6 +37,8 @@ func main() {
 		block(os.Args[2:])
 	case "reconstruct":
 		reconstruct(os.Args[2:])
+	case "verify":
+		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/verify/" + flagVal(os.Args[2:], "height")))
 	case "supply":
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/supply"))
 	case "peers":
@@ -117,6 +119,7 @@ Passphrase for .tok wallets: --pass or env SL_WALLET_PASS.
   head        --rpc URL
   block       --height N --rpc URL
   reconstruct --height N --rpc URL    (slow-path: rebuild body from shards)
+  verify      --height N --rpc URL    (proof-of-availability: reconstruct + check commitment)
   supply      --rpc URL               ($SHARD minted + next block reward)
   peers       --rpc URL               (this node's known peers)
   storage     --rpc URL               (Proof-of-Storage scoreboard)

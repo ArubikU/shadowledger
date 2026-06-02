@@ -114,6 +114,23 @@ This is the **permissionless-entry** mechanism. Two things still gate turning it
    **Remaining:** true reorg-based fork choice — today it's first-valid-block-per-height-wins (no
    reorg), so a network partition could leave nodes on different tips until manual intervention.
    Heaviest-chain reorg + finality is the next consensus item.
+
+## Fork choice by availability (the design, v0.19 building block)
+
+The intended fork-choice fits ShadowLedger's thesis: the canonical chain is the one whose blocks are
+**data-available** — i.e. reconstructable from the pooled fragments. Mechanism:
+
+- A node never holds all of a block's shards. Holders pool their fragments (served on the shard
+  channel); any node that gathers `K` of `K+M` reconstructs the body and checks it against the
+  validator's **signed commitment** (`BodyHash` + `MerkleRoot`). That is `chain.VerifyAvailable`
+  (v0.19) / `GET /verify/{height}` — *reconstruct from pooled fragments, compare to the committed
+  hash*. (Note: Reed-Solomon is all-or-nothing — fewer than `K` shards recover nothing, so there is
+  no "partial reconstruction"; the pool must collectively hold `K`.)
+- A block that cannot be reconstructed to its commitment is **withheld/unavailable** and is not
+  trusted. Fork choice then prefers the chain with more availability-verified (and storage-proven)
+  blocks — "compare the reconstructions, pick the available one." The full reorg engine
+  (rewind to common ancestor, replay the heavier-available branch) is the remaining work; v0.19
+  ships the per-block availability proof it builds on.
 6. On-chain storage-proof records → enforceable eligibility + reward/fee share + slashing of failed
    proofs (storage-failure slashing; equivocation already done)
 7. Finality gadget, hardened P2P, audit, public testnet

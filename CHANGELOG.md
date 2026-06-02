@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.19.0 — proof-of-availability (reconstruct + verify against commitment)
+
+- **`chain.VerifyAvailable(height)` / `GET /verify/{height}` / `slctl verify`** — reconstructs a
+  block's body from pooled shards (local + fetched) and checks it against the validator's signed
+  `BodyHash` + `MerkleRoot`. A block that can't be reconstructed to its commitment is
+  withheld/corrupt = NOT available. Building block for **availability-weighted fork choice**: the
+  canonical chain is the one whose blocks are reconstructable from the fragment pool.
+- docs/CONSENSUS.md documents the design (incl. the Reed-Solomon all-or-nothing fact: <K shards
+  recover nothing — the pool must collectively hold K; there is no partial reconstruction).
+- Additive — no chain reset. The full reorg engine is the remaining consensus work.
+
 ## v0.18.0 — VM byte layer (full addresses + strings → real ERC-721)
 
 - **Byte-storage layer** in the VM: contracts now have `bkey → []byte` storage beside the uint64
