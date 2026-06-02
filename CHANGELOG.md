@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.14.0 — hybrid log history (Ethereum root + ShadowLedger fragments)
+
+- Logs are no longer stored whole on every node (that contradicted the no-node-stores-everything
+  thesis). New hybrid model:
+  - **Ethereum-style commitment**: a merkle **`LogsRoot`** over the block's logs is added to the
+    header, signed and part of the block id. `ApplyExternalBlock` recomputes it from re-execution and
+    **rejects forged event history** (`ErrBadLogsRoot`).
+  - **ShadowLedger-style storage**: log data is erasure-coded + rendezvous-distributed like block
+    bodies — no node holds all logs. `GET /logs/{height}` reconstructs from K-of-(K+M) log-shards and
+    verifies against `LogsRoot` before returning.
+- `Log` moved to `internal/types` with canonical encoding (`EncodeLogs`/`DecodeLogs`/`LogsRootOf`).
+  Tested end-to-end (`TestLogsHybridRoundTrip`): emit → fragment → reconstruct → integrity-check.
+
 ## v0.13.0 — contract event logs (on-chain history)
 
 - **`LOG` opcode** — contracts emit events (`pop n` + `n` topic words). Events are collected per

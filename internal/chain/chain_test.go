@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/ArubikU/shadowledger/internal/bloom"
@@ -96,6 +97,46 @@ func TestGenesisProduceReconstruct(t *testing.T) {
 	}
 	if !rebuilt[0].IsCoinbase() || rebuilt[1].Hash() != tx.Hash() {
 		t.Fatalf("reconstructed body does not match expected (coinbase + transfer)")
+	}
+}
+
+// TestLogsHybridRoundTrip: a contract emits an event; the logs are erasure-coded
+// + stored as shards (ShadowLedger), committed via header.LogsRoot (Ethereum),
+// then reconstructed and integrity-checked on read.
+func TestLogsHybridRoundTrip(t *testing.T) {
+	val, _ := crypto.Generate()
+	c := newTestChain(t, val)
+	if _, err := c.Genesis(map[crypto.Address]uint64{val.Address(): 1_000_000_000}, val.Address(), val); err != nil {
+		t.Fatal(err)
+	}
+	// Contract: PUSH 99 ; PUSH 1 ; LOG ; STOP  (emits one event, topic=99).
+	code := []byte{0x01, 0, 0, 0, 0, 0, 0, 0, 99, 0x01, 0, 0, 0, 0, 0, 0, 0, 1, 0x72, 0x00}
+	dep := types.Transaction{Kind: types.KindDeploy, Data: code, Nonce: 0}
+	dep.Sign(val)
+	if _, _, err := c.ProduceBlock([]types.Transaction{dep}, val); err != nil {
+		t.Fatalf("deploy block: %v", err)
+	}
+	caddr := types.ContractAddress(val.Address(), 0)
+
+	call := types.Transaction{To: caddr, Kind: types.KindCall, Gas: 100000, Nonce: 1}
+	call.Sign(val)
+	blk, _, err := c.ProduceBlock([]types.Transaction{call}, val)
+	if err != nil {
+		t.Fatalf("call block: %v", err)
+	}
+	h := blk.Header.Height
+
+	// header committed a non-zero logs root...
+	if blk.Header.LogsRoot == (types.Hash{}) {
+		t.Fatal("logs root not committed in header")
+	}
+	// ...and the logs reconstruct from shards + pass the integrity check.
+	var logs []types.Log
+	if err := json.Unmarshal(c.Logs(h), &logs); err != nil {
+		t.Fatalf("logs json: %v", err)
+	}
+	if len(logs) != 1 || len(logs[0].Topics) != 1 || logs[0].Topics[0] != 99 || logs[0].Contract != caddr {
+		t.Fatalf("reconstructed logs wrong: %+v", logs)
 	}
 }
 

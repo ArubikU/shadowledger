@@ -46,37 +46,39 @@ func (s *Store) shardDir(blockID types.Hash) string {
 	return filepath.Join(s.dir, "shards", hex.EncodeToString(blockID[:]))
 }
 
-func (s *Store) logsPath(height uint64) string {
-	return filepath.Join(s.dir, "logs", fmt.Sprintf("%020d.json", height))
+func (s *Store) logsSetPath(height uint64) string {
+	return filepath.Join(s.dir, "logs", fmt.Sprintf("%020d.set", height))
 }
 
-// PutLogs persists a block's event logs (any JSON-serializable value). Skips
-// writing when there are no logs.
-func (s *Store) PutLogs(height uint64, logs any) error {
-	b, err := json.Marshal(logs)
-	if err != nil {
-		return err
-	}
-	if string(b) == "null" || string(b) == "[]" {
-		return nil
-	}
+// PutLogsSet persists the erasure shard-set COMMITMENT for a block's logs (just
+// the hashes/spec — the log DATA lives in rendezvous-distributed shards, not
+// here). Nothing is written when the block emitted no logs.
+func (s *Store) PutLogsSet(height uint64, set types.ShardSet) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if err := os.MkdirAll(filepath.Join(s.dir, "logs"), 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(s.logsPath(height), b, 0o644)
+	b, err := json.Marshal(set)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(s.logsSetPath(height), b, 0o644)
 }
 
-// GetLogs returns the raw JSON logs at a height (or "[]" if none).
-func (s *Store) GetLogs(height uint64) []byte {
+// GetLogsSet loads a block's log shard-set commitment (ok=false if none).
+func (s *Store) GetLogsSet(height uint64) (types.ShardSet, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	b, err := os.ReadFile(s.logsPath(height))
+	b, err := os.ReadFile(s.logsSetPath(height))
 	if err != nil {
-		return []byte("[]")
+		return types.ShardSet{}, false
 	}
-	return b
+	var set types.ShardSet
+	if json.Unmarshal(b, &set) != nil {
+		return types.ShardSet{}, false
+	}
+	return set, true
 }
 
 // PutHeader persists a header + shard set at its height.

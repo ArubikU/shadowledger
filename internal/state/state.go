@@ -58,15 +58,6 @@ type Validator struct {
 	Slashed bool   `json:"slashed,omitempty"` // permanently barred after equivocation
 }
 
-// Log is an event emitted by a contract via the LOG opcode. Logs are part of
-// block history (deterministic, re-derivable by re-executing the block) and let
-// indexers track activity like ERC-721 Transfer events.
-type Log struct {
-	Contract crypto.Address `json:"contract"`
-	Topics   []uint64       `json:"topics"`
-	TxIndex  int            `json:"tx_index"`
-}
-
 // State is a thread-safe account ledger bound to a head height.
 type State struct {
 	mu         sync.RWMutex
@@ -74,14 +65,14 @@ type State struct {
 	Validators map[crypto.Address]*Validator `json:"validators"` // on-chain validator registry
 	Height     uint64                        `json:"height"`     // height of last applied block
 	Minted     uint64                        `json:"minted"`     // total $SHARD emitted (counts toward cap)
-	lastLogs   []Log                         // events from the most recently applied block (transient)
+	lastLogs   []types.Log                   // events from the most recently applied block (transient)
 }
 
 // LastLogs returns the events emitted by the most recently applied block.
-func (s *State) LastLogs() []Log {
+func (s *State) LastLogs() []types.Log {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return append([]Log(nil), s.lastLogs...)
+	return append([]types.Log(nil), s.lastLogs...)
 }
 
 // New returns an empty state.
@@ -293,7 +284,7 @@ func (s *State) ApplyBlock(b *types.Block) error {
 		}
 	}
 	valBackup := s.cloneValidators()
-	var blockLogs []Log
+	var blockLogs []types.Log
 	rollback := func() {
 		for a, ac := range saved {
 			if ac != nil {
@@ -455,7 +446,7 @@ func (s *State) contractByDigest(d uint64) (crypto.Address, bool) {
 // records accounts for block-level rollback. depth bounds recursion.
 //
 // Must be called with s.mu held (ApplyBlock holds it).
-func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, value, gas uint64, snap func(crypto.Address), depth int, logs *[]Log, txIndex int) (ret, used uint64, ok bool) {
+func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, value, gas uint64, snap func(crypto.Address), depth int, logs *[]types.Log, txIndex int) (ret, used uint64, ok bool) {
 	c := s.acct(addr)
 	snap(addr)
 	storage := storageDecode(c.Storage)
@@ -475,7 +466,7 @@ func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, v
 	// Emit this contract's events into the block log (only on success).
 	if logs != nil {
 		for _, ev := range res.Logs {
-			*logs = append(*logs, Log{Contract: addr, Topics: ev, TxIndex: txIndex})
+			*logs = append(*logs, types.Log{Contract: addr, Topics: ev, TxIndex: txIndex})
 		}
 	}
 	return res.Return, res.GasUsed, true
@@ -508,7 +499,7 @@ func (s *State) QueryContract(addr crypto.Address, caller uint64, input []byte, 
 type vmHost struct {
 	s       *State
 	snap    func(crypto.Address)
-	logs    *[]Log
+	logs    *[]types.Log
 	txIndex int
 }
 

@@ -125,11 +125,15 @@ selector + arguments. `RETURN` yields one word.
 reassigns (reverts on unauthorized), `ownerOf` returns the owner. Mint/transfer/access-control all
 work, and `ownerOf` is queryable read-only.
 
-**Events/history: done (v0.13).** The `LOG` opcode emits events recorded in block history; the
-tested NFT emits a `Transfer`-style event on mint. Query them at `GET /logs/{height}` / `slctl logs
---height N`. Logs are deterministic and re-derivable by re-executing the block, so they're real
-history, not a side database. (A `logsRoot` header commitment for light-client proofs is a later
-add.)
+**Events/history: done — hybrid model (v0.13–v0.14).** The `LOG` opcode emits events. The design is
+a deliberate Frankenstein of Ethereum + ShadowLedger:
+- **Ethereum side:** a merkle **`LogsRoot`** over the block's logs is committed in the block header
+  (signed, part of the block id). Tamper-evident — a validator cannot forge event history, and
+  `ApplyExternalBlock` rejects a block whose re-executed logs don't match the committed root.
+- **ShadowLedger side:** the log **data** is erasure-coded into shards and rendezvous-distributed
+  exactly like block bodies — **no node stores the whole log history**. `GET /logs/{height}` /
+  `slctl logs` reconstructs from K-of-(K+M) log-shards and **verifies the result against `LogsRoot`**
+  before returning. Tested end-to-end (`TestLogsHybridRoundTrip`).
 
 **Still not full production ERC-721**, honestly:
 - Owners are stored as a **uint64 digest** of the address, not the full address (VM words are

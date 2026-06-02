@@ -9,6 +9,8 @@
 package chain
 
 import (
+	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"sort"
 	"sync"
@@ -86,6 +88,7 @@ var (
 	ErrBadPrev     = errors.New("chain: prev hash mismatch")
 	ErrBadMerkle   = errors.New("chain: merkle root mismatch")
 	ErrBadBodyHash = errors.New("chain: body hash mismatch")
+	ErrBadLogsRoot = errors.New("chain: logs root mismatch (forged event history)")
 	ErrReconstruct = errors.New("chain: could not reconstruct block body")
 )
 
@@ -210,18 +213,24 @@ func (c *Chain) ProduceBlock(txs []types.Transaction, kp *crypto.KeyPair) (*type
 		TxCount:    uint32(len(full)),
 		Spec:       c.specFor(), // network-decided erasure shape for this block
 		BodyHash:   types.BodyHash(body),
+		Validator:  kp.Address(), // set early so ApplyBlock's coinbase check passes
 	}
-	hdr.Sign(kp)
 	blk.Header = hdr
 
+	// Execute first to learn the logs, then commit their merkle root in the
+	// header (Ethereum-style) before signing.
 	if err := c.state.ApplyBlock(blk); err != nil {
 		return nil, types.ShardSet{}, err
 	}
+	hdr.LogsRoot = types.LogsRootOf(c.state.LastLogs())
+	hdr.Sign(kp)
+	blk.Header = hdr
+
 	set, err := c.persistBlockSet(&hdr, body)
 	if err != nil {
 		return nil, types.ShardSet{}, err
 	}
-	_ = c.store.PutLogs(hdr.Height, c.state.LastLogs())
+	c.persistLogs(&hdr)
 	c.head = hdr
 	return blk, set, nil
 }
@@ -253,16 +262,18 @@ func (c *Chain) ApplyExternalBlock(blk *types.Block) error {
 	if err := c.state.ApplyBlock(blk); err != nil {
 		return err
 	}
+	// Verify the producer's committed logs root matches what re-execution yields
+	// (Ethereum-style integrity: a lying validator can't forge event history).
+	if types.LogsRootOf(c.state.LastLogs()) != hdr.LogsRoot {
+		return ErrBadLogsRoot
+	}
 	if _, err := c.persistBlockSet(hdr, body); err != nil {
 		return err
 	}
-	_ = c.store.PutLogs(hdr.Height, c.state.LastLogs())
+	c.persistLogs(hdr)
 	c.head = *hdr
 	return nil
 }
-
-// Logs returns the raw JSON event logs stored at a height.
-func (c *Chain) Logs(height uint64) []byte { return c.store.GetLogs(height) }
 
 // persistBlock stores the header (computing the shard set) without keeping body.
 func (c *Chain) persistBlock(hdr *types.Header, body []byte) error {
@@ -303,40 +314,29 @@ func (c *Chain) storeAssignedShards(blockID types.Hash, shards [][]byte, set typ
 // Members returns the current rendezvous membership set.
 func (c *Chain) Members() []string { return c.members() }
 
-// ReconstructBody rematerializes a block body at the given height from local
-// shards plus, if needed, shards fetched from peers (the slow path). It returns
-// the decoded transactions.
-func (c *Chain) ReconstructBody(height uint64) ([]types.Transaction, error) {
-	hdr, set, err := c.store.GetHeader(height)
-	if err != nil {
-		return nil, err
-	}
+// reconstructShards rematerializes an erasure-coded payload identified by `id`
+// from local shards plus, if needed, shards fetched from rendezvous holders (the
+// slow path). Works for any sharded payload — block bodies AND logs.
+func (c *Chain) reconstructShards(id types.Hash, set types.ShardSet) ([]byte, error) {
 	total := set.Spec.Total()
 	shards := make([][]byte, total)
 	have := 0
-	blockID := hdr.ID()
-
-	// Local shards first.
-	for _, i := range c.store.HeldShards(blockID) {
+	for _, i := range c.store.HeldShards(id) {
 		if i >= 0 && i < total {
-			if data, err := c.store.GetShard(blockID, i); err == nil && erasure.VerifyShard(set, i, data) {
+			if data, err := c.store.GetShard(id, i); err == nil && erasure.VerifyShard(set, i, data) {
 				shards[i] = data
 				have++
 			}
 		}
 	}
-	// Fetch missing shards until we reach K valid ones.
 	if have < int(set.Spec.K) && c.source != nil {
 		for i := 0; i < total && have < int(set.Spec.K); i++ {
 			if shards[i] != nil {
 				continue
 			}
-			data, ferr := c.source.FetchShard(blockID, i, set)
-			if ferr != nil || data == nil {
-				continue
-			}
-			if !erasure.VerifyShard(set, i, data) {
-				continue // corrupt / lying peer; skip
+			data, ferr := c.source.FetchShard(id, i, set)
+			if ferr != nil || data == nil || !erasure.VerifyShard(set, i, data) {
+				continue // missing / corrupt / lying peer
 			}
 			shards[i] = data
 			have++
@@ -345,11 +345,70 @@ func (c *Chain) ReconstructBody(height uint64) ([]types.Transaction, error) {
 	if have < int(set.Spec.K) {
 		return nil, ErrReconstruct
 	}
-	body, err := erasure.Reconstruct(shards, set.Spec, set.OrigLen)
+	return erasure.Reconstruct(shards, set.Spec, set.OrigLen)
+}
+
+// ReconstructBody rematerializes a block body (its transactions) at a height
+// from K-of-(K+M) scattered shards.
+func (c *Chain) ReconstructBody(height uint64) ([]types.Transaction, error) {
+	hdr, set, err := c.store.GetHeader(height)
+	if err != nil {
+		return nil, err
+	}
+	body, err := c.reconstructShards(hdr.ID(), set)
 	if err != nil {
 		return nil, err
 	}
 	return types.DecodeTxs(body)
+}
+
+// logsID is the erasure-payload id for a block's event logs (distinct from the
+// body id so logs get their own rendezvous-distributed shard set).
+func logsID(blockID types.Hash) types.Hash {
+	return sha256.Sum256(append([]byte("sl-logs:"), blockID[:]...))
+}
+
+// persistLogs erasure-codes a block's event logs and stores this node's
+// rendezvous-assigned log-shards — logs are fragmented exactly like bodies, so
+// no node holds the whole log history; it is reconstructed on demand.
+func (c *Chain) persistLogs(hdr *types.Header) {
+	logs := c.state.LastLogs()
+	if len(logs) == 0 {
+		return
+	}
+	raw := types.EncodeLogs(logs) // canonical bytes (matches LogsRoot)
+	lid := logsID(hdr.ID())
+	shards, set, err := erasure.BuildShardSet(lid, raw, hdr.Spec)
+	if err != nil {
+		return
+	}
+	_ = c.store.PutLogsSet(hdr.Height, set)
+	c.storeAssignedShards(lid, shards, set)
+}
+
+// Logs reconstructs a block's event logs from its rendezvous-distributed
+// log-shards and VERIFIES them against the header's committed LogsRoot before
+// returning JSON, or "[]" if the block emitted none. This is the hybrid: data
+// fragmented like ShadowLedger bodies, integrity anchored like Ethereum.
+func (c *Chain) Logs(height uint64) []byte {
+	set, ok := c.store.GetLogsSet(height)
+	if !ok {
+		return []byte("[]")
+	}
+	hdr, _, err := c.store.GetHeader(height)
+	if err != nil {
+		return []byte("[]")
+	}
+	raw, err := c.reconstructShards(logsID(hdr.ID()), set)
+	if err != nil {
+		return []byte("[]")
+	}
+	logs, err := types.DecodeLogs(raw)
+	if err != nil || types.LogsRootOf(logs) != hdr.LogsRoot {
+		return []byte("[]") // reconstruction failed integrity check
+	}
+	out, _ := json.Marshal(logs)
+	return out
 }
 
 // HeaderAt returns the stored header + shard set at height.

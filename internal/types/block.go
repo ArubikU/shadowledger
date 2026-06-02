@@ -37,6 +37,7 @@ type Header struct {
 	TxCount    uint32         `json:"tx_count"`
 	Spec       ShardSpec      `json:"spec"`
 	BodyHash   Hash           `json:"body_hash"` // SHA-256 of canonical body bytes
+	LogsRoot   Hash           `json:"logs_root"` // merkle root over this block's event logs (Ethereum-style)
 	Sig        []byte         `json:"sig"`       // validator ed25519 over SigningBytes
 	ValPubKey  []byte         `json:"val_pubkey"`
 }
@@ -174,6 +175,7 @@ func (h *Header) SigningBytes() []byte {
 	b.WriteByte(h.Spec.K)
 	b.WriteByte(h.Spec.M)
 	b.Write(h.BodyHash[:])
+	b.Write(h.LogsRoot[:])
 	return b.Bytes()
 }
 
