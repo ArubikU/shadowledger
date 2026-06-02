@@ -1,0 +1,65 @@
+name: Release
+
+# Build cross-platform executables and attach them to the GitHub Release.
+# Triggers on any version tag push (v*), or manually via the Actions tab.
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build and upload assets for'
+        required: true
+
+permissions:
+  contents: write   # needed to upload release assets
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build executables (linux/macos/windows, amd64+arm64)
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.ver.outputs.version }}"
+          mkdir -p dist
+          targets="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64"
+          for t in $targets; do
+            export GOOS="${t%/*}" GOARCH="${t#*/}"
+            ext=""; [ "$GOOS" = "windows" ] && ext=".exe"
+            name="shadowledger-${VERSION}-${GOOS}-${GOARCH}"
+            mkdir -p "build/$name"
+            CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o "build/$name/slnode$ext" ./cmd/slnode
+            CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o "build/$name/slctl$ext"  ./cmd/slctl
+            cp README.md LICENSE CHANGELOG.md "build/$name/"
+            cp -r configs "build/$name/configs"
+            if [ "$GOOS" = "windows" ]; then
+              (cd build && zip -qr "../dist/$name.zip" "$name")
+            else
+              (cd build && tar czf "../dist/$name.tar.gz" "$name")
+            fi
+          done
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+          ls -la dist
+
+      - name: Upload assets to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.version }}
+          files: dist/*
+          fail_on_unmatched_files: true

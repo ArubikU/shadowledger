@@ -62,6 +62,11 @@ docs/        SPEC-CORE-V1.md, ARCHITECTURE.md, GAPS-AND-DESIGN.md
 
 ## Install
 
+**Prebuilt binaries:** grab a `.tar.gz` / `.zip` for your OS+arch from the
+[latest release](https://github.com/ArubikU/shadowledger/releases/latest)
+(linux/macOS/windows, amd64+arm64; each bundles `slnode`, `slctl`, docs and example configs).
+
+**With Go:**
 ```
 go install github.com/ArubikU/shadowledger/cmd/slnode@latest
 go install github.com/ArubikU/shadowledger/cmd/slctl@latest
