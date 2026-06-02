@@ -32,6 +32,8 @@ node computes identical results, which consensus requires.
 | SLOAD SSTORE | 0x50 0x51 | storage read / write |
 | CALLER VALUE BAL | 0x60–0x62 | caller-id, call value, contract balance |
 | CDLOAD | 0x63 | push input word at popped index |
+| SELF | 0x64 | push this contract's id |
+| CALL | 0x71 | pop gasLimit, arg, target → call target contract; push its return (0 on fail) |
 | RETURN | 0x70 | pop → return value, halt |
 
 Stack is uint64 words (max 1024 deep); step limit 1,000,000.
@@ -69,8 +71,25 @@ curl -s http://localhost:4004/state/snapshot | jq '.accounts["sl<contract>"].sto
 # -> {"0": 1}
 ```
 
+## Contract-to-contract calls (v0.5)
+
+A contract can call another with the `CALL` opcode: push `target` (the callee's id — its
+`AddrDigest`), one `arg` word, and a `gasLimit`, then `CALL`. The host resolves the id to a
+contract, runs it with `arg` as a one-word input, and pushes the callee's `RETURN` value (or `0`
+if the target is missing or reverted). Calls forward remaining gas, are depth-limited (8) to bound
+recursion/reentrancy, and carry no value in v0.5. Nested storage changes commit only if the whole
+transaction succeeds (block-level rollback covers them).
+
+```
+PUSH <callee-id>   ; target (AddrDigest of the callee)
+PUSH <arg>         ; one input word
+PUSH <gasLimit>    ; gas to forward
+CALL               ; -> pushes callee return value (0 on failure)
+```
+
 ## Limits / roadmap
 
-v0.4 is intentionally small: no contract-to-contract calls, no dynamic memory/byte arrays, no
-events/logs, uint64-only words, no constructor. Next: richer value types, CALL between contracts,
-event logs, and possibly a WASM backend (`wazero`). See [GAPS-AND-DESIGN.md](GAPS-AND-DESIGN.md).
+Still small: single uint64 arg/return across calls (no byte-array ABI), no value transfer in CALL,
+no dynamic memory, no events/logs, uint64-only words, no constructor. Next: value-bearing calls,
+multi-word calldata/return, event logs, richer types, possibly a WASM backend (`wazero`). See
+[GAPS-AND-DESIGN.md](GAPS-AND-DESIGN.md).

@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.0 — contract-to-contract calls
+
+- **`CALL` opcode** — a contract can invoke another contract: push target id (callee `AddrDigest`),
+  an arg word, and a gas limit. Gas is forwarded from the remaining budget, depth-limited to 8
+  (reentrancy/recursion bound), no value transfer yet. Returns the callee's value or 0 on
+  missing/reverted target.
+- **`SELF` opcode** — push the executing contract's id.
+- Nested contract storage commits are covered by the block's atomic rollback snapshot.
+- New test: contract A calls contract B (counter), B's storage increments per A-call.
+
 ## v0.4.0 — smart contracts
 
 - **Deterministic smart-contract VM** (`internal/vm`): uint64 stack machine, per-contract

@@ -38,6 +38,8 @@ const (
 	VALUE  = 0x61 // push value sent with the call
 	BAL    = 0x62 // push contract balance
 	CDLOAD = 0x63 // pop word-index -> push input[index] (uint64 word, 0 if oob)
+	SELF   = 0x64 // push this contract's id (uint64 digest of its address)
+	CALL   = 0x71 // pop gasLimit, pop arg, pop target -> call target contract; push its return (0 on fail)
 	RETURN = 0x70 // pop -> set return value, halt
 )
 
@@ -53,16 +55,27 @@ var (
 	ErrStepLimit  = errors.New("vm: step limit exceeded")
 )
 
+// CallHost lets a contract invoke another contract. The host resolves the
+// target id to a contract, executes it, and reports its return value and gas
+// used. ok is false if the target is missing or it reverted.
+type CallHost interface {
+	Call(self, target, arg, gasLimit uint64, depth int) (ret uint64, gasUsed uint64, ok bool)
+}
+
 // Context is the execution environment exposed to a contract.
 type Context struct {
-	Caller  uint64 // caller identity (uint64 digest of address)
-	Value   uint64 // value sent with this call
-	Balance uint64 // contract balance
+	Caller  uint64   // caller identity (uint64 digest of address)
+	Self    uint64   // this contract's identity
+	Value   uint64   // value sent with this call
+	Balance uint64   // contract balance
+	Host    CallHost // cross-contract call host (nil disables CALL)
+	Depth   int      // current call depth (reentrancy / recursion bound)
 }
 
 const (
 	maxStack = 1024
 	maxSteps = 1_000_000
+	maxDepth = 8 // contract-to-contract call depth limit
 )
 
 // gas cost per opcode (storage writes are the expensive ones).
@@ -267,6 +280,46 @@ func Execute(code, input []byte, storage map[uint64]uint64, gas uint64, ctx Cont
 				return nil, err
 			}
 			if err := push(word(input, idx)); err != nil {
+				return nil, err
+			}
+		case SELF:
+			if err := push(ctx.Self); err != nil {
+				return nil, err
+			}
+		case CALL:
+			gl, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			arg, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			target, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			// Forward at most the remaining gas; a failed/absent call pushes 0.
+			if ctx.Host == nil || ctx.Depth >= maxDepth {
+				if err := push(0); err != nil {
+					return nil, err
+				}
+				break
+			}
+			forward := gl
+			if rem := gas - used; forward > rem {
+				forward = rem
+			}
+			ret2, gu, ok := ctx.Host.Call(ctx.Self, target, arg, forward, ctx.Depth+1)
+			used += gu
+			if used > gas {
+				return nil, ErrOutOfGas
+			}
+			if ok {
+				if err := push(ret2); err != nil {
+					return nil, err
+				}
+			} else if err := push(0); err != nil {
 				return nil, err
 			}
 		case RETURN:

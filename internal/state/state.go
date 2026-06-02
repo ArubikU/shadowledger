@@ -242,7 +242,10 @@ func (s *State) ApplyBlock(b *types.Block) error {
 			if len(to.Code) == 0 {
 				break // calling a non-contract behaves as a plain transfer
 			}
-			s.runContract(t, to)
+			if _, _, ok := s.execContract(t.To, types.AddrDigest(t.From), t.Data, t.Amount, t.Gas, snap, 0); !ok {
+				to.Balance -= t.Amount             // revert value credit
+				s.acct(t.From).Balance += t.Amount // refund sender (fee still kept)
+			}
 		default: // KindTransfer
 			snap(t.To)
 			s.acct(t.To).Balance += t.Amount
@@ -272,26 +275,86 @@ func (s *State) ApplyBlock(b *types.Block) error {
 	return nil
 }
 
-// runContract executes a contract call against account c (already credited with
-// the call value). On success it commits the contract's storage; on revert (any
-// VM error, incl. out-of-gas) it refunds the call value to the sender and leaves
-// storage untouched — the fee is still consumed.
-func (s *State) runContract(t *types.Transaction, c *Account) {
-	storage := make(map[uint64]uint64, len(c.Storage))
-	for k, v := range c.Storage {
+// storageDecode/Encode convert between the persisted string-keyed map and the
+// uint64-keyed map the VM operates on.
+func storageDecode(m map[string]uint64) map[uint64]uint64 {
+	out := make(map[uint64]uint64, len(m))
+	for k, v := range m {
 		if n, err := strconv.ParseUint(k, 10, 64); err == nil {
-			storage[n] = v
+			out[n] = v
 		}
 	}
-	ctx := vm.Context{Caller: types.AddrDigest(t.From), Value: t.Amount, Balance: c.Balance}
-	if _, err := vm.Execute(c.Code, t.Data, storage, t.Gas, ctx); err != nil {
-		c.Balance -= t.Amount              // undo the value credit
-		s.acct(t.From).Balance += t.Amount // refund sender
-		return
+	return out
+}
+func storageEncode(m map[uint64]uint64) map[string]uint64 {
+	out := make(map[string]uint64, len(m))
+	for k, v := range m {
+		out[strconv.FormatUint(k, 10)] = v
 	}
-	c.Storage = make(map[string]uint64, len(storage))
-	for k, v := range storage {
-		c.Storage[strconv.FormatUint(k, 10)] = v
+	return out
+}
+
+// contractByDigest resolves a VM uint64 contract id back to its address.
+func (s *State) contractByDigest(d uint64) (crypto.Address, bool) {
+	for addr, ac := range s.Accounts {
+		if len(ac.Code) > 0 && types.AddrDigest(addr) == d {
+			return addr, true
+		}
+	}
+	return "", false
+}
+
+// execContract runs the contract at addr with the given caller, input, value
+// and gas. On success it commits the contract's storage and returns its RETURN
+// value; on revert it leaves storage untouched and reports ok=false. The caller
+// (or vm host, for nested calls) is responsible for value transfer/refund. snap
+// records accounts for block-level rollback. depth bounds recursion.
+//
+// Must be called with s.mu held (ApplyBlock holds it).
+func (s *State) execContract(addr crypto.Address, caller uint64, input []byte, value, gas uint64, snap func(crypto.Address), depth int) (ret, used uint64, ok bool) {
+	c := s.acct(addr)
+	snap(addr)
+	storage := storageDecode(c.Storage)
+	ctx := vm.Context{
+		Caller:  caller,
+		Self:    types.AddrDigest(addr),
+		Value:   value,
+		Balance: c.Balance,
+		Host:    &vmHost{s: s, snap: snap},
+		Depth:   depth,
+	}
+	res, err := vm.Execute(c.Code, input, storage, gas, ctx)
+	if err != nil {
+		return 0, gas, false // reverted; storage (a copy in Execute) discarded
+	}
+	c.Storage = storageEncode(storage)
+	return res.Return, res.GasUsed, true
+}
+
+// vmHost implements vm.CallHost so a contract can call another contract.
+type vmHost struct {
+	s    *State
+	snap func(crypto.Address)
+}
+
+// Call resolves target to a contract and executes it (no value transfer in v0.5).
+func (h *vmHost) Call(self, target, arg, gasLimit uint64, depth int) (uint64, uint64, bool) {
+	addr, found := h.s.contractByDigest(target)
+	if !found {
+		return 0, 0, false
+	}
+	ret, used, ok := h.s.execContract(addr, self, u64word(arg), 0, gasLimit, h.snap, depth)
+	if !ok {
+		return 0, gasLimit, false
+	}
+	return ret, used, true
+}
+
+// u64word encodes a single uint64 as an 8-byte calldata input.
+func u64word(v uint64) []byte {
+	return []byte{
+		byte(v >> 56), byte(v >> 48), byte(v >> 40), byte(v >> 32),
+		byte(v >> 24), byte(v >> 16), byte(v >> 8), byte(v),
 	}
 }
 

@@ -67,6 +67,43 @@ func TestDeployAndCallCounter(t *testing.T) {
 	}
 }
 
+func TestContractCallsContract(t *testing.T) {
+	dev, _ := crypto.Generate()
+	val, _ := crypto.Generate()
+	s := New()
+	s.Credit(dev.Address(), 1_000_000)
+
+	// Deploy B (counter) at nonce 0.
+	depB := types.Transaction{Kind: types.KindDeploy, Data: counterCode(), Nonce: 0}
+	depB.Sign(dev)
+	applyOne(t, s, 1, val.Address(), depB)
+	bAddr := types.ContractAddress(dev.Address(), 0)
+	bDigest := types.AddrDigest(bAddr)
+
+	// Deploy A at nonce 1: A calls B (push target, arg, gasLimit; CALL; POP; STOP).
+	var aCode []byte
+	aCode = append(aCode, push(bDigest)...) // target
+	aCode = append(aCode, push(0)...)       // arg
+	aCode = append(aCode, push(50000)...)   // gas to forward
+	aCode = append(aCode, vm.CALL)
+	aCode = append(aCode, vm.POP)
+	aCode = append(aCode, vm.STOP)
+	depA := types.Transaction{Kind: types.KindDeploy, Data: aCode, Nonce: 1}
+	depA.Sign(dev)
+	applyOne(t, s, 2, val.Address(), depA)
+	aAddr := types.ContractAddress(dev.Address(), 1)
+
+	// Call A twice; each invocation makes A call B, incrementing B's counter.
+	for i := uint64(1); i <= 2; i++ {
+		call := types.Transaction{To: aAddr, Kind: types.KindCall, Nonce: i + 1, Gas: 200000}
+		call.Sign(dev)
+		applyOne(t, s, i+2, val.Address(), call)
+		if got := s.Get(bAddr).Storage["0"]; got != i {
+			t.Fatalf("after %d A-calls, B.storage[0]=%d, want %d", i, got, i)
+		}
+	}
+}
+
 func TestCallValueAndRevertRefund(t *testing.T) {
 	dev, _ := crypto.Generate()
 	val, _ := crypto.Generate()
