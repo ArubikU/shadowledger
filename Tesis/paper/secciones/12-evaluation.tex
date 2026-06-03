@@ -178,10 +178,11 @@ set, not a throughput benchmark; large-scale latency/throughput measurement is f
 \emph{Storage-weighted election.} We verify the weighting is effective and deterministic: with two
 validators weighted $65{:}1$ by proven storage, the high-storage validator wins $>90\%$ of $2000$
 elections while the base-weight validator still wins occasionally, matching the virtual-copy model
-of \S\ref{sec:consensus}; every node computes the identical winner from the same chain state. End to
-end, a validator's auto-submitted storage proofs (\S\ref{sec:audit}) are accepted on-chain, raise
-its score, and shift its election share, so block-production rights track proven storage in the
-running system rather than only in design.
+of \S\ref{sec:consensus}; every node computes the identical winner from the same chain state. In
+integration the validator's auto-submitted storage proofs (\S\ref{sec:audit}) are accepted on-chain
+and raise its score, which the weighting then reads, so block-production rights track proven storage
+by construction in the deployed binary; observing this accrual on the public network is gated only
+on rolling the upgrade out to validators, not on any missing mechanism.
 
 \subsection{Functional and security checks}
 \begin{itemize}

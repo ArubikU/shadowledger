@@ -46,7 +46,19 @@ Review crítico del usuario (PC-level). Críticas P1 y fixes aplicados:
 - Calidad experimental 6/10 (un despliegue, sin testbed común, sintético) → ya declarado honestamente; queda como future work (benchmark multi-sistema/geo + churn).
 Paper a 12pp (HRW formal eq, opcode table, reorg fig+ejemplo, param-sensitivity, reproducibility, future-work, org roadmap). 34/34 refs, 0 em-dash, 0 undefined.
 
+## 2026-06-03 (cont.) — Fixes (a)+(b) del review: retítulo + storage-weighted consensus REAL
+- (a) **Retítulo**: "...and Proof-of-Storage Consensus" → "**...and Storage-Weighted Consensus**" (matiza overclaim).
+- (b) **CÓDIGO v0.27.0**: storage-weighted consensus construido + testeado + pusheado a GitHub.
+  - `KindStorageProof` tx (height‖shardBytes); índice DERIVADO = H(addr‖blockID)%T (no cherry-pick).
+  - Verificación on-chain vs ShardHash comprometido (store.GetHeader) — sin body, sin header change, SIN RESET.
+  - `state.StorageWeights` (1+min(score,cap)); `PoStorage.LeaderFor` con copias virtuales (entero determinista) → elección ponderada por storage probado; decae a base si deja de probar.
+  - Loop auto-prueba en node (validador postorage). chainparams StorageWindow=256/MinDepth=4/Cap=64.
+  - Tests: state/storageproof_test (credita/bad/stale/decay) + consensus (65:1→>90%). 17 paquetes verdes.
+- **Paper releído + flipeado** "specified"→"built" en TODOS los puntos (abstract, §1 contrib, §6 election+status, §6b audit, §7 fork, §10 grinding/colusión, §12 result, §13, §15). DISTINCIÓN clave mantenida honesta: elección ponderada=CONSTRUIDA; fork-choice-weight (peso de RAMA) + slashing-de-BOND = aún futuro. 12pp, 0 undefined, 0 em-dash.
+- **VPS deploy v0.27.0 PENDIENTE**: VPS inalcanzable (HTTP+SSH timeout, blip transitorio recurrente). §12 redactado para NO afirmar observación en vivo (solo integración + "gated on rollout"). Reintentar deploy cuando VPS vuelva → entonces observar storage_score>0 en /validators.
+
 ### Pendiente
+- [ ] **Desplegar v0.27.0 a VPS** cuando vuelva (SSH) + verificar storage proof aceptado on-chain (storage_score sube en /validators) → cierra el end-to-end live.
 - [ ] (opcional) Retitular si se quiere matizar más el overclaim (hoy resuelto vía honestidad en cuerpo, sin retítulo).
 - [ ] Subir a Accept: implementar storage-proof records on-chain (→ weighting + slashing reales) + testbed distribuido (50-100 nodos geo, churn). Eso cierra los 2 gaps que bajan de Q1.
 - [ ] Crecer a 11-13pp cómodo (no solo 10) si se quiere margen.
