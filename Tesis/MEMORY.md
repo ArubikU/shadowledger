@@ -55,10 +55,9 @@ Paper a 12pp (HRW formal eq, opcode table, reorg fig+ejemplo, param-sensitivity,
   - Loop auto-prueba en node (validador postorage). chainparams StorageWindow=256/MinDepth=4/Cap=64.
   - Tests: state/storageproof_test (credita/bad/stale/decay) + consensus (65:1→>90%). 17 paquetes verdes.
 - **Paper releído + flipeado** "specified"→"built" en TODOS los puntos (abstract, §1 contrib, §6 election+status, §6b audit, §7 fork, §10 grinding/colusión, §12 result, §13, §15). DISTINCIÓN clave mantenida honesta: elección ponderada=CONSTRUIDA; fork-choice-weight (peso de RAMA) + slashing-de-BOND = aún futuro. 12pp, 0 undefined, 0 em-dash.
-- **VPS deploy v0.27.0 PENDIENTE**: VPS inalcanzable (HTTP+SSH timeout, blip transitorio recurrente). §12 redactado para NO afirmar observación en vivo (solo integración + "gated on rollout"). Reintentar deploy cuando VPS vuelva → entonces observar storage_score>0 en /validators.
+- **VPS v0.27.0 DESPLEGADO + VERIFICADO LIVE (2026-06-03):** VPS volvió (uptime 1d8h), subida a v0.27.0, height ~11973. Validador auto-submite storage proofs cada 30s: logs "storage proof: block=11973 shard=0/3 submitted" + 11979 shard=1/3; `/validators` muestra `storage_score:2, last_proof_at:11985` → proofs ACEPTADOS ON-CHAIN, score subiendo, weighting los lee. END-TO-END en mainnet real confirmado. §12 actualizado a observación en vivo (honesto, ya no "gated on rollout").
 
 ### Pendiente
-- [ ] **Desplegar v0.27.0 a VPS** cuando vuelva (SSH) + verificar storage proof aceptado on-chain (storage_score sube en /validators) → cierra el end-to-end live.
 - [ ] (opcional) Retitular si se quiere matizar más el overclaim (hoy resuelto vía honestidad en cuerpo, sin retítulo).
 - [ ] Subir a Accept: implementar storage-proof records on-chain (→ weighting + slashing reales) + testbed distribuido (50-100 nodos geo, churn). Eso cierra los 2 gaps que bajan de Q1.
 - [ ] Crecer a 11-13pp cómodo (no solo 10) si se quiere margen.

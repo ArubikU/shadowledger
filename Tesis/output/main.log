@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1 Portable) (preloaded format=pdflatex 2026.5.19)  3 JUN 2026 17:57
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1 Portable) (preloaded format=pdflatex 2026.5.19)  3 JUN 2026 18:01
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1906,11 +1906,7 @@ de=log unsupported (yet).
 
 Class acmart Warning: A possible image without description on input line 71.
 
-[9.9]) (secciones/13-discussion.tex
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [10.10])
-(secciones/14-rationale.tex
+[9.9]) (secciones/13-discussion.tex [10.10]) (secciones/14-rationale.tex
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 )
@@ -2005,8 +2001,8 @@ rs/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/public/newtx/txmia
 X.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/publi
 c/newtx/txsym.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts
 /type1/public/newtx/txsys.pfb>
-Output written on D:\Github\ShadowLedger\Tesis\output\main.pdf (12 pages, 70520
-6 bytes).
+Output written on D:\Github\ShadowLedger\Tesis\output\main.pdf (12 pages, 70524
+8 bytes).
 PDF statistics:
  600 PDF objects out of 1000 (max. 8388607)
  119 named destinations out of 1000 (max. 500000)
