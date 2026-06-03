@@ -58,7 +58,16 @@ itself defeat an adversary who registers many identities behind one back end (th
 raises but does not eliminate that cost). Two defenses are partial today and strengthen with the
 specified work: replication $r$ and parity $M$ raise the number of distinct holders that must
 collude, and the storage-weighted election (built) plus future bond slashing for missed proofs make
-holding-but-withholding economically self-defeating. We state this as a real limitation, not a solved problem.
+holding-but-withholding economically self-defeating. A concrete hardening, which the HRW layer
+admits without protocol change, is \emph{anti-affinity placement}: rank holders not over raw node
+identities but over (operator-or-ASN, identity) pairs declared at registration, so the top-$r$
+holders of a shard fall in distinct failure domains by construction; an operator controlling a
+fraction $\phi$ of declared domains then holds at most $\lceil r\phi\rceil$ of any shard's copies,
+and tolerating a fully-correlated domain of that size needs only $r>1/(1-\phi)$ rather than trusting
+independence. This shifts the assumption from ``failures are independent'' to ``no single domain
+exceeds $\phi$,'' which is auditable. We implement identity-based HRW today and flag domain-aware
+placement as the concrete next mitigation, stating the correlation risk as a real limitation rather
+than a solved problem.
 
 \textbf{Sybil and long-range attacks.} Mass identities cost bond + registration PoW per
 identity. Rewriting finalized history is impossible by construction (\S\ref{sec:fork}); a

@@ -99,11 +99,11 @@
 \newlabel{fig:reorg}{{3}{6}{Reorg above the finality floor. Branch $B$ (heavier, height $103$) wins over branch $A$; nodes rewind to the common parent $100$ and replay $B$. Blocks at or below the floor (height $84$, shaded) are final and cannot be reorganized}{figure.caption.12}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {9}Economics and Capital-Free Onboarding}{6}{section.9}\protected@file@percent }
 \newlabel{sec:econ}{{9}{6}{Economics and Capital-Free Onboarding}{section.9}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {10}Deterministic Smart Contracts}{6}{section.10}\protected@file@percent }
-\newlabel{sec:vm}{{10}{6}{Deterministic Smart Contracts}{section.10}{}}
 \citation{hallandersen2025foundations}
 \@writefile{loa}{\contentsline {algocf}{\numberline {3}{\ignorespaces Faucet claim verification (\textsc  {Lz}: leading-zero-bit count).}}{7}{algocf.3}\protected@file@percent }
 \newlabel{alg:faucet}{{3}{7}{Economics and Capital-Free Onboarding}{algocf.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {10}Deterministic Smart Contracts}{7}{section.10}\protected@file@percent }
+\newlabel{sec:vm}{{10}{7}{Deterministic Smart Contracts}{section.10}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces VM opcode classes (representative, not exhaustive).}}{7}{table.caption.14}\protected@file@percent }
 \newlabel{tab:opcodes}{{3}{7}{VM opcode classes (representative, not exhaustive)}{table.caption.14}{}}
 \newlabel{lst:shl}{{1}{7}{A safe ERC-20-style transfer in SHL}{lstlisting.1}{}}
@@ -114,43 +114,41 @@
 \newlabel{tab:avail}{{4}{8}{Recoverability at K16\,M8, $r{=}3$, $T{=}24$. Shard loss $f^3$; block lost iff $>M$ shards lost}{table.caption.15}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Threat model summary. \text  {$\mathsurround \z@ \mathchar "7D8$}\,= mitigated in the prototype; $\circ $\,= partial.}}{8}{table.caption.16}\protected@file@percent }
 \newlabel{tab:threat}{{5}{8}{Threat model summary. \checkmark \,= mitigated in the prototype; $\circ $\,= partial}{table.caption.16}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Principal implementation modules and responsibilities.}}{8}{table.caption.17}\protected@file@percent }
-\newlabel{tab:modules}{{6}{8}{Principal implementation modules and responsibilities}{table.caption.17}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {12}Implementation}{8}{section.12}\protected@file@percent }
 \newlabel{sec:impl}{{12}{8}{Implementation}{section.12}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Principal implementation modules and responsibilities.}}{9}{table.caption.17}\protected@file@percent }
+\newlabel{tab:modules}{{6}{9}{Principal implementation modules and responsibilities}{table.caption.17}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {13}Evaluation}{9}{section.13}\protected@file@percent }
 \newlabel{sec:eval}{{13}{9}{Evaluation}{section.13}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {13.1}Storage scarcity}{9}{subsection.13.1}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Per-node history storage vs.\ full replication (1\,MiB blocks; rendezvous placement averaged over 2000 blocks). ``max'' shards/node stayed within $3\%$ of the mean, confirming HRW balance.}}{9}{table.caption.18}\protected@file@percent }
 \newlabel{tab:storage}{{7}{9}{Per-node history storage vs.\ full replication (1\,MiB blocks; rendezvous placement averaged over 2000 blocks). ``max'' shards/node stayed within $3\%$ of the mean, confirming HRW balance}{table.caption.18}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Per-node history-storage reduction vs.\ full replication. Measured rendezvous placement tracks the analytical $\rho =Kn/(Tr)$ once the erasure shape saturates ($n\gtrsim 32$).}}{9}{figure.caption.19}\protected@file@percent }
-\newlabel{fig:storagecurve}{{4}{9}{Per-node history-storage reduction vs.\ full replication. Measured rendezvous placement tracks the analytical $\rho =Kn/(Tr)$ once the erasure shape saturates ($n\gtrsim 32$)}{figure.caption.19}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {13.1}Storage scarcity}{9}{subsection.13.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {13.2}Comparison with replication baselines}{9}{subsection.13.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {13.3}Coding cost and recoverability}{9}{subsection.13.3}\protected@file@percent }
 \citation{kadhe2019sef,perard2018erasure}
-\citation{bunz2020flyclient}
-\citation{hallandersen2025foundations}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Per-node history-storage reduction vs.\ full replication. Measured rendezvous placement tracks the analytical $\rho =Kn/(Tr)$ once the erasure shape saturates ($n\gtrsim 32$).}}{10}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:storagecurve}{{4}{10}{Per-node history-storage reduction vs.\ full replication. Measured rendezvous placement tracks the analytical $\rho =Kn/(Tr)$ once the erasure shape saturates ($n\gtrsim 32$)}{figure.caption.19}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Storage vs.\ durability at $n{=}128$, $1$\,MiB blocks, $f{=}0.3$ node unavailability.}}{10}{table.caption.20}\protected@file@percent }
 \newlabel{tab:baseline}{{8}{10}{Storage vs.\ durability at $n{=}128$, $1$\,MiB blocks, $f{=}0.3$ node unavailability}{table.caption.20}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Faucet Proof-of-Work cost by difficulty $N$ (leading zero bits).}}{10}{table.caption.21}\protected@file@percent }
 \newlabel{tab:pow}{{9}{10}{Faucet Proof-of-Work cost by difficulty $N$ (leading zero bits)}{table.caption.21}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {13.3}Coding cost and recoverability}{10}{subsection.13.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {13.4}Onboarding cost}{10}{subsection.13.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {13.5}Parameter sensitivity}{10}{subsection.13.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {13.6}Cost of reconstruction (the tradeoff)}{10}{subsection.13.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {13.7}Consensus behaviour}{10}{subsection.13.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {13.8}Functional and security checks}{10}{subsection.13.8}\protected@file@percent }
+\citation{bunz2020flyclient}
+\citation{hallandersen2025foundations}
 \citation{kokoriskogias2018omniledger}
 \citation{zamani2018rapidchain}
 \citation{thaler1998rendezvous,karger1997consistent}
 \citation{luu2016elastico}
 \citation{buterin2017casper}
 \citation{garay2015backbone}
+\@writefile{toc}{\contentsline {subsection}{\numberline {13.8}Functional and security checks}{11}{subsection.13.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {14}Discussion and Limitations}{11}{section.14}\protected@file@percent }
 \newlabel{sec:disc}{{14}{11}{Discussion and Limitations}{section.14}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {15}Design Rationale}{11}{section.15}\protected@file@percent }
 \newlabel{sec:rationale}{{15}{11}{Design Rationale}{section.15}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {16}Conclusion}{11}{section.16}\protected@file@percent }
-\newlabel{sec:concl}{{16}{11}{Conclusion}{section.16}{}}
 \bibstyle{ACM-Reference-Format}
 \bibdata{references}
 \bibcite{albassam2019lazyledger}{{1}{2019}{{Al-Bassam}}{{}}}
@@ -186,6 +184,9 @@
 \bibcite{wilkinson2016storj}{{31}{2016}{{Wilkinson et~al\mbox  {.}}}{{}}}
 \bibcite{yang2024scaling}{{32}{2024}{{Yang et~al\mbox  {.}}}{{}}}
 \bibcite{yu2020coded}{{33}{2020}{{Yu et~al\mbox  {.}}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {16}Conclusion}{12}{section.16}\protected@file@percent }
+\newlabel{sec:concl}{{16}{12}{Conclusion}{section.16}{}}
+\@writefile{toc}{\contentsline {section}{References}{12}{section*.23}\protected@file@percent }
 \bibcite{zamani2018rapidchain}{{34}{2018}{{Zamani et~al\mbox  {.}}}{{}}}
 \newlabel{tocindent-1}{0pt}
 \newlabel{tocindent0}{0pt}
@@ -194,6 +195,5 @@
 \newlabel{tocindent3}{0pt}
 \newlabel{tocindent4}{0pt}
 \newlabel{tocindent5}{0pt}
-\@writefile{toc}{\contentsline {section}{References}{12}{section*.23}\protected@file@percent }
-\newlabel{TotPages}{{12}{12}{}{page.12}{}}
-\gdef \@abspage@last{12}
+\newlabel{TotPages}{{13}{13}{}{page.13}{}}
+\gdef \@abspage@last{13}

@@ -2,9 +2,16 @@
 \label{sec:fork}
 \textbf{Fork choice.} Nodes maintain a block tree and follow the heaviest branch, after
 GHOST~\cite{sompolinsky2015ghost}; ties break by lowest block id for determinism. Today
-``weight'' is chain length. Note the distinction from \emph{leader election}, which \emph{is}
-storage-weighted (\S\ref{sec:consensus}): here the branch-selection weight remains chain length, and
-extending storage weighting to fork choice is future work (\S\ref{sec:disc}).
+``weight'' is chain length. We deliberately keep this distinct from \emph{leader election}, which
+\emph{is} storage-weighted (\S\ref{sec:consensus}). Extending storage weight to branch selection is
+not a free relabelling: a branch's weight must be computed identically by every node for any
+competing branch, yet a producer's storage score is \emph{branch-dependent state} (it depends on
+which proofs that branch accepted). Making fork choice storage-weighted therefore requires either
+committing each producer's score in the (signed) header or recomputing weights by replaying each
+branch, and a naive local-state reading would let nodes disagree on the heaviest branch, a
+consensus-safety hazard. We treat this as future work rather than risk that on a live network; the
+leader-election weighting, whose inputs are the post-parent state both producer and verifier already
+share, has no such hazard.
 
 \textbf{Reorg engine.} On observing a heavier branch, a node rewinds state to a \emph{replay
 base} and replays the winning branch onto a fresh copy, committing only if the whole branch
