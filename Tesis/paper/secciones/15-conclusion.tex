@@ -1,0 +1,27 @@
+\section{Conclusion}
+\label{sec:concl}
+ShadowLedger reframes the scarce resource of a blockchain from computation to storage. With a
+running prototype we show that a chain can fragment its \emph{history} across the
+network, so no node stores it all, while keeping \emph{state} local for fast validation,
+earning block-production rights by storage-weighted election instead of PoW, and remaining
+permissionless through bonded registration and a PoW faucet. An analytical model and measurements
+show per-node history cost falling as $O(1/n)$ ($\approx 28\times$ at $128$ nodes) at a fixed
+$1.5\times$ coding overhead, alongside tamper rejection, partition reconvergence, hard finality,
+storage-weighted leader election verified against on-chain proofs, and capital-free onboarding on
+the live network. The remaining work, extending storage weight to fork choice, bond slashing for
+missed proofs, succinct state commitments, data-availability sampling, and external audit, is well
+scoped, and we believe the state-versus-history separation is a reusable principle for
+storage-scarce ledgers.
+
+\textbf{Future work.} Four steps would move the prototype toward a system trustworthy for real
+value. First, completing the storage coupling: \emph{storage-weighted fork choice} (the running
+system weights leader election by proven storage but not yet branch selection) and \emph{bond
+slashing} for missed proofs (today the penalty is election-weight decay), recorded against the
+same on-chain storage proofs already in use (\S\ref{sec:audit}). Second, \emph{succinct
+state commitments}: adding a state (or verkle) root to the header so light clients verify balances
+with a short proof instead of trusting a snapshot. Third, \emph{data-availability sampling} layered
+on the committed shards, upgrading the operational reconstruction check into a probabilistic
+guarantee for non-storing clients. Fourth, a \emph{controlled multi-system benchmark} on shared
+infrastructure and an \emph{external security audit} before the network carries value. Each is
+well scoped, and none requires revisiting the core thesis; together they would raise the design
+from a demonstrated prototype to a deployable storage-scarce ledger.

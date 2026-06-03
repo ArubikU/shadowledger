@@ -1,0 +1,43 @@
+\section{Storage Auditing}
+\label{sec:audit}
+Proof-of-Storage is only as strong as the network's ability to \emph{check} that a node holds
+what it claims. ShadowLedger runs a lightweight challenge--response audit, in the lineage of
+proofs of retrievability~\cite{juels2007pors} and replication~\cite{fisch2018scaling} but
+specialized to committed shards.
+
+\textbf{Challenge--response.} Periodically, a node challenges a holder for one of its assigned
+shards $(\textit{blockID},s)$ with a fresh random nonce $c$. The holder replies with
+$\sigma=H(\textit{shard}\,\|\,c)$. Because the header commits the shard's hash, a challenger can
+detect a holder that does not actually possess the bytes: a holder without the shard cannot
+produce a $\sigma$ consistent with the committed shard (it would have to invert $H$), and a
+holder that serves a \emph{wrong} shard is caught when any reconstructing node compares the
+committed hash. The nonce prevents replaying a previously observed response, so the holder must
+have the shard \emph{now}, not merely once.
+
+\textbf{Scoreboard.} Each node keeps a local scoreboard of pass/miss outcomes per peer. A peer
+that repeatedly fails challenges, or serves shards inconsistent with their commitment, is
+down-scored and, for outright forgery, struck from the local peer set. The scoreboard is a fast local
+hygiene signal; the consensus-binding counterpart is the on-chain storage score described next,
+which \S\ref{sec:consensus} reads so a validator that proves it stores more of its assigned shards
+wins more rounds.
+
+\textbf{On-chain storage-proof records.} The audit is made consensus-visible by a storage-proof
+transaction. A validator periodically proves it can produce a \emph{protocol-assigned} shard of a
+recent confirmed block: the target block lies within a recency window and at least a few blocks
+deep, and the shard \emph{index} is derived deterministically as $H(\textit{addr}\,\|\,
+\textit{blockID})\bmod T$, so the validator cannot cherry-pick one easy shard but must answer for
+the slot the protocol assigns it (it serves the shard locally if it holds it, or reconstructs it
+from $K$ peers). Every node verifies the submitted bytes against the committed shard hash for that
+slot, taken from the persisted header and shard set, so verification needs neither the full body
+nor any new header field. An accepted proof increments the validator's on-chain
+\emph{storage score} (capped), which \S\ref{sec:consensus} reads to weight leader election; the
+score decays to the base if the validator stops proving within the window.
+
+\textbf{Status and honest scope.} What this buys, in the running binary, is storage-\emph{coupled}
+election: block-production odds rise with accepted proofs and fall when proofs lapse, a real
+economic pressure to store and serve assigned data. What it does \emph{not} yet do is burn a
+validator's \emph{bond} for missed proofs (the penalty is weight decay, softer than a slash) or
+weight \emph{fork choice} by storage (branch weight is still chain length, \S\ref{sec:fork}). The
+local scoreboard remains as a fast peer-hygiene tool alongside the on-chain record. We separate
+these precisely (\S\ref{sec:consensus}, \S\ref{sec:disc}) rather than let the term
+``proof-of-storage'' imply more than is enforced.

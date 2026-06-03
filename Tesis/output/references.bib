@@ -1,0 +1,212 @@
+%% ShadowLedger — verified references (DOI/arXiv confirmed via Crossref / Semantic Scholar).
+%% Verify author given-names + page ranges against publisher PDFs before camera-ready.
+
+%% --- Erasure coding, coded blockchains, data availability ---
+@article{reed1960polynomial,
+  author = {Reed, Irving S. and Solomon, Gustave},
+  title = {Polynomial Codes Over Certain Finite Fields},
+  journal = {Journal of the Society for Industrial and Applied Mathematics},
+  volume = {8}, number = {2}, pages = {300--304}, year = {1960},
+  doi = {10.1137/0108018}
+}
+@inproceedings{perard2018erasure,
+  author = {Perard, Doriane and Lacan, J{\'e}r{\^o}me and Bachy, Yann and Detchart, Jonathan},
+  title = {Erasure Code-Based Low Storage Blockchain Node},
+  booktitle = {2018 IEEE Int. Conf. on Internet of Things (iThings) / GreenCom / CPSCom / SmartData},
+  pages = {1622--1627}, year = {2018}, publisher = {IEEE},
+  doi = {10.1109/Cybermatics_2018.2018.00271}
+}
+@misc{kadhe2019sef,
+  author = {Kadhe, Swanand and Chung, Jichan and Ramchandran, Kannan},
+  title = {{SeF}: A Secure Fountain Architecture for Slashing Storage Costs in Blockchains},
+  year = {2019}, eprint = {1906.12140}, archivePrefix = {arXiv}, primaryClass = {cs.IT}
+}
+@inproceedings{yu2020coded,
+  author = {Yu, Mingchao and Sahraei, Saeid and Li, Songze and Avestimehr, Salman and Kannan, Sreeram and Viswanath, Pramod},
+  title = {Coded Merkle Tree: Solving Data Availability Attacks in Blockchains},
+  booktitle = {Financial Cryptography and Data Security (FC 2020)}, series = {LNCS},
+  volume = {12059}, pages = {114--134}, year = {2020}, publisher = {Springer},
+  doi = {10.1007/978-3-030-51280-4_8}
+}
+@inproceedings{albassam2021fraud,
+  author = {Al-Bassam, Mustafa and Sonnino, Alberto and Buterin, Vitalik and Khoffi, Ismail},
+  title = {Fraud and Data Availability Proofs: Detecting Invalid Blocks in Light Clients},
+  booktitle = {Financial Cryptography and Data Security (FC 2021)}, series = {LNCS},
+  volume = {12675}, pages = {279--298}, year = {2021}, publisher = {Springer},
+  doi = {10.1007/978-3-662-64331-0_15}
+}
+@misc{albassam2019lazyledger,
+  author = {Al-Bassam, Mustafa},
+  title = {LazyLedger: A Distributed Data Availability Ledger With Client-Side Smart Contracts},
+  year = {2019}, eprint = {1905.09274}, archivePrefix = {arXiv}, primaryClass = {cs.CR}
+}
+@article{hallandersen2025foundations,
+  author = {Hall-Andersen, Mathias and Simkin, Mark and Wagner, Benedikt},
+  title = {Foundations of Data Availability Sampling},
+  journal = {IACR Communications in Cryptology}, volume = {1}, number = {4}, year = {2025},
+  doi = {10.62056/a09qudhdj}
+}
+@inproceedings{hallandersen2024frida,
+  author = {Hall-Andersen, Mathias and Simkin, Mark and Wagner, Benedikt},
+  title = {{FRIDA}: Data Availability Sampling from {FRI}},
+  booktitle = {Advances in Cryptology -- CRYPTO 2024}, series = {LNCS}, volume = {14929},
+  year = {2024}, publisher = {Springer}, doi = {10.1007/978-3-031-68391-6_9}
+}
+@article{huang2022downsampling,
+  author = {Huang, Tao and Quan, Yu and Zhang, Xianwei},
+  title = {Downsampling and Transparent Coding for Blockchain},
+  journal = {IEEE Transactions on Network Science and Engineering}, volume = {9}, number = {4},
+  year = {2022}, doi = {10.1109/TNSE.2022.3155385}
+}
+@inproceedings{mitra2019patterned,
+  author = {Mitra, Debarnab and Dolecek, Lara},
+  title = {Patterned Erasure Correcting Codes for Low Storage-Overhead Blockchain Systems},
+  booktitle = {2019 53rd Asilomar Conference on Signals, Systems, and Computers},
+  pages = {1734--1738}, year = {2019}, publisher = {IEEE},
+  doi = {10.1109/IEEECONF44664.2019.9048887}
+}
+@article{yang2024scaling,
+  author = {Yang, Changlin and Chin, Kwan-Wu and Wang, Jiguang and Wang, Xu and Liu, Ying and Zheng, Zibin},
+  title = {Scaling Blockchains with Error Correction Codes: A Survey on Coded Blockchains},
+  journal = {ACM Computing Surveys}, volume = {56}, number = {6}, year = {2024},
+  doi = {10.1145/3637224}
+}
+
+%% --- Placement, sharding, fork choice, finality, light clients ---
+@article{thaler1998rendezvous,
+  author = {Thaler, David G. and Ravishankar, Chinya V.},
+  title = {Using Name-Based Mappings to Increase Hit Rates},
+  journal = {IEEE/ACM Transactions on Networking}, volume = {6}, number = {1}, pages = {1--14},
+  year = {1998}, doi = {10.1109/90.663936}
+}
+@inproceedings{karger1997consistent,
+  author = {Karger, David and Lehman, Eric and Leighton, Tom and Panigrahy, Rina and Levine, Matthew and Lewin, Daniel},
+  title = {Consistent Hashing and Random Trees: Distributed Caching Protocols for Relieving Hot Spots on the World Wide Web},
+  booktitle = {Proc. 29th Annual ACM Symposium on Theory of Computing (STOC '97)},
+  pages = {654--663}, year = {1997}, publisher = {ACM}, doi = {10.1145/258533.258660}
+}
+@inproceedings{luu2016elastico,
+  author = {Luu, Loi and Narayanan, Viswesh and Zheng, Chaodong and Baweja, Kunal and Gilbert, Seth and Saxena, Prateek},
+  title = {A Secure Sharding Protocol for Open Blockchains},
+  booktitle = {Proc. 2016 ACM SIGSAC Conf. on Computer and Communications Security (CCS '16)},
+  pages = {17--30}, year = {2016}, publisher = {ACM}, doi = {10.1145/2976749.2978389}
+}
+@inproceedings{kokoriskogias2018omniledger,
+  author = {Kokoris-Kogias, Eleftherios and Jovanovic, Philipp and Gasser, Linus and Gailly, Nicolas and Syta, Ewa and Ford, Bryan},
+  title = {{OmniLedger}: A Secure, Scale-Out, Decentralized Ledger via Sharding},
+  booktitle = {2018 IEEE Symposium on Security and Privacy (SP)}, pages = {583--598},
+  year = {2018}, publisher = {IEEE}, doi = {10.1109/SP.2018.000-5}
+}
+@inproceedings{zamani2018rapidchain,
+  author = {Zamani, Mahdi and Movahedi, Mahnush and Raykova, Mariana},
+  title = {{RapidChain}: Scaling Blockchain via Full Sharding},
+  booktitle = {Proc. 2018 ACM SIGSAC Conf. on Computer and Communications Security (CCS '18)},
+  pages = {931--948}, year = {2018}, publisher = {ACM}, doi = {10.1145/3243734.3243853}
+}
+@inproceedings{wang2019monoxide,
+  author = {Wang, Jiaping and Wang, Hao},
+  title = {{Monoxide}: Scale Out Blockchains with Asynchronous Consensus Zones},
+  booktitle = {16th USENIX Symp. on Networked Systems Design and Implementation (NSDI '19)},
+  pages = {95--112}, year = {2019}, publisher = {USENIX Association},
+  url = {https://www.usenix.org/conference/nsdi19/presentation/wang-jiaping}
+}
+@inproceedings{sompolinsky2015ghost,
+  author = {Sompolinsky, Yonatan and Zohar, Aviv},
+  title = {Secure High-Rate Transaction Processing in Bitcoin},
+  booktitle = {Financial Cryptography and Data Security (FC 2015)}, series = {LNCS},
+  volume = {8975}, pages = {507--527}, year = {2015}, publisher = {Springer},
+  doi = {10.1007/978-3-662-47854-7_32}
+}
+@misc{buterin2017casper,
+  author = {Buterin, Vitalik and Griffith, Virgil},
+  title = {Casper the Friendly Finality Gadget},
+  year = {2017}, eprint = {1710.09437}, archivePrefix = {arXiv}, primaryClass = {cs.CR}
+}
+@inproceedings{garay2015backbone,
+  author = {Garay, Juan and Kiayias, Aggelos and Leonardos, Nikos},
+  title = {The Bitcoin Backbone Protocol: Analysis and Applications},
+  booktitle = {Advances in Cryptology -- EUROCRYPT 2015}, series = {LNCS}, volume = {9057},
+  pages = {281--310}, year = {2015}, publisher = {Springer}, doi = {10.1007/978-3-662-46803-6_10}
+}
+@inproceedings{bunz2020flyclient,
+  author = {B{\"u}nz, Benedikt and Kiffer, Lucianna and Luu, Loi and Zamani, Mahdi},
+  title = {{FlyClient}: Super-Light Clients for Cryptocurrencies},
+  booktitle = {2020 IEEE Symposium on Security and Privacy (SP)}, pages = {928--946},
+  year = {2020}, publisher = {IEEE}, doi = {10.1109/SP40000.2020.00049}
+}
+@misc{nakamoto2008bitcoin,
+  author = {Nakamoto, Satoshi},
+  title = {Bitcoin: A Peer-to-Peer Electronic Cash System},
+  year = {2008}, note = {Whitepaper}, url = {https://bitcoin.org/bitcoin.pdf}
+}
+@inproceedings{merkle1988digsig,
+  author = {Merkle, Ralph C.},
+  title = {A Digital Signature Based on a Conventional Encryption Function},
+  booktitle = {Advances in Cryptology --- CRYPTO '87}, series = {LNCS}, volume = {293},
+  pages = {369--378}, year = {1988}, publisher = {Springer}, doi = {10.1007/3-540-48184-2_32}
+}
+
+%% --- Proof-of-Storage / Space / Replication, PoS bonded validators, slashing ---
+@inproceedings{dziembowski2015proofs,
+  author = {Dziembowski, Stefan and Faust, Sebastian and Kolmogorov, Vladimir and Pietrzak, Krzysztof},
+  title = {Proofs of Space}, booktitle = {Advances in Cryptology -- CRYPTO 2015}, series = {LNCS},
+  volume = {9216}, pages = {585--605}, publisher = {Springer}, year = {2015},
+  doi = {10.1007/978-3-662-48000-7_29}
+}
+@inproceedings{park2018spacemint,
+  author = {Park, Sunoo and Kwon, Albert and Fuchsbauer, Georg and Ga{\v{z}}i, Peter and Alwen, Jo{\"e}l and Pietrzak, Krzysztof},
+  title = {{SpaceMint}: A Cryptocurrency Based on Proofs of Space},
+  booktitle = {Financial Cryptography and Data Security (FC 2018)}, series = {LNCS},
+  volume = {10957}, publisher = {Springer}, year = {2018}, doi = {10.1007/978-3-662-58387-6_26}
+}
+@inproceedings{miller2014permacoin,
+  author = {Miller, Andrew and Juels, Ari and Shi, Elaine and Parno, Bryan and Katz, Jonathan},
+  title = {{Permacoin}: Repurposing Bitcoin Work for Data Preservation},
+  booktitle = {2014 IEEE Symposium on Security and Privacy (SP)}, publisher = {IEEE},
+  year = {2014}, doi = {10.1109/SP.2014.37}
+}
+@misc{cohen2019chia,
+  author = {Cohen, Bram and Pietrzak, Krzysztof}, title = {The Chia Network Blockchain},
+  howpublished = {Chia Network, Inc. (green paper)}, year = {2019},
+  note = {\url{https://www.chia.net/wp-content/uploads/2022/07/ChiaGreenPaper.pdf}}
+}
+@inproceedings{moran2019simple,
+  author = {Moran, Tal and Orlov, Ilan},
+  title = {Simple Proofs of Space-Time and Rational Proofs of Storage},
+  booktitle = {Advances in Cryptology -- CRYPTO 2019}, series = {LNCS}, volume = {11692},
+  publisher = {Springer}, year = {2019}, doi = {10.1007/978-3-030-26948-7_14}
+}
+@misc{fisch2018scaling,
+  author = {Fisch, Ben and Bonneau, Joseph and Greco, Nicola and Benet, Juan},
+  title = {Scaling Proof-of-Replication for {Filecoin} Mining},
+  howpublished = {Protocol Labs Research; IACR ePrint 2018/678}, year = {2018},
+  note = {\url{https://research.protocol.ai/publications/scaling-proof-of-replication-for-filecoin-mining/}}
+}
+@inproceedings{juels2007pors,
+  author = {Juels, Ari and Kaliski, Burton S.},
+  title = {{Pors}: Proofs of Retrievability for Large Files},
+  booktitle = {Proc. 14th ACM Conf. on Computer and Communications Security (CCS '07)},
+  pages = {584--597}, publisher = {ACM}, year = {2007}, doi = {10.1145/1315245.1315317}
+}
+@misc{wilkinson2016storj,
+  author = {Wilkinson, Shawn and Boshevski, Tome and Brandoff, Josh and Buterin, Vitalik},
+  title = {Storj: A Decentralized Cloud Storage Network Framework},
+  howpublished = {Storj Labs, Inc. (whitepaper)}, year = {2016},
+  note = {\url{https://www.storj.io/whitepaper}}
+}
+@inproceedings{kiayias2017ouroboros,
+  author = {Kiayias, Aggelos and Russell, Alexander and David, Bernardo and Oliynykov, Roman},
+  title = {{Ouroboros}: A Provably Secure Proof-of-Stake Blockchain Protocol},
+  booktitle = {Advances in Cryptology -- CRYPTO 2017}, series = {LNCS}, volume = {10401},
+  pages = {357--388}, publisher = {Springer}, year = {2017}, doi = {10.1007/978-3-319-63688-7_12}
+}
+@misc{buchman2018gossip,
+  author = {Buchman, Ethan and Kwon, Jae and Milosevic, Zarko},
+  title = {The Latest Gossip on {BFT} Consensus},
+  year = {2018}, eprint = {1807.04938}, archivePrefix = {arXiv}, primaryClass = {cs.DC}
+}
+@misc{buterin2020gasper,
+  author = {Buterin, Vitalik and Hernandez, Diego and Kamphefner, Thor and Pham, Khiem and Qiao, Zhi and Ryan, Danny and Sin, Juhyeok and Wang, Ying and Zhang, Yan X.},
+  title = {Combining {GHOST} and {Casper}},
+  year = {2020}, eprint = {2003.03052}, archivePrefix = {arXiv}, primaryClass = {cs.CR}
+}

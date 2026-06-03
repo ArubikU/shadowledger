@@ -275,6 +275,51 @@ func (c *Chain) BodyHashAt(height uint64) ([32]byte, bool) {
 	return [32]byte(hdr.BodyHash), true
 }
 
+// ShardAt returns the block id and total shard count committed at a height, used
+// to derive a storage-proof challenge. Available from the persisted header/shard
+// set, so every node agrees without holding the (fragmented) body.
+func (c *Chain) ShardAt(height uint64) ([32]byte, int, bool) {
+	hdr, set, err := c.store.GetHeader(height)
+	if err != nil {
+		return [32]byte{}, 0, false
+	}
+	return [32]byte(hdr.ID()), set.Spec.Total(), true
+}
+
+// ShardProofOK verifies a presented shard against the committed per-shard hash at
+// (height, index). True iff the bytes are the genuine shard for that slot.
+func (c *Chain) ShardProofOK(height uint64, index int, shard []byte) bool {
+	_, set, err := c.store.GetHeader(height)
+	if err != nil {
+		return false
+	}
+	return erasure.VerifyShard(set, index, shard)
+}
+
+// ShardBytes returns the bytes of shard `index` at a height: the locally held copy
+// if this node is a holder, otherwise reconstructing the body from K shards and
+// re-encoding. Used by a validator to answer a storage-proof challenge for a shard
+// it may or may not currently hold. ok=false if the shard cannot be obtained.
+func (c *Chain) ShardBytes(height uint64, index int) ([]byte, bool) {
+	hdr, set, err := c.store.GetHeader(height)
+	if err != nil || index < 0 || index >= set.Spec.Total() {
+		return nil, false
+	}
+	id := hdr.ID()
+	if data, err := c.store.GetShard(id, index); err == nil && erasure.VerifyShard(set, index, data) {
+		return data, true
+	}
+	body, err := c.reconstructShards(id, set)
+	if err != nil {
+		return nil, false
+	}
+	shards, _, _, err := erasure.Encode(body, set.Spec)
+	if err != nil || index >= len(shards) {
+		return nil, false
+	}
+	return shards[index], true
+}
+
 // Spec returns the erasure shape the network policy currently picks.
 func (c *Chain) Spec() types.ShardSpec { return c.specFor() }
 

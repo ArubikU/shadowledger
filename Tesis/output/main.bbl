@@ -1,0 +1,468 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{34}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{} and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showURL}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showURL #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[Al-Bassam(2019)]%
+        {albassam2019lazyledger}
+\bibfield{author}{\bibinfo{person}{Mustafa Al-Bassam}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \bibinfo{title}{LazyLedger: A Distributed Data Availability Ledger
+  With Client-Side Smart Contracts}.
+\newblock
+\showeprint[arxiv]{1905.09274}~[cs.CR]
+
+
+\bibitem[Al-Bassam et~al\mbox{.}(2021)]%
+        {albassam2021fraud}
+\bibfield{author}{\bibinfo{person}{Mustafa Al-Bassam}, \bibinfo{person}{Alberto
+  Sonnino}, \bibinfo{person}{Vitalik Buterin}, {and} \bibinfo{person}{Ismail
+  Khoffi}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Fraud and Data Availability Proofs: Detecting
+  Invalid Blocks in Light Clients}. In \bibinfo{booktitle}{\emph{Financial
+  Cryptography and Data Security (FC 2021)}} \emph{(\bibinfo{series}{LNCS},
+  Vol.~\bibinfo{volume}{12675})}. \bibinfo{publisher}{Springer},
+  \bibinfo{pages}{279--298}.
+\newblock
+\href{https://doi.org/10.1007/978-3-662-64331-0_15}{doi:\nolinkurl{10.1007/978-3-662-64331-0_15}}
+
+
+\bibitem[Buchman et~al\mbox{.}(2018)]%
+        {buchman2018gossip}
+\bibfield{author}{\bibinfo{person}{Ethan Buchman}, \bibinfo{person}{Jae Kwon},
+  {and} \bibinfo{person}{Zarko Milosevic}.} \bibinfo{year}{2018}\natexlab{}.
+\newblock \bibinfo{title}{The Latest Gossip on {BFT} Consensus}.
+\newblock
+\showeprint[arxiv]{1807.04938}~[cs.DC]
+
+
+\bibitem[B{\"u}nz et~al\mbox{.}(2020)]%
+        {bunz2020flyclient}
+\bibfield{author}{\bibinfo{person}{Benedikt B{\"u}nz},
+  \bibinfo{person}{Lucianna Kiffer}, \bibinfo{person}{Loi Luu}, {and}
+  \bibinfo{person}{Mahdi Zamani}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{FlyClient}: Super-Light Clients for
+  Cryptocurrencies}. In \bibinfo{booktitle}{\emph{2020 IEEE Symposium on
+  Security and Privacy (SP)}}. \bibinfo{publisher}{IEEE},
+  \bibinfo{pages}{928--946}.
+\newblock
+\href{https://doi.org/10.1109/SP40000.2020.00049}{doi:\nolinkurl{10.1109/SP40000.2020.00049}}
+
+
+\bibitem[Buterin and Griffith(2017)]%
+        {buterin2017casper}
+\bibfield{author}{\bibinfo{person}{Vitalik Buterin} {and}
+  \bibinfo{person}{Virgil Griffith}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \bibinfo{title}{Casper the Friendly Finality Gadget}.
+\newblock
+\showeprint[arxiv]{1710.09437}~[cs.CR]
+
+
+\bibitem[Buterin et~al\mbox{.}(2020)]%
+        {buterin2020gasper}
+\bibfield{author}{\bibinfo{person}{Vitalik Buterin}, \bibinfo{person}{Diego
+  Hernandez}, \bibinfo{person}{Thor Kamphefner}, \bibinfo{person}{Khiem Pham},
+  \bibinfo{person}{Zhi Qiao}, \bibinfo{person}{Danny Ryan},
+  \bibinfo{person}{Juhyeok Sin}, \bibinfo{person}{Ying Wang}, {and}
+  \bibinfo{person}{Yan~X. Zhang}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \bibinfo{title}{Combining {GHOST} and {Casper}}.
+\newblock
+\showeprint[arxiv]{2003.03052}~[cs.CR]
+
+
+\bibitem[Cohen and Pietrzak(2019)]%
+        {cohen2019chia}
+\bibfield{author}{\bibinfo{person}{Bram Cohen} {and} \bibinfo{person}{Krzysztof
+  Pietrzak}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \bibinfo{title}{The Chia Network Blockchain}.
+\newblock \bibinfo{howpublished}{Chia Network, Inc. (green paper)}.
+\newblock
+\newblock
+\shownote{\url{https://www.chia.net/wp-content/uploads/2022/07/ChiaGreenPaper.pdf}}.
+
+
+\bibitem[Dziembowski et~al\mbox{.}(2015)]%
+        {dziembowski2015proofs}
+\bibfield{author}{\bibinfo{person}{Stefan Dziembowski},
+  \bibinfo{person}{Sebastian Faust}, \bibinfo{person}{Vladimir Kolmogorov},
+  {and} \bibinfo{person}{Krzysztof Pietrzak}.} \bibinfo{year}{2015}\natexlab{}.
+\newblock \showarticletitle{Proofs of Space}. In
+  \bibinfo{booktitle}{\emph{Advances in Cryptology -- CRYPTO 2015}}
+  \emph{(\bibinfo{series}{LNCS}, Vol.~\bibinfo{volume}{9216})}.
+  \bibinfo{publisher}{Springer}, \bibinfo{pages}{585--605}.
+\newblock
+\href{https://doi.org/10.1007/978-3-662-48000-7_29}{doi:\nolinkurl{10.1007/978-3-662-48000-7_29}}
+
+
+\bibitem[Fisch et~al\mbox{.}(2018)]%
+        {fisch2018scaling}
+\bibfield{author}{\bibinfo{person}{Ben Fisch}, \bibinfo{person}{Joseph
+  Bonneau}, \bibinfo{person}{Nicola Greco}, {and} \bibinfo{person}{Juan
+  Benet}.} \bibinfo{year}{2018}\natexlab{}.
+\newblock \bibinfo{title}{Scaling Proof-of-Replication for {Filecoin} Mining}.
+\newblock \bibinfo{howpublished}{Protocol Labs Research; IACR ePrint 2018/678}.
+\newblock
+\newblock
+\shownote{\url{https://research.protocol.ai/publications/scaling-proof-of-replication-for-filecoin-mining/}}.
+
+
+\bibitem[Garay et~al\mbox{.}(2015)]%
+        {garay2015backbone}
+\bibfield{author}{\bibinfo{person}{Juan Garay}, \bibinfo{person}{Aggelos
+  Kiayias}, {and} \bibinfo{person}{Nikos Leonardos}.}
+  \bibinfo{year}{2015}\natexlab{}.
+\newblock \showarticletitle{The Bitcoin Backbone Protocol: Analysis and
+  Applications}. In \bibinfo{booktitle}{\emph{Advances in Cryptology --
+  EUROCRYPT 2015}} \emph{(\bibinfo{series}{LNCS},
+  Vol.~\bibinfo{volume}{9057})}. \bibinfo{publisher}{Springer},
+  \bibinfo{pages}{281--310}.
+\newblock
+\href{https://doi.org/10.1007/978-3-662-46803-6_10}{doi:\nolinkurl{10.1007/978-3-662-46803-6_10}}
+
+
+\bibitem[Hall-Andersen et~al\mbox{.}(2024)]%
+        {hallandersen2024frida}
+\bibfield{author}{\bibinfo{person}{Mathias Hall-Andersen},
+  \bibinfo{person}{Mark Simkin}, {and} \bibinfo{person}{Benedikt Wagner}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{{FRIDA}: Data Availability Sampling from {FRI}}. In
+  \bibinfo{booktitle}{\emph{Advances in Cryptology -- CRYPTO 2024}}
+  \emph{(\bibinfo{series}{LNCS}, Vol.~\bibinfo{volume}{14929})}.
+  \bibinfo{publisher}{Springer}.
+\newblock
+\href{https://doi.org/10.1007/978-3-031-68391-6_9}{doi:\nolinkurl{10.1007/978-3-031-68391-6_9}}
+
+
+\bibitem[Hall-Andersen et~al\mbox{.}(2025)]%
+        {hallandersen2025foundations}
+\bibfield{author}{\bibinfo{person}{Mathias Hall-Andersen},
+  \bibinfo{person}{Mark Simkin}, {and} \bibinfo{person}{Benedikt Wagner}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{Foundations of Data Availability Sampling}.
+\newblock \bibinfo{journal}{\emph{IACR Communications in Cryptology}}
+  \bibinfo{volume}{1}, \bibinfo{number}{4} (\bibinfo{year}{2025}).
+\newblock
+\href{https://doi.org/10.62056/a09qudhdj}{doi:\nolinkurl{10.62056/a09qudhdj}}
+
+
+\bibitem[Huang et~al\mbox{.}(2022)]%
+        {huang2022downsampling}
+\bibfield{author}{\bibinfo{person}{Tao Huang}, \bibinfo{person}{Yu Quan}, {and}
+  \bibinfo{person}{Xianwei Zhang}.} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Downsampling and Transparent Coding for
+  Blockchain}.
+\newblock \bibinfo{journal}{\emph{IEEE Transactions on Network Science and
+  Engineering}} \bibinfo{volume}{9}, \bibinfo{number}{4}
+  (\bibinfo{year}{2022}).
+\newblock
+\href{https://doi.org/10.1109/TNSE.2022.3155385}{doi:\nolinkurl{10.1109/TNSE.2022.3155385}}
+
+
+\bibitem[Juels and Kaliski(2007)]%
+        {juels2007pors}
+\bibfield{author}{\bibinfo{person}{Ari Juels} {and} \bibinfo{person}{Burton~S.
+  Kaliski}.} \bibinfo{year}{2007}\natexlab{}.
+\newblock \showarticletitle{{Pors}: Proofs of Retrievability for Large Files}.
+  In \bibinfo{booktitle}{\emph{Proc. 14th ACM Conf. on Computer and
+  Communications Security (CCS '07)}}. \bibinfo{publisher}{ACM},
+  \bibinfo{pages}{584--597}.
+\newblock
+\href{https://doi.org/10.1145/1315245.1315317}{doi:\nolinkurl{10.1145/1315245.1315317}}
+
+
+\bibitem[Kadhe et~al\mbox{.}(2019)]%
+        {kadhe2019sef}
+\bibfield{author}{\bibinfo{person}{Swanand Kadhe}, \bibinfo{person}{Jichan
+  Chung}, {and} \bibinfo{person}{Kannan Ramchandran}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \bibinfo{title}{{SeF}: A Secure Fountain Architecture for Slashing
+  Storage Costs in Blockchains}.
+\newblock
+\showeprint[arxiv]{1906.12140}~[cs.IT]
+
+
+\bibitem[Karger et~al\mbox{.}(1997)]%
+        {karger1997consistent}
+\bibfield{author}{\bibinfo{person}{David Karger}, \bibinfo{person}{Eric
+  Lehman}, \bibinfo{person}{Tom Leighton}, \bibinfo{person}{Rina Panigrahy},
+  \bibinfo{person}{Matthew Levine}, {and} \bibinfo{person}{Daniel Lewin}.}
+  \bibinfo{year}{1997}\natexlab{}.
+\newblock \showarticletitle{Consistent Hashing and Random Trees: Distributed
+  Caching Protocols for Relieving Hot Spots on the World Wide Web}. In
+  \bibinfo{booktitle}{\emph{Proc. 29th Annual ACM Symposium on Theory of
+  Computing (STOC '97)}}. \bibinfo{publisher}{ACM}, \bibinfo{pages}{654--663}.
+\newblock
+\href{https://doi.org/10.1145/258533.258660}{doi:\nolinkurl{10.1145/258533.258660}}
+
+
+\bibitem[Kiayias et~al\mbox{.}(2017)]%
+        {kiayias2017ouroboros}
+\bibfield{author}{\bibinfo{person}{Aggelos Kiayias}, \bibinfo{person}{Alexander
+  Russell}, \bibinfo{person}{Bernardo David}, {and} \bibinfo{person}{Roman
+  Oliynykov}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{{Ouroboros}: A Provably Secure Proof-of-Stake
+  Blockchain Protocol}. In \bibinfo{booktitle}{\emph{Advances in Cryptology --
+  CRYPTO 2017}} \emph{(\bibinfo{series}{LNCS}, Vol.~\bibinfo{volume}{10401})}.
+  \bibinfo{publisher}{Springer}, \bibinfo{pages}{357--388}.
+\newblock
+\href{https://doi.org/10.1007/978-3-319-63688-7_12}{doi:\nolinkurl{10.1007/978-3-319-63688-7_12}}
+
+
+\bibitem[Kokoris-Kogias et~al\mbox{.}(2018)]%
+        {kokoriskogias2018omniledger}
+\bibfield{author}{\bibinfo{person}{Eleftherios Kokoris-Kogias},
+  \bibinfo{person}{Philipp Jovanovic}, \bibinfo{person}{Linus Gasser},
+  \bibinfo{person}{Nicolas Gailly}, \bibinfo{person}{Ewa Syta}, {and}
+  \bibinfo{person}{Bryan Ford}.} \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{{OmniLedger}: A Secure, Scale-Out, Decentralized
+  Ledger via Sharding}. In \bibinfo{booktitle}{\emph{2018 IEEE Symposium on
+  Security and Privacy (SP)}}. \bibinfo{publisher}{IEEE},
+  \bibinfo{pages}{583--598}.
+\newblock
+\href{https://doi.org/10.1109/SP.2018.000-5}{doi:\nolinkurl{10.1109/SP.2018.000-5}}
+
+
+\bibitem[Luu et~al\mbox{.}(2016)]%
+        {luu2016elastico}
+\bibfield{author}{\bibinfo{person}{Loi Luu}, \bibinfo{person}{Viswesh
+  Narayanan}, \bibinfo{person}{Chaodong Zheng}, \bibinfo{person}{Kunal Baweja},
+  \bibinfo{person}{Seth Gilbert}, {and} \bibinfo{person}{Prateek Saxena}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{A Secure Sharding Protocol for Open Blockchains}.
+  In \bibinfo{booktitle}{\emph{Proc. 2016 ACM SIGSAC Conf. on Computer and
+  Communications Security (CCS '16)}}. \bibinfo{publisher}{ACM},
+  \bibinfo{pages}{17--30}.
+\newblock
+\href{https://doi.org/10.1145/2976749.2978389}{doi:\nolinkurl{10.1145/2976749.2978389}}
+
+
+\bibitem[Merkle(1988)]%
+        {merkle1988digsig}
+\bibfield{author}{\bibinfo{person}{Ralph~C. Merkle}.}
+  \bibinfo{year}{1988}\natexlab{}.
+\newblock \showarticletitle{A Digital Signature Based on a Conventional
+  Encryption Function}. In \bibinfo{booktitle}{\emph{Advances in Cryptology ---
+  CRYPTO '87}} \emph{(\bibinfo{series}{LNCS}, Vol.~\bibinfo{volume}{293})}.
+  \bibinfo{publisher}{Springer}, \bibinfo{pages}{369--378}.
+\newblock
+\href{https://doi.org/10.1007/3-540-48184-2_32}{doi:\nolinkurl{10.1007/3-540-48184-2_32}}
+
+
+\bibitem[Miller et~al\mbox{.}(2014)]%
+        {miller2014permacoin}
+\bibfield{author}{\bibinfo{person}{Andrew Miller}, \bibinfo{person}{Ari Juels},
+  \bibinfo{person}{Elaine Shi}, \bibinfo{person}{Bryan Parno}, {and}
+  \bibinfo{person}{Jonathan Katz}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{{Permacoin}: Repurposing Bitcoin Work for Data
+  Preservation}. In \bibinfo{booktitle}{\emph{2014 IEEE Symposium on Security
+  and Privacy (SP)}}. \bibinfo{publisher}{IEEE}.
+\newblock
+\href{https://doi.org/10.1109/SP.2014.37}{doi:\nolinkurl{10.1109/SP.2014.37}}
+
+
+\bibitem[Mitra and Dolecek(2019)]%
+        {mitra2019patterned}
+\bibfield{author}{\bibinfo{person}{Debarnab Mitra} {and} \bibinfo{person}{Lara
+  Dolecek}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Patterned Erasure Correcting Codes for Low
+  Storage-Overhead Blockchain Systems}. In \bibinfo{booktitle}{\emph{2019 53rd
+  Asilomar Conference on Signals, Systems, and Computers}}.
+  \bibinfo{publisher}{IEEE}, \bibinfo{pages}{1734--1738}.
+\newblock
+\href{https://doi.org/10.1109/IEEECONF44664.2019.9048887}{doi:\nolinkurl{10.1109/IEEECONF44664.2019.9048887}}
+
+
+\bibitem[Moran and Orlov(2019)]%
+        {moran2019simple}
+\bibfield{author}{\bibinfo{person}{Tal Moran} {and} \bibinfo{person}{Ilan
+  Orlov}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Simple Proofs of Space-Time and Rational Proofs of
+  Storage}. In \bibinfo{booktitle}{\emph{Advances in Cryptology -- CRYPTO
+  2019}} \emph{(\bibinfo{series}{LNCS}, Vol.~\bibinfo{volume}{11692})}.
+  \bibinfo{publisher}{Springer}.
+\newblock
+\href{https://doi.org/10.1007/978-3-030-26948-7_14}{doi:\nolinkurl{10.1007/978-3-030-26948-7_14}}
+
+
+\bibitem[Nakamoto(2008)]%
+        {nakamoto2008bitcoin}
+\bibfield{author}{\bibinfo{person}{Satoshi Nakamoto}.}
+  \bibinfo{year}{2008}\natexlab{}.
+\newblock \bibinfo{title}{Bitcoin: A Peer-to-Peer Electronic Cash System}.
+\newblock
+\urldef\tempurl%
+\url{https://bitcoin.org/bitcoin.pdf}
+\showURL{%
+\tempurl}
+\newblock
+\shownote{Whitepaper}.
+
+
+\bibitem[Park et~al\mbox{.}(2018)]%
+        {park2018spacemint}
+\bibfield{author}{\bibinfo{person}{Sunoo Park}, \bibinfo{person}{Albert Kwon},
+  \bibinfo{person}{Georg Fuchsbauer}, \bibinfo{person}{Peter Ga{\v{z}}i},
+  \bibinfo{person}{Jo{\"e}l Alwen}, {and} \bibinfo{person}{Krzysztof
+  Pietrzak}.} \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{{SpaceMint}: A Cryptocurrency Based on Proofs of
+  Space}. In \bibinfo{booktitle}{\emph{Financial Cryptography and Data Security
+  (FC 2018)}} \emph{(\bibinfo{series}{LNCS}, Vol.~\bibinfo{volume}{10957})}.
+  \bibinfo{publisher}{Springer}.
+\newblock
+\href{https://doi.org/10.1007/978-3-662-58387-6_26}{doi:\nolinkurl{10.1007/978-3-662-58387-6_26}}
+
+
+\bibitem[Perard et~al\mbox{.}(2018)]%
+        {perard2018erasure}
+\bibfield{author}{\bibinfo{person}{Doriane Perard},
+  \bibinfo{person}{J{\'e}r{\^o}me Lacan}, \bibinfo{person}{Yann Bachy}, {and}
+  \bibinfo{person}{Jonathan Detchart}.} \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{Erasure Code-Based Low Storage Blockchain Node}. In
+  \bibinfo{booktitle}{\emph{2018 IEEE Int. Conf. on Internet of Things
+  (iThings) / GreenCom / CPSCom / SmartData}}. \bibinfo{publisher}{IEEE},
+  \bibinfo{pages}{1622--1627}.
+\newblock
+\href{https://doi.org/10.1109/Cybermatics_2018.2018.00271}{doi:\nolinkurl{10.1109/Cybermatics_2018.2018.00271}}
+
+
+\bibitem[Reed and Solomon(1960)]%
+        {reed1960polynomial}
+\bibfield{author}{\bibinfo{person}{Irving~S. Reed} {and}
+  \bibinfo{person}{Gustave Solomon}.} \bibinfo{year}{1960}\natexlab{}.
+\newblock \showarticletitle{Polynomial Codes Over Certain Finite Fields}.
+\newblock \bibinfo{journal}{\emph{J. Soc. Indust. Appl. Math.}}
+  \bibinfo{volume}{8}, \bibinfo{number}{2} (\bibinfo{year}{1960}),
+  \bibinfo{pages}{300--304}.
+\newblock
+\href{https://doi.org/10.1137/0108018}{doi:\nolinkurl{10.1137/0108018}}
+
+
+\bibitem[Sompolinsky and Zohar(2015)]%
+        {sompolinsky2015ghost}
+\bibfield{author}{\bibinfo{person}{Yonatan Sompolinsky} {and}
+  \bibinfo{person}{Aviv Zohar}.} \bibinfo{year}{2015}\natexlab{}.
+\newblock \showarticletitle{Secure High-Rate Transaction Processing in
+  Bitcoin}. In \bibinfo{booktitle}{\emph{Financial Cryptography and Data
+  Security (FC 2015)}} \emph{(\bibinfo{series}{LNCS},
+  Vol.~\bibinfo{volume}{8975})}. \bibinfo{publisher}{Springer},
+  \bibinfo{pages}{507--527}.
+\newblock
+\href{https://doi.org/10.1007/978-3-662-47854-7_32}{doi:\nolinkurl{10.1007/978-3-662-47854-7_32}}
+
+
+\bibitem[Thaler and Ravishankar(1998)]%
+        {thaler1998rendezvous}
+\bibfield{author}{\bibinfo{person}{David~G. Thaler} {and}
+  \bibinfo{person}{Chinya~V. Ravishankar}.} \bibinfo{year}{1998}\natexlab{}.
+\newblock \showarticletitle{Using Name-Based Mappings to Increase Hit Rates}.
+\newblock \bibinfo{journal}{\emph{IEEE/ACM Transactions on Networking}}
+  \bibinfo{volume}{6}, \bibinfo{number}{1} (\bibinfo{year}{1998}),
+  \bibinfo{pages}{1--14}.
+\newblock
+\href{https://doi.org/10.1109/90.663936}{doi:\nolinkurl{10.1109/90.663936}}
+
+
+\bibitem[Wang and Wang(2019)]%
+        {wang2019monoxide}
+\bibfield{author}{\bibinfo{person}{Jiaping Wang} {and} \bibinfo{person}{Hao
+  Wang}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{{Monoxide}: Scale Out Blockchains with Asynchronous
+  Consensus Zones}. In \bibinfo{booktitle}{\emph{16th USENIX Symp. on Networked
+  Systems Design and Implementation (NSDI '19)}}. \bibinfo{publisher}{USENIX
+  Association}, \bibinfo{pages}{95--112}.
+\newblock
+\urldef\tempurl%
+\url{https://www.usenix.org/conference/nsdi19/presentation/wang-jiaping}
+\showURL{%
+\tempurl}
+
+
+\bibitem[Wilkinson et~al\mbox{.}(2016)]%
+        {wilkinson2016storj}
+\bibfield{author}{\bibinfo{person}{Shawn Wilkinson}, \bibinfo{person}{Tome
+  Boshevski}, \bibinfo{person}{Josh Brandoff}, {and} \bibinfo{person}{Vitalik
+  Buterin}.} \bibinfo{year}{2016}\natexlab{}.
+\newblock \bibinfo{title}{Storj: A Decentralized Cloud Storage Network
+  Framework}.
+\newblock \bibinfo{howpublished}{Storj Labs, Inc. (whitepaper)}.
+\newblock
+\newblock
+\shownote{\url{https://www.storj.io/whitepaper}}.
+
+
+\bibitem[Yang et~al\mbox{.}(2024)]%
+        {yang2024scaling}
+\bibfield{author}{\bibinfo{person}{Changlin Yang}, \bibinfo{person}{Kwan-Wu
+  Chin}, \bibinfo{person}{Jiguang Wang}, \bibinfo{person}{Xu Wang},
+  \bibinfo{person}{Ying Liu}, {and} \bibinfo{person}{Zibin Zheng}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Scaling Blockchains with Error Correction Codes: A
+  Survey on Coded Blockchains}.
+\newblock \bibinfo{journal}{\emph{Comput. Surveys}} \bibinfo{volume}{56},
+  \bibinfo{number}{6} (\bibinfo{year}{2024}).
+\newblock
+\href{https://doi.org/10.1145/3637224}{doi:\nolinkurl{10.1145/3637224}}
+
+
+\bibitem[Yu et~al\mbox{.}(2020)]%
+        {yu2020coded}
+\bibfield{author}{\bibinfo{person}{Mingchao Yu}, \bibinfo{person}{Saeid
+  Sahraei}, \bibinfo{person}{Songze Li}, \bibinfo{person}{Salman Avestimehr},
+  \bibinfo{person}{Sreeram Kannan}, {and} \bibinfo{person}{Pramod Viswanath}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{Coded Merkle Tree: Solving Data Availability
+  Attacks in Blockchains}. In \bibinfo{booktitle}{\emph{Financial Cryptography
+  and Data Security (FC 2020)}} \emph{(\bibinfo{series}{LNCS},
+  Vol.~\bibinfo{volume}{12059})}. \bibinfo{publisher}{Springer},
+  \bibinfo{pages}{114--134}.
+\newblock
+\href{https://doi.org/10.1007/978-3-030-51280-4_8}{doi:\nolinkurl{10.1007/978-3-030-51280-4_8}}
+
+
+\bibitem[Zamani et~al\mbox{.}(2018)]%
+        {zamani2018rapidchain}
+\bibfield{author}{\bibinfo{person}{Mahdi Zamani}, \bibinfo{person}{Mahnush
+  Movahedi}, {and} \bibinfo{person}{Mariana Raykova}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{{RapidChain}: Scaling Blockchain via Full
+  Sharding}. In \bibinfo{booktitle}{\emph{Proc. 2018 ACM SIGSAC Conf. on
+  Computer and Communications Security (CCS '18)}}. \bibinfo{publisher}{ACM},
+  \bibinfo{pages}{931--948}.
+\newblock
+\href{https://doi.org/10.1145/3243734.3243853}{doi:\nolinkurl{10.1145/3243734.3243853}}
+
+
+\end{thebibliography}

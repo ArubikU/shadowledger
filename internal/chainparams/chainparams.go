@@ -12,23 +12,26 @@ import "github.com/ArubikU/shadowledger/internal/crypto"
 
 // Params is a complete network definition.
 type Params struct {
-	Network        string
-	ChainID        uint64                    // network id bound into every tx (cross-network replay protection)
-	GenesisTime    int64                     // fixed genesis timestamp (anchors round timing; same on all nodes)
-	RegPoWBits     int                       // validator-registration PoW difficulty (Sybil gate; 0 = off)
-	Consensus      string                    // "authority" | "postorage"
-	FinalityDepth  int                       // blocks behind head that become irreversible (0 = off)
-	FaucetAmount   uint64                    // $SHARD paid per successful PoW faucet claim (0 = faucet off)
-	FaucetBits     int                       // faucet PoW difficulty (leading zero bits)
-	FaucetCooldown uint64                    // blocks an address must wait between faucet claims
-	FaucetDepth    uint64                    // min blocks the PoW anchor must be behind head (confirmation)
-	Genesis        map[crypto.Address]uint64 // premine: address -> base units (counts toward 21M cap)
-	Validators     []crypto.Address          // authorized block producers (v0 authority)
-	Seeds          []string                  // bootstrap node control URLs
-	DNSSeeds       []string                  // DNS seed hostnames (A/AAAA -> live node IPs)
-	ControlAddr    string                    // default control/RPC bind
-	ShardAddr      string                    // default shard-transfer bind
-	BlockTimeMS    int
+	Network         string
+	ChainID         uint64                    // network id bound into every tx (cross-network replay protection)
+	GenesisTime     int64                     // fixed genesis timestamp (anchors round timing; same on all nodes)
+	RegPoWBits      int                       // validator-registration PoW difficulty (Sybil gate; 0 = off)
+	Consensus       string                    // "authority" | "postorage"
+	FinalityDepth   int                       // blocks behind head that become irreversible (0 = off)
+	FaucetAmount    uint64                    // $SHARD paid per successful PoW faucet claim (0 = faucet off)
+	FaucetBits      int                       // faucet PoW difficulty (leading zero bits)
+	FaucetCooldown  uint64                    // blocks an address must wait between faucet claims
+	FaucetDepth     uint64                    // min blocks the PoW anchor must be behind head (confirmation)
+	StorageWindow   uint64                    // storage-proof target must be within this many blocks of head
+	StorageMinDepth uint64                    // and at least this deep (confirmed)
+	StorageCap      uint64                    // max proven-storage election-weight bonus per validator
+	Genesis         map[crypto.Address]uint64 // premine: address -> base units (counts toward 21M cap)
+	Validators      []crypto.Address          // authorized block producers (v0 authority)
+	Seeds           []string                  // bootstrap node control URLs
+	DNSSeeds        []string                  // DNS seed hostnames (A/AAAA -> live node IPs)
+	ControlAddr     string                    // default control/RPC bind
+	ShardAddr       string                    // default shard-transfer bind
+	BlockTimeMS     int
 }
 
 // Founder/treasury address — block authority + genesis premine recipient.
@@ -50,6 +53,11 @@ func Mainnet() Params {
 		FaucetBits:     18,          // ~260k hashes per claim (seconds on a laptop)
 		FaucetCooldown: 50,          // an address may claim once per 50 blocks
 		FaucetDepth:    4,           // anchor block must be >=4 deep (confirmed)
+		// Proof-of-storage: validators prove they hold an assigned shard of a recent
+		// block; proofs weight leader election (storage-weighted consensus).
+		StorageWindow:   256, // proof target within last 256 blocks
+		StorageMinDepth: 4,   // and >=4 deep (confirmed)
+		StorageCap:      64,  // up to +64 election weight from proven storage
 		Genesis: map[crypto.Address]uint64{
 			founder: 100_000_000_000_000, // 1,000,000 SHARD treasury premine
 		},

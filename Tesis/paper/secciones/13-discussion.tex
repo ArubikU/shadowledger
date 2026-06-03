@@ -1,0 +1,45 @@
+\section{Discussion and Limitations}
+\label{sec:disc}
+We report these candidly, per ACM/COPE integrity expectations. (1) \textbf{Storage coupling, built
+and remaining.} Leader election is now storage-weighted via on-chain storage-proof records
+(\S\ref{sec:consensus},~\ref{sec:audit}): the running consensus is genuinely storage-coupled. Two
+related items remain. \emph{Fork-choice} weight is still chain length (we weight \emph{who leads},
+not yet \emph{which branch wins}), and missed storage proofs incur election-weight decay rather than
+a \emph{bond} slash. Adding storage weight to fork choice and bond slashing for missed proofs are
+the priority next steps and would close the gap between the leader-level and branch-level coupling. (2) \textbf{State commitments}: the header
+commits transaction and log roots but not a \emph{state root}, so light clients trust state via
+replay/snapshot rather than a succinct proof; adding a state (or verkle) root would enable
+trust-minimized light clients~\cite{bunz2020flyclient}. (3) \textbf{Data availability} is an
+operational reconstruction check, not a sampling proof; DAS~\cite{hallandersen2025foundations}
+is complementary. (4) \textbf{Evaluation scale}: a single deployment and workstation, not a
+large multi-region benchmark; numbers are feasibility evidence. (5) \textbf{No external security
+audit}; the live network is treated as a testnet with no real value. (6) The contract VM is a
+Solidity subset. None of these undermines the central result, that history can be fragmented so
+no node stores it all, while state stays local and block production is earned by storage, but
+each bounds how far the present prototype should be trusted.
+
+\textbf{Applicability.} ShadowLedger is a fit when history grows large relative to active state and
+many modest nodes are available to share it: public ledgers, audit logs, and data-preservation
+chains, where the archive dwarfs the working set and decentralization is valued over raw
+throughput. It is a poor fit when the working state itself is enormous (then keeping state local is
+the bottleneck, and state sharding as in OmniLedger~\cite{kokoriskogias2018omniledger} or
+RapidChain~\cite{zamani2018rapidchain} is the right tool), or when historical reads are frequent
+and latency-critical (the reconstruction cost of \S\ref{sec:eval} would dominate). The design also
+assumes enough independent nodes that the $r$ holders of a shard fail independently; in a tiny or
+collusive network that assumption, and with it the availability argument of \S\ref{sec:threat},
+weakens. We therefore present ShadowLedger as a point in the design space, not a universal
+replacement for replicated ledgers.
+
+\textbf{On head-to-head benchmarking.} We deliberately do not report wall-clock comparisons against
+deployed systems such as Filecoin, Chia, or other coded-blockchain prototypes. Such numbers would
+be measured on different hardware, networks, and workloads, so a cross-system performance table
+would be apples-to-oranges and, by our own integrity standard, misleading; reproducing each system
+in a controlled common testbed is a substantial effort beyond this paper. Instead we compare where
+comparison is fair: analytically and under identical assumptions against full replication and naive
+distributed replication (\S\ref{sec:eval}), and qualitatively against prior coded-storage designs
+(\S\ref{sec:related}). The distinction worth stating plainly is not a larger constant-factor saving
+than prior coded nodes, which report substantial per-node reductions at a \emph{fixed} network size;
+it is that ShadowLedger's reduction \emph{scales} as $O(1/n)$ with the membership and is produced by
+the same mechanism that grants block-production rights, rather than by a storage layer bolted onto an
+unchanged consensus. A controlled multi-system benchmark on shared infrastructure is the natural next
+empirical step.

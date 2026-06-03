@@ -1,0 +1,2014 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1 Portable) (preloaded format=pdflatex 2026.5.19)  3 JUN 2026 17:52
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**./main.tex
+(main.tex
+LaTeX2e <2023-11-01> patch level 1
+L3 programming layer <2024-01-04>
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/acmart\acmart
+.cls
+Document Class: acmart 2025/08/27 v2.16 Typesetting articles for the Associatio
+n for Computing Machinery
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/xkeyval\xkeyv
+al.sty
+Package: xkeyval 2022/06/16 v2.9 package option processing (HA)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/xkeyval\xke
+yval.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/xkeyval\xkv
+utils.tex
+\XKV@toks=\toks17
+\XKV@tempa@toks=\toks18
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/xkeyval\key
+val.tex))
+\XKV@depth=\count187
+File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
+))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/xstring\xstri
+ng.sty
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/xstring\xst
+ring.tex
+\xs_counta=\count188
+\xs_countb=\count189
+)
+Package: xstring 2023/08/22 v1.86 String manipulations (CT)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/iftex\iftex
+.sty
+Package: iftex 2022/02/03 v1.0f TeX engine tests
+)
+Package acmart Info: Not using screen mode on input line 77.
+Package acmart Info: Using breaking urls on hyphens on input line 85.
+Package acmart Info: Requiring acmthm on input line 93.
+Package acmart Info: Not using review mode on input line 102.
+Package acmart Info: Not using authorversion mode on input line 110.
+Package acmart Info: Not using nonacm mode on input line 122.
+Package acmart Info: Explicitly selecting natbib mode on input line 138.
+Package acmart Info: Not using anonymous mode on input line 146.
+Package acmart Info: Not using timestamp mode on input line 154.
+Package acmart Info: Not using authordraft mode on input line 164.
+Package acmart Info: Using anonymous mode on input line 179.
+Package acmart Info: Using review mode on input line 179.
+Class acmart Info: Using format sigconf, number 4 on input line 179.
+Class acmart Info: Using fontsize 9pt on input line 281.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/amscls\amsart
+.cls
+Document Class: amsart 2020/05/29 v2.20.6
+\linespacing=\dimen140
+\normalparindent=\dimen141
+\normaltopskip=\skip48
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/amsmath\amsma
+th.sty
+Package: amsmath 2023/05/13 v2.17o AMS math features
+\@mathmargin=\skip49
+
+For additional information on amsmath, use the `?' option.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/amsmath\amste
+xt.sty
+Package: amstext 2021/08/26 v2.01 AMS text
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/amsmath\amsge
+n.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks19
+\ex@=\dimen142
+))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/amsmath\amsbs
+y.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen143
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/amsmath\amsop
+n.sty
+Package: amsopn 2022/04/08 v2.04 operator names
+)
+\inf@bad=\count190
+LaTeX Info: Redefining \frac on input line 234.
+\uproot@=\count191
+\leftroot@=\count192
+LaTeX Info: Redefining \overline on input line 399.
+LaTeX Info: Redefining \colon on input line 410.
+\classnum@=\count193
+\DOTSCASE@=\count194
+LaTeX Info: Redefining \ldots on input line 496.
+LaTeX Info: Redefining \dots on input line 499.
+LaTeX Info: Redefining \cdots on input line 620.
+\Mathstrutbox@=\box51
+\strutbox@=\box52
+LaTeX Info: Redefining \big on input line 722.
+LaTeX Info: Redefining \Big on input line 723.
+LaTeX Info: Redefining \bigg on input line 724.
+LaTeX Info: Redefining \Bigg on input line 725.
+\big@size=\dimen144
+LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
+\macc@depth=\count195
+LaTeX Info: Redefining \bmod on input line 905.
+LaTeX Info: Redefining \pmod on input line 910.
+LaTeX Info: Redefining \smash on input line 940.
+LaTeX Info: Redefining \relbar on input line 970.
+LaTeX Info: Redefining \Relbar on input line 971.
+\c@MaxMatrixCols=\count196
+\dotsspace@=\muskip16
+\c@parentequation=\count197
+\dspbrk@lvl=\count198
+\tag@help=\toks20
+\row@=\count199
+\column@=\count266
+\maxfields@=\count267
+\andhelp@=\toks21
+\eqnshift@=\dimen145
+\alignsep@=\dimen146
+\tagshift@=\dimen147
+\tagwidth@=\dimen148
+\totwidth@=\dimen149
+\lineht@=\dimen150
+\@envbody=\toks22
+\multlinegap=\skip50
+\multlinetaggap=\skip51
+\mathdisplay@stack=\toks23
+LaTeX Info: Redefining \[ on input line 2953.
+LaTeX Info: Redefining \] on input line 2954.
+)
+LaTeX Font Info:    Trying to load font information for U+msa on input line 397
+.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/amsfonts\umsa
+.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/amsfonts\amsf
+onts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)
+\copyins=\insert252
+\abstractbox=\box53
+\listisep=\skip52
+\c@part=\count268
+\c@section=\count269
+\c@subsection=\count270
+\c@subsubsection=\count271
+\c@paragraph=\count272
+\c@subparagraph=\count273
+\c@figure=\count274
+\c@table=\count275
+\abovecaptionskip=\skip53
+\belowcaptionskip=\skip54
+\captionindent=\dimen151
+\thm@style=\toks24
+\thm@bodyfont=\toks25
+\thm@headfont=\toks26
+\thm@notefont=\toks27
+\thm@headpunct=\toks28
+\thm@preskip=\skip55
+\thm@postskip=\skip56
+\thm@headsep=\skip57
+\dth@everypar=\toks29
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/microtype\mic
+rotype.sty
+Package: microtype 2026/03/01 v3.2d Micro-typographical refinements (RS)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/etoolbox\etoo
+lbox.sty
+Package: etoolbox 2020/10/05 v2.5k e-TeX tools for LaTeX (JAW)
+\etb@tempcnta=\count276
+)
+\MT@toks=\toks30
+\MT@tempbox=\box54
+\MT@count=\count277
+LaTeX Info: Redefining \noprotrusionifhmode on input line 1084.
+LaTeX Info: Redefining \leftprotrusion on input line 1085.
+\MT@prot@toks=\toks31
+LaTeX Info: Redefining \rightprotrusion on input line 1104.
+LaTeX Info: Redefining \textls on input line 1449.
+\MT@outer@kern=\dimen152
+LaTeX Info: Redefining \microtypecontext on input line 2053.
+LaTeX Info: Redefining \textmicrotypecontext on input line 2070.
+\MT@listname@count=\count278
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/microtype\mic
+rotype-pdftex.def
+File: microtype-pdftex.def 2026/03/01 v3.2d Definitions specific to pdftex (RS)
+
+LaTeX Info: Redefining \lsstyle on input line 944.
+LaTeX Info: Redefining \lslig on input line 944.
+\MT@outer@space=\skip58
+)
+Package microtype Info: Loading configuration file microtype.cfg.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/microtype\mic
+rotype.cfg
+File: microtype.cfg 2026/03/01 v3.2d microtype main configuration file (RS)
+)
+LaTeX Info: Redefining \microtypesetup on input line 3065.
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/booktabs\book
+tabs.sty
+Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
+\heavyrulewidth=\dimen153
+\lightrulewidth=\dimen154
+\cmidrulewidth=\dimen155
+\belowrulesep=\dimen156
+\belowbottomsep=\dimen157
+\aboverulesep=\dimen158
+\abovetopsep=\dimen159
+\cmidrulesep=\dimen160
+\cmidrulekern=\dimen161
+\defaultaddspace=\dimen162
+\@cmidla=\count279
+\@cmidlb=\count280
+\@aboverulesep=\dimen163
+\@belowrulesep=\dimen164
+\@thisruleclass=\count281
+\@lastruleclass=\count282
+\@thisrulewidth=\dimen165
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/refcount\refc
+ount.sty
+Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/ltxcmds\ltx
+cmds.sty
+Package: ltxcmds 2023-12-04 v1.26 LaTeX kernel commands for general use (HO)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/infwarerr\i
+nfwarerr.sty
+Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
+))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/totpages\totp
+ages.sty
+Package: totpages 2005/09/19 v2.00 Totpages Package (muewi)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/everyshi\ever
+yshi.sty
+Package: everyshi 2020/11/18 v4.00 EveryShipout Package
+))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/environ\envir
+on.sty
+Package: environ 2014/05/04 v0.3 A new way to define environments
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/trimspaces\tr
+imspaces.sty
+Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
+))
+\@ACM@acmcp@delta=\dimen166
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/natbib\natbib
+.sty
+Package: natbib 2010/09/13 8.31b (PWD, AO)
+\bibhang=\skip59
+\bibsep=\skip60
+LaTeX Info: Redefining \cite on input line 694.
+\c@NAT@ctr=\count283
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/hyperref\hype
+rref.sty
+Package: hyperref 2023-11-26 v7.01g Hypertext links for LaTeX
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/kvsetkeys\kvs
+etkeys.sty
+Package: kvsetkeys 2022-10-05 v1.19 Key value parser (HO)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/kvdefinekey
+s\kvdefinekeys.sty
+Package: kvdefinekeys 2019-12-19 v1.6 Define keys (HO)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pdfescape\p
+dfescape.sty
+Package: pdfescape 2019/12/09 v1.15 Implements pdfTeX's escape features (HO)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pdftexcmds\
+pdftexcmds.sty
+Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
+)
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/hycolor\hycol
+or.sty
+Package: hycolor 2020-01-27 v1.10 Color options for hyperref/bookmark (HO)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/letltxmacro\l
+etltxmacro.sty
+Package: letltxmacro 2019/12/03 v1.6 Let assignment for LaTeX macros (HO)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/auxhook\auxho
+ok.sty
+Package: auxhook 2019-12-17 v1.6 Hooks for auxiliary files (HO)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/hyperref\name
+ref.sty
+Package: nameref 2023-11-26 v2.56 Cross-referencing by name of section
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/gettitlestr
+ing\gettitlestring.sty
+Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/kvoptions\kvo
+ptions.sty
+Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
+))
+\c@section@level=\count284
+)
+\@linkdim=\dimen167
+\Hy@linkcounter=\count285
+\Hy@pagecounter=\count286
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/hyperref\pd1e
+nc.def
+File: pd1enc.def 2023-11-26 v7.01g Hyperref: PDFDocEncoding definition (HO)
+Now handling font encoding PD1 ...
+... no UTF-8 mapping file for font encoding PD1
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/intcalc\int
+calc.sty
+Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
+)
+\Hy@SavedSpaceFactor=\count287
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/hyperref\puen
+c.def
+File: puenc.def 2023-11-26 v7.01g Hyperref: PDF Unicode definition (HO)
+Now handling font encoding PU ...
+... no UTF-8 mapping file for font encoding PU
+)
+Package hyperref Info: Option `bookmarksnumbered' set `true' on input line 4064
+.
+Package hyperref Info: Option `unicode' set `true' on input line 4064.
+Package hyperref Info: Hyper figures OFF on input line 4181.
+Package hyperref Info: Link nesting OFF on input line 4186.
+Package hyperref Info: Hyper index ON on input line 4189.
+Package hyperref Info: Plain pages OFF on input line 4196.
+Package hyperref Info: Backreferencing OFF on input line 4201.
+Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
+Package hyperref Info: Bookmarks ON on input line 4448.
+\c@Hy@tempcnt=\count288
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/url\url.sty
+\Urlmuskip=\muskip17
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+LaTeX Info: Redefining \url on input line 4786.
+\XeTeXLinkMargin=\dimen168
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/bitset\bits
+et.sty
+Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/bigintcalc\
+bigintcalc.sty
+Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
+)
+))
+\Fld@menulength=\count289
+\Field@Width=\dimen169
+\Fld@charsize=\dimen170
+Package hyperref Info: Hyper figures OFF on input line 6065.
+Package hyperref Info: Link nesting OFF on input line 6070.
+Package hyperref Info: Hyper index ON on input line 6073.
+Package hyperref Info: backreferencing OFF on input line 6080.
+Package hyperref Info: Link coloring OFF on input line 6085.
+Package hyperref Info: Link coloring with OCG OFF on input line 6090.
+Package hyperref Info: PDF/A mode OFF on input line 6095.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/base\atbegshi
+-ltx.sty
+Package: atbegshi-ltx 2021/01/10 v1.0c Emulation of the original atbegshi
+package with kernel methods
+)
+\Hy@abspage=\count290
+\c@Item=\count291
+\c@Hfootnote=\count292
+)
+Package hyperref Info: Driver (autodetected): hpdftex.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/hyperref\hpdf
+tex.def
+File: hpdftex.def 2023-11-26 v7.01g Hyperref driver for pdfTeX
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/base\atveryen
+d-ltx.sty
+Package: atveryend-ltx 2020/08/19 v1.0a Emulation of the original atveryend pac
+kage
+with kernel methods
+)
+\Fld@listcount=\count293
+\c@bookmark@seq@number=\count294
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/rerunfilechec
+k\rerunfilecheck.sty
+Package: rerunfilecheck 2025-06-21 v1.11 Rerun checks for auxiliary files (HO)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/uniquecount
+er\uniquecounter.sty
+Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
+)
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
+84.
+)
+\Hy@SectionHShift=\skip61
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/hyperxmp\hype
+rxmp.sty
+Package: hyperxmp 2024/03/17 v5.13 Store hyperref metadata in XMP format
+\hyxmp@aep@toks=\toks32
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/stringenc\s
+tringenc.sty
+Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
+)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/ifmtarg\ifmta
+rg.sty
+Package: ifmtarg 2018/04/16 v1.2b check for an empty argument
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/base\ifthen.s
+ty
+Package: ifthen 2022/04/13 v1.1d Standard LaTeX ifthen package (DPC)
+)
+\@hyxmp@count=\count295
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/oberdiek\ifdr
+aft.sty
+Package: ifdraft 2016/05/16 v1.4 Detect class options draft and final (HO)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/iftex\iflua
+tex.sty
+Package: ifluatex 2019/10/25 v1.5 ifluatex legacy package. Use iftex instead.
+))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/graphics\grap
+hicx.sty
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/graphics\grap
+hics.sty
+Package: graphics 2022/03/10 v1.4e Standard LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/graphics\trig
+.sty
+Package: trig 2021/08/11 v1.11 sin cos tan (DPC)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/graphics-cfg\
+graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 107.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/graphics-def\
+pdftex.def
+File: pdftex.def 2022/09/22 v1.2b Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen171
+\Gin@req@width=\dimen172
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/xcolor\xcolor
+.sty
+Package: xcolor 2023/11/15 v3.01 LaTeX color extensions (UK)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/graphics-cfg\
+color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 274.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/graphics\math
+color.ltx)
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1350.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1354.
+Package xcolor Info: Model `RGB' extended on input line 1366.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1368.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1370.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1371.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1372.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1373.
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/geometry\geom
+etry.sty
+Package: geometry 2026/03/07 v6.0 Page Geometry
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/iftex\ifvte
+x.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+)
+\Gm@cnth=\count296
+\Gm@cntv=\count297
+\c@Gm@tempcnt=\count298
+\Gm@bindingoffset=\dimen173
+\Gm@wd@mp=\dimen174
+\Gm@odd@mp=\dimen175
+\Gm@even@mp=\dimen176
+\Gm@layoutwidth=\dimen177
+\Gm@layoutheight=\dimen178
+\Gm@layouthoffset=\dimen179
+\Gm@layoutvoffset=\dimen180
+\Gm@dimlist=\toks33
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/geometry\geom
+etry.cfg))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/ncctools\many
+foot.sty
+Package: manyfoot 2019/08/03 v1.11 Many Footnote Levels Package (NCC)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/ncctools\nccf
+oots.sty
+Package: nccfoots 2005/02/03 v1.2 NCC Footnotes Package (NCC)
+)
+\MFL@columnwidth=\dimen181
+)
+\footinsauthorsaddresses=\insert251
+\c@footnoteauthorsaddresses=\count299
+\footinscopyrightpermission=\insert250
+\c@footnotecopyrightpermission=\count300
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pdftex\glyp
+htounicode.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/cmap\cmap.sty
+Package: cmap 2021/02/06 v1.0j CMap support: searchable PDF
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/base\fontenc.
+sty
+Package: fontenc 2021/04/29 v2.0v Standard LaTeX package
+<<t1.cmap>>)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/libertine\lib
+ertine.sty
+Package: libertine 2024/04/23 (Bob Tennent) Supports Libertine and Biolinum fon
+ts for all LaTeX engines.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/iftex\ifxet
+ex.sty
+Package: ifxetex 2019/10/25 v0.7 ifxetex legacy package. Use iftex instead.
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/base\textcomp
+.sty
+Package: textcomp 2020/02/02 v2.0n Standard LaTeX package
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/base\fontenc.
+sty
+Package: fontenc 2021/04/29 v2.0v Standard LaTeX package
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/fontaxes\font
+axes.sty
+Package: fontaxes 2026-01-02 v2.0.2 Font selection axes (deprecated)
+Applying: [0000-00-00] Fall back to v1 on input line 76.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/fontaxes\font
+axes-v1.sty
+Package: fontaxes 2020/07/21 v1.0e Font selection axes
+LaTeX Info: Redefining \upshape on input line 29.
+LaTeX Info: Redefining \itshape on input line 31.
+LaTeX Info: Redefining \slshape on input line 33.
+LaTeX Info: Redefining \swshape on input line 35.
+LaTeX Info: Redefining \scshape on input line 37.
+LaTeX Info: Redefining \sscshape on input line 39.
+LaTeX Info: Redefining \ulcshape on input line 41.
+LaTeX Info: Redefining \textsw on input line 47.
+LaTeX Info: Redefining \textssc on input line 48.
+LaTeX Info: Redefining \textulc on input line 49.
+))
+LaTeX Info: Redefining \oldstylenums on input line 485.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/libertine\Lin
+Libertine_I.tex))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/inconsolata\z
+i4.sty
+Package: zi4 2019/05/17 v1.12
+
+`inconsolata-zi4' v1.12, 2019/05/17 Text macros for Inconsolata (msharpe)
+\zifour@ocount=\count301
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/newtx\newtxma
+th.sty
+Package: newtxmath 2024/09/22 v1.754
+
+`newtxmath' v1.754, 2024/09/22 Math macros based originally on txfonts (msharpe
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/oberdiek\cent
+ernot.sty
+Package: centernot 2016/05/16 v1.4 Centers the not symbol horizontally (HO)
+)
+\tx@cntz=\count302
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/binhex\binh
+ex.tex)
+\tx@Isdigit=\count303
+\tx@IsAlNum=\count304
+\tx@tA=\toks34
+\tx@tB=\toks35
+\tx@su=\read2
+
+amsthm NOT loaded
+LaTeX Font Info:    Redeclaring symbol font `operators' on input line 402.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  OT1/cmr/m/n --> OT1/LinuxLibertineT-TLF/m/n on input li
+ne 402.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  OT1/cmr/bx/n --> OT1/LinuxLibertineT-TLF/m/n on input l
+ine 402.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  OT1/LinuxLibertineT-TLF/m/n --> OT1/LinuxLibertineT-TLF
+/sb/n on input line 403.
+LaTeX Font Info:    Redeclaring math alphabet \mathsf on input line 410.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
+(Font)                  OT1/cmss/m/n --> OT1/LinuxBiolinumT-TLF/m/n on input li
+ne 410.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
+(Font)                  OT1/cmss/bx/n --> OT1/LinuxBiolinumT-TLF/m/n on input l
+ine 410.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
+(Font)                  OT1/LinuxBiolinumT-TLF/m/n --> OT1/LinuxBiolinumT-TLF/b
+/n on input line 412.
+LaTeX Font Info:    Redeclaring math alphabet \mathit on input line 419.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
+(Font)                  OT1/cmr/m/it --> OT1/LinuxLibertineT-TLF/m/it on input 
+line 419.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
+(Font)                  OT1/cmr/bx/it --> OT1/LinuxLibertineT-TLF/m/it on input
+ line 419.
+LaTeX Font Info:    Redeclaring math alphabet \mathtt on input line 420.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
+(Font)                  OT1/cmtt/m/n --> T1/zi4/m/n on input line 420.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
+(Font)                  OT1/cmtt/m/n --> T1/zi4/m/n on input line 420.
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 422.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
+(Font)                  OT1/cmr/bx/n --> OT1/LinuxLibertineT-TLF/sb/n on input 
+line 422.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `bold'
+(Font)                  OT1/cmr/bx/n --> OT1/LinuxLibertineT-TLF/sb/n on input 
+line 422.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
+(Font)                  OT1/LinuxLibertineT-TLF/m/it --> OT1/LinuxLibertineT-TL
+F/sb/it on input line 423.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
+(Font)                  T1/zi4/m/n --> T1/zi4/b/n on input line 426.
+LaTeX Font Info:    Redeclaring symbol font `letters' on input line 444.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `normal'
+(Font)                  OML/cmm/m/it --> OML/nxlmi/m/it on input line 444.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `bold'
+(Font)                  OML/cmm/b/it --> OML/nxlmi/m/it on input line 444.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `bold'
+(Font)                  OML/nxlmi/m/it --> OML/nxlmi/b/it on input line 445.
+\symlettersA=\mathgroup6
+LaTeX Font Info:    Overwriting symbol font `lettersA' in version `bold'
+(Font)                  U/ntxmia/m/it --> U/ntxmia/b/it on input line 582.
+LaTeX Font Info:    Redeclaring math alphabet \mathfrak on input line 584.
+Now handling font encoding LMS ...
+... no UTF-8 mapping file for font encoding LMS
+LaTeX Font Info:    Redeclaring symbol font `symbols' on input line 604.
+LaTeX Font Info:    Encoding `OMS' has changed to `LMS' for symbol font
+(Font)              `symbols' in the math version `normal' on input line 604.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `normal'
+(Font)                  OMS/cmsy/m/n --> LMS/ntxsy/m/n on input line 604.
+LaTeX Font Info:    Encoding `OMS' has changed to `LMS' for symbol font
+(Font)              `symbols' in the math version `bold' on input line 604.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `bold'
+(Font)                  OMS/cmsy/b/n --> LMS/ntxsy/m/n on input line 604.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `bold'
+(Font)                  LMS/ntxsy/m/n --> LMS/ntxsy/b/n on input line 605.
+\symAMSm=\mathgroup7
+LaTeX Font Info:    Overwriting symbol font `AMSm' in version `bold'
+(Font)                  U/ntxsym/m/n --> U/ntxsym/b/n on input line 630.
+\symsymbolsC=\mathgroup8
+LaTeX Font Info:    Overwriting symbol font `symbolsC' in version `bold'
+(Font)                  U/ntxsyc/m/n --> U/ntxsyc/b/n on input line 651.
+Now handling font encoding LMX ...
+... no UTF-8 mapping file for font encoding LMX
+LaTeX Font Info:    Redeclaring symbol font `largesymbols' on input line 664.
+LaTeX Font Info:    Encoding `OMX' has changed to `LMX' for symbol font
+(Font)              `largesymbols' in the math version `normal' on input line 6
+64.
+LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `normal'
+(Font)                  OMX/cmex/m/n --> LMX/ntxexx/m/n on input line 664.
+LaTeX Font Info:    Encoding `OMX' has changed to `LMX' for symbol font
+(Font)              `largesymbols' in the math version `bold' on input line 664
+.
+LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
+(Font)                  OMX/cmex/m/n --> LMX/ntxexx/m/n on input line 664.
+LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
+(Font)                  LMX/ntxexx/m/n --> LMX/ntxexx/b/n on input line 665.
+\symlargesymbolsTXA=\mathgroup9
+LaTeX Font Info:    Overwriting symbol font `largesymbolsTXA' in version `bold'
+
+(Font)                  U/ntxexa/m/n --> U/ntxexa/b/n on input line 679.
+\tx@sbptoks=\toks36
+LaTeX Font Info:    Redeclaring math delimiter \lfloor on input line 902.
+LaTeX Font Info:    Redeclaring math delimiter \rfloor on input line 903.
+LaTeX Font Info:    Redeclaring math delimiter \lceil on input line 904.
+LaTeX Font Info:    Redeclaring math delimiter \rceil on input line 905.
+LaTeX Font Info:    Redeclaring math delimiter \lbrace on input line 910.
+LaTeX Font Info:    Redeclaring math delimiter \rbrace on input line 911.
+LaTeX Font Info:    Redeclaring math delimiter \langle on input line 913.
+LaTeX Font Info:    Redeclaring math delimiter \rangle on input line 915.
+LaTeX Font Info:    Redeclaring math delimiter \arrowvert on input line 919.
+LaTeX Font Info:    Redeclaring math delimiter \vert on input line 920.
+LaTeX Font Info:    Redeclaring math accent \dot on input line 991.
+LaTeX Font Info:    Redeclaring math accent \ddot on input line 992.
+LaTeX Font Info:    Redeclaring math accent \vec on input line 2057.
+LaTeX Info: Redefining \Bbbk on input line 2847.
+LaTeX Info: Redefining \not on input line 2995.
+LaTeX Info: Redefining \textsquare on input line 3025.
+LaTeX Info: Redefining \openbox on input line 3027.
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/caption\capti
+on.sty
+Package: caption 2023/08/05 v3.6o Customizing captions (AR)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/caption\capti
+on3.sty
+Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
+\caption@tempdima=\dimen182
+\captionmargin=\dimen183
+\caption@leftmargin=\dimen184
+\caption@rightmargin=\dimen185
+\caption@width=\dimen186
+\caption@indent=\dimen187
+\caption@parindent=\dimen188
+\caption@hangindent=\dimen189
+Package caption Info: AMS or SMF document class detected.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/caption\capti
+on-ams-smf.sto
+File: caption-ams-smf.sto 2020/08/22 v2.0 Adaption of the caption package to th
+e AMS and SMF document classes (AR)
+))
+\c@caption@flags=\count305
+\c@continuedfloat=\count306
+Package caption Info: hyperref package is loaded.
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/float\float.s
+ty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count307
+\float@exts=\toks37
+\float@box=\box55
+\@float@everytoks=\toks38
+\@floatcapt=\box56
+)
+\@float@every@sidebar=\toks39
+\c@sidebar=\count308
+\fulltextwidth=\dimen190
+\@ACM@labelwidth=\dimen191
+\listisep=\skip62
+\num@authorgroups=\count309
+\num@authors=\count310
+\@ACM@badge@width=\skip63
+\@ACM@title@width=\skip64
+\@ACM@badge@skip=\skip65
+Class acmart Info: Printing CCS on input line 1848.
+Class acmart Info: Printing bibformat on input line 1848.
+Class acmart Info: Suppressing folios on input line 1855.
+Class acmart Info: Setting authorsperrow to 0 on input line 1858.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/comment\comme
+nt.sty
+\CommentStream=\write3
+ Excluding comment 'comment') Excluding comment 'CCSXML'
+\c@@concepts=\count311
+\mktitle@bx=\box57
+\@ACM@acmcpbox=\box58
+\@ACM@commabox=\box59
+\author@bx=\box60
+\author@bx@wd=\dimen192
+\author@bx@sep=\skip66
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/fancyhdr\fanc
+yhdr.sty
+Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
+
+\f@nch@headwidth=\skip67
+\f@nch@offset@elh=\skip68
+\f@nch@offset@erh=\skip69
+\f@nch@offset@olh=\skip70
+\f@nch@offset@orh=\skip71
+\f@nch@offset@elf=\skip72
+\f@nch@offset@erf=\skip73
+\f@nch@offset@olf=\skip74
+\f@nch@offset@orf=\skip75
+\f@nch@height=\skip76
+\f@nch@footalignment=\skip77
+\f@nch@widthL=\skip78
+\f@nch@widthC=\skip79
+\f@nch@widthR=\skip80
+\@temptokenb=\toks40
+)
+\ACM@linecount@bx=\box61
+\ACM@linecount@bxht=\skip81
+\ACM@linecount=\count312
+ Special comment 'acks'
+LaTeX Font Info:    Trying to load font information for T1+LinuxLibertineT-TLF 
+on input line 3652.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/libertine\t1l
+inuxlibertinet-tlf.fd
+File: T1LinuxLibertineT-TLF.fd 2017/03/20 (autoinst) Font definitions for T1/Li
+nuxLibertineT-TLF.
+)
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 9.0pt on input line 3652.
+)
+Class acmart Info: Suppressing bibformat on input line 11.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgf/frontendl
+ayer\tikz.sty
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgf/basiclaye
+r\pgf.sty
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgf/utilities
+\pgfrcs.sty
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/utiliti
+es\pgfutil-common.tex
+\pgfutil@everybye=\toks41
+\pgfutil@tempdima=\dimen193
+\pgfutil@tempdimb=\dimen194
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/utiliti
+es\pgfutil-latex.def
+\pgfutil@abb=\box62
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/utiliti
+es\pgfrcs.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf\pgf.rev
+ision.tex)
+Package: pgfrcs 2023-01-15 v3.1.10 (3.1.10)
+))
+Package: pgf 2023-01-15 v3.1.10 (3.1.10)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgf/basiclaye
+r\pgfcore.sty
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgf/systemlay
+er\pgfsys.sty
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/systeml
+ayer\pgfsys.code.tex
+Package: pgfsys 2023-01-15 v3.1.10 (3.1.10)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/utiliti
+es\pgfkeys.code.tex
+\pgfkeys@pathtoks=\toks42
+\pgfkeys@temptoks=\toks43
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/utiliti
+es\pgfkeyslibraryfiltered.code.tex
+\pgfkeys@tmptoks=\toks44
+))
+\pgf@x=\dimen195
+\pgf@y=\dimen196
+\pgf@xa=\dimen197
+\pgf@ya=\dimen198
+\pgf@xb=\dimen199
+\pgf@yb=\dimen256
+\pgf@xc=\dimen257
+\pgf@yc=\dimen258
+\pgf@xd=\dimen259
+\pgf@yd=\dimen260
+\w@pgf@writea=\write4
+\r@pgf@reada=\read3
+\c@pgf@counta=\count313
+\c@pgf@countb=\count314
+\c@pgf@countc=\count315
+\c@pgf@countd=\count316
+\t@pgf@toka=\toks45
+\t@pgf@tokb=\toks46
+\t@pgf@tokc=\toks47
+\pgf@sys@id@count=\count317
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/systeml
+ayer\pgf.cfg
+File: pgf.cfg 2023-01-15 v3.1.10 (3.1.10)
+)
+Driver file for pgf: pgfsys-pdftex.def
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/systeml
+ayer\pgfsys-pdftex.def
+File: pgfsys-pdftex.def 2023-01-15 v3.1.10 (3.1.10)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/systeml
+ayer\pgfsys-common-pdf.def
+File: pgfsys-common-pdf.def 2023-01-15 v3.1.10 (3.1.10)
+)))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/systeml
+ayer\pgfsyssoftpath.code.tex
+File: pgfsyssoftpath.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfsyssoftpath@smallbuffer@items=\count318
+\pgfsyssoftpath@bigbuffer@items=\count319
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/systeml
+ayer\pgfsysprotocol.code.tex
+File: pgfsysprotocol.code.tex 2023-01-15 v3.1.10 (3.1.10)
+))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcore.code.tex
+Package: pgfcore 2023-01-15 v3.1.10 (3.1.10)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmath.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathutil.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathparser.code.tex
+\pgfmath@dimen=\dimen261
+\pgfmath@count=\count320
+\pgfmath@box=\box63
+\pgfmath@toks=\toks48
+\pgfmath@stack@operand=\toks49
+\pgfmath@stack@operation=\toks50
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathfunctions.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathfunctions.basic.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathfunctions.trigonometric.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathfunctions.random.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathfunctions.comparison.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathfunctions.base.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathfunctions.round.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathfunctions.misc.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathfunctions.integerarithmetics.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathcalc.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmathfloat.code.tex
+\c@pgfmathroundto@lastzeros=\count321
+))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fint.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcorepoints.code.tex
+File: pgfcorepoints.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@picminx=\dimen262
+\pgf@picmaxx=\dimen263
+\pgf@picminy=\dimen264
+\pgf@picmaxy=\dimen265
+\pgf@pathminx=\dimen266
+\pgf@pathmaxx=\dimen267
+\pgf@pathminy=\dimen268
+\pgf@pathmaxy=\dimen269
+\pgf@xx=\dimen270
+\pgf@xy=\dimen271
+\pgf@yx=\dimen272
+\pgf@yy=\dimen273
+\pgf@zx=\dimen274
+\pgf@zy=\dimen275
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcorepathconstruct.code.tex
+File: pgfcorepathconstruct.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@path@lastx=\dimen276
+\pgf@path@lasty=\dimen277
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcorepathusage.code.tex
+File: pgfcorepathusage.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@shorten@end@additional=\dimen278
+\pgf@shorten@start@additional=\dimen279
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcorescopes.code.tex
+File: pgfcorescopes.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfpic=\box64
+\pgf@hbox=\box65
+\pgf@layerbox@main=\box66
+\pgf@picture@serial@count=\count322
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcoregraphicstate.code.tex
+File: pgfcoregraphicstate.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgflinewidth=\dimen280
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcoretransformations.code.tex
+File: pgfcoretransformations.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@pt@x=\dimen281
+\pgf@pt@y=\dimen282
+\pgf@pt@temp=\dimen283
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcorequick.code.tex
+File: pgfcorequick.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcoreobjects.code.tex
+File: pgfcoreobjects.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcorepathprocessing.code.tex
+File: pgfcorepathprocessing.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcorearrows.code.tex
+File: pgfcorearrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfarrowsep=\dimen284
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcoreshade.code.tex
+File: pgfcoreshade.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@max=\dimen285
+\pgf@sys@shading@range@num=\count323
+\pgf@shadingcount=\count324
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcoreimage.code.tex
+File: pgfcoreimage.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcoreexternal.code.tex
+File: pgfcoreexternal.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfexternal@startupbox=\box67
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcorelayers.code.tex
+File: pgfcorelayers.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcoretransparency.code.tex
+File: pgfcoretransparency.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcorepatterns.code.tex
+File: pgfcorepatterns.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/basicla
+yer\pgfcorerdf.code.tex
+File: pgfcorerdf.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/modules
+\pgfmoduleshapes.code.tex
+File: pgfmoduleshapes.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfnodeparttextbox=\box68
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/modules
+\pgfmoduleplot.code.tex
+File: pgfmoduleplot.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgf/compatibi
+lity\pgfcomp-version-0-65.sty
+Package: pgfcomp-version-0-65 2023-01-15 v3.1.10 (3.1.10)
+\pgf@nodesepstart=\dimen286
+\pgf@nodesepend=\dimen287
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgf/compatibi
+lity\pgfcomp-version-1-18.sty
+Package: pgfcomp-version-1-18 2023-01-15 v3.1.10 (3.1.10)
+))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgf/utilities
+\pgffor.sty
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgf/utilities
+\pgfkeys.sty
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/utiliti
+es\pgfkeys.code.tex))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgf/math\pgfm
+ath.sty
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/math\pg
+fmath.code.tex))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/utiliti
+es\pgffor.code.tex
+Package: pgffor 2023-01-15 v3.1.10 (3.1.10)
+\pgffor@iter=\dimen288
+\pgffor@skip=\dimen289
+\pgffor@stack=\toks51
+\pgffor@toks=\toks52
+))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/fronten
+dlayer/tikz\tikz.code.tex
+Package: tikz 2023-01-15 v3.1.10 (3.1.10)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/librari
+es\pgflibraryplothandlers.code.tex
+File: pgflibraryplothandlers.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@plot@mark@count=\count325
+\pgfplotmarksize=\dimen290
+)
+\tikz@lastx=\dimen291
+\tikz@lasty=\dimen292
+\tikz@lastxsaved=\dimen293
+\tikz@lastysaved=\dimen294
+\tikz@lastmovetox=\dimen295
+\tikz@lastmovetoy=\dimen296
+\tikzleveldistance=\dimen297
+\tikzsiblingdistance=\dimen298
+\tikz@figbox=\box69
+\tikz@figbox@bg=\box70
+\tikz@tempbox=\box71
+\tikz@tempbox@bg=\box72
+\tikztreelevel=\count326
+\tikznumberofchildren=\count327
+\tikznumberofcurrentchild=\count328
+\tikz@fig@count=\count329
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/modules
+\pgfmodulematrix.code.tex
+File: pgfmodulematrix.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfmatrixcurrentrow=\count330
+\pgfmatrixcurrentcolumn=\count331
+\pgf@matrix@numberofcolumns=\count332
+)
+\tikz@expandcount=\count333
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/fronten
+dlayer/tikz/libraries\tikzlibrarytopaths.code.tex
+File: tikzlibrarytopaths.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/librari
+es\pgflibraryarrows.meta.code.tex
+File: pgflibraryarrows.meta.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfarrowinset=\dimen299
+\pgfarrowlength=\dimen300
+\pgfarrowwidth=\dimen301
+\pgfarrowlinewidth=\dimen302
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/fronten
+dlayer/tikz/libraries\tikzlibrarypositioning.code.tex
+File: tikzlibrarypositioning.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/fronten
+dlayer/tikz/libraries\tikzlibraryfit.code.tex
+File: tikzlibraryfit.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/fronten
+dlayer/tikz/libraries\tikzlibrarybackgrounds.code.tex
+File: tikzlibrarybackgrounds.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@layerbox@background=\box73
+\pgf@layerboxsaved@background=\box74
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/fronten
+dlayer/tikz/libraries\tikzlibrarycalc.code.tex
+File: tikzlibrarycalc.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/pgfplots\pgfp
+lots.sty
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplots.revision.tex)
+Package: pgfplots 2021/05/15 v1.18.1 Data Visualization (1.18.1)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplots.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplotscore.code.tex
+\t@pgfplots@toka=\toks53
+\t@pgfplots@tokb=\toks54
+\t@pgfplots@tokc=\toks55
+\pgfplots@tmpa=\dimen303
+\c@pgfplots@coordindex=\count334
+\c@pgfplots@scanlineindex=\count335
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/sy
+s\pgfplotssysgeneric.code.tex))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/li
+bs\pgfplotslibrary.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/ol
+dpgfcompatib\pgfplotsoldpgfsupp_loader.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/librari
+es\pgflibraryfpu.code.tex)
+Package pgfplots: loading complementary utilities for your pgf version...
+\t@pgf@toka=\toks56
+\t@pgf@tokb=\toks57
+\t@pgf@tokc=\toks58
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/ol
+dpgfcompatib\pgfplotsoldpgfsupp_pgfutil-common-lists.tex))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/ut
+il\pgfplotsutil.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/li
+ststructure\pgfplotsliststructure.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/li
+ststructure\pgfplotsliststructureext.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/li
+ststructure\pgfplotsarray.code.tex
+\c@pgfplotsarray@tmp=\count336
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/li
+ststructure\pgfplotsmatrix.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/nu
+mtable\pgfplotstableshared.code.tex
+\c@pgfplotstable@counta=\count337
+\t@pgfplotstable@a=\toks59
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/li
+ststructure\pgfplotsdeque.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/ut
+il\pgfplotsbinary.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/ut
+il\pgfplotsbinary.data.code.tex))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/ut
+il\pgfplotsutil.verb.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/li
+bs\pgflibrarypgfplots.surfshading.code.tex
+\c@pgfplotslibrarysurf@no=\count338
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/sy
+s\pgflibrarypgfplots.surfshading.pgfsys-pdftex.def)))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/ut
+il\pgfplotscolormap.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/ut
+il\pgfplotscolor.code.tex))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplotsstackedplots.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplotsplothandlers.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplotsmeshplothandler.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplotsmeshplotimage.code.tex)))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplots.scaling.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplotscoordprocessing.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplots.errorbars.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplots.markers.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplotsticks.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots\pg
+fplots.paths.code.tex)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/fronten
+dlayer/tikz/libraries\tikzlibrarydecorations.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/modules
+\pgfmoduledecorations.code.tex
+\pgfdecoratedcompleteddistance=\dimen304
+\pgfdecoratedremainingdistance=\dimen305
+\pgfdecoratedinputsegmentcompleteddistance=\dimen306
+\pgfdecoratedinputsegmentremainingdistance=\dimen307
+\pgf@decorate@distancetomove=\dimen308
+\pgf@decorate@repeatstate=\count339
+\pgfdecorationsegmentamplitude=\dimen309
+\pgfdecorationsegmentlength=\dimen310
+)
+\tikz@lib@dec@box=\box75
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/fronten
+dlayer/tikz/libraries\tikzlibrarydecorations.pathmorphing.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/librari
+es/decorations\pgflibrarydecorations.pathmorphing.code.tex))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/fronten
+dlayer/tikz/libraries\tikzlibrarydecorations.pathreplacing.code.tex
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/librari
+es/decorations\pgflibrarydecorations.pathreplacing.code.tex))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgfplots/li
+bs\tikzlibrarypgfplots.contourlua.code.tex)
+\pgfplots@numplots=\count340
+\pgfplots@xmin@reg=\dimen311
+\pgfplots@xmax@reg=\dimen312
+\pgfplots@ymin@reg=\dimen313
+\pgfplots@ymax@reg=\dimen314
+\pgfplots@zmin@reg=\dimen315
+\pgfplots@zmax@reg=\dimen316
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/fronten
+dlayer/tikz/libraries\tikzlibraryplotmarks.code.tex
+File: tikzlibraryplotmarks.code.tex 2023-01-15 v3.1.10 (3.1.10)
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/pgf/librari
+es\pgflibraryplotmarks.code.tex
+File: pgflibraryplotmarks.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)))
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/algorithm2e\a
+lgorithm2e.sty
+Package: algorithm2e 2017/07/18 v5.2 algorithms environments
+\c@AlgoLine=\count341
+\algocf@hangindent=\skip82
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/ifoddpage\ifo
+ddpage.sty
+Package: ifoddpage 2022/10/18 v1.2 Conditionals for odd/even page detection
+\c@checkoddpage=\count342
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/tools\xspace.
+sty
+Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/relsize\relsi
+ze.sty
+Package: relsize 2013/03/29 ver 4.1
+LaTeX Info: Redefining \larger on input line 150.
+LaTeX Info: Redefining \smaller on input line 151.
+)
+\skiptotal=\skip83
+\skiplinenumber=\skip84
+\skiprule=\skip85
+\skiphlne=\skip86
+\skiptext=\skip87
+\skiplength=\skip88
+\algomargin=\skip89
+\skipalgocfslide=\skip90
+\algowidth=\dimen317
+\inoutsize=\dimen318
+\inoutindent=\dimen319
+\interspacetitleruled=\dimen320
+\interspacealgoruled=\dimen321
+\interspacetitleboxruled=\dimen322
+\algocf@ruledwidth=\skip91
+\algocf@inoutbox=\box76
+\algocf@inputbox=\box77
+\AlCapSkip=\skip92
+\AlCapHSkip=\skip93
+\algoskipindent=\skip94
+\algocf@nlbox=\box78
+\algocf@hangingbox=\box79
+\algocf@untilbox=\box80
+\algocf@skipuntil=\skip95
+\algocf@capbox=\box81
+\algocf@lcaptionbox=\skip96
+\algoheightruledefault=\skip97
+\algoheightrule=\skip98
+\algotitleheightruledefault=\skip99
+\algotitleheightrule=\skip100
+\c@algocfline=\count343
+\c@algocfproc=\count344
+\c@algocf=\count345
+\algocf@algoframe=\box82
+\algocf@algobox=\box83
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/listings\list
+ings.sty
+\lst@mode=\count346
+\lst@gtempboxa=\box84
+\lst@token=\toks60
+\lst@length=\count347
+\lst@currlwidth=\dimen323
+\lst@column=\count348
+\lst@pos=\count349
+\lst@lostspace=\dimen324
+\lst@width=\dimen325
+\lst@newlines=\count350
+\lst@lineno=\count351
+\lst@maxwidth=\dimen326
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/listings\lstm
+isc.sty
+File: lstmisc.sty 2023/02/27 1.9 (Carsten Heinz)
+\c@lstnumber=\count352
+\lst@skipnumbers=\count353
+\lst@framebox=\box85
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/listings\list
+ings.cfg
+File: listings.cfg 2023/02/27 1.9 listings configuration
+))
+Package: listings 2023/02/27 1.9 (Carsten Heinz)
+Package hyperref Info: Option `pdfdisplaydoctitle' set `true' on input line 25.
+
+\c@theorem=\count354
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/preprint\bala
+nce.sty
+Package: balance 1999/02/23 4.3 (PWD)
+\oldvsize=\dimen327
+) Excluding comment 'screenonly' Include comment 'printonly'
+Excluding comment 'anonsuppress' Excluding comment 'acks'
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/l3backend\l3b
+ackend-pdftex.def
+File: l3backend-pdftex.def 2024-01-04 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count355
+\l__pdf_internal_box=\box86
+) (D:\Github\ShadowLedger\Tesis\output\main.aux)
+\openout1 = `main.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/nxlmi/m/it on input line 25.
+LaTeX Font Info:    Trying to load font information for OML+nxlmi on input line
+ 25.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/newtx\omlnxlm
+i.fd
+File: omlnxlmi.fd 2013/11/19 Fontinst v1.933 font definitions for OML/nxlmi.
+)
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for U/ntxexa/m/n on input line 25.
+LaTeX Font Info:    Trying to load font information for U+ntxexa on input line 
+25.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/newtx\untxexa
+.fd
+File: untxexa.fd 2012/04/16 Fontinst v1.933 font definitions for U/ntxexa.
+)
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for LMS/ntxsy/m/n on input line 25.
+LaTeX Font Info:    Trying to load font information for LMS+ntxsy on input line
+ 25.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/newtx\lmsntxs
+y.fd
+File: lmsntxsy.fd 2016/07/02 Fontinst v1.933 font definitions for LMS/ntxsy.
+)
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for LMX/ntxexx/m/n on input line 25.
+LaTeX Font Info:    Trying to load font information for LMX+ntxexx on input lin
+e 25.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/newtx\lmxntxe
+xx.fd
+File: lmxntxexx.fd 2016/07/03 Fontinst v1.933 font definitions for LMX/ntxexx.
+)
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 7.0pt on input line 25.
+LaTeX Font Info:    Trying to load font information for OT1+LinuxLibertineT-TLF
+ on input line 25.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/libertine\ot1
+linuxlibertinet-tlf.fd
+File: OT1LinuxLibertineT-TLF.fd 2017/03/20 (autoinst) Font definitions for OT1/
+LinuxLibertineT-TLF.
+)
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 7.3pt on input line 25.
+<<ot1.cmap>>
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 5.5pt on input line 25.
+LaTeX Font Info:    Font shape `OML/nxlmi/m/it' will be
+(Font)              scaled to size 7.3pt on input line 25.
+<<oml.cmap>>
+LaTeX Font Info:    Font shape `OML/nxlmi/m/it' will be
+(Font)              scaled to size 5.5pt on input line 25.
+LaTeX Font Info:    Font shape `LMS/ntxsy/m/n' will be
+(Font)              scaled to size 7.3pt on input line 25.
+LaTeX Font Info:    Font shape `LMS/ntxsy/m/n' will be
+(Font)              scaled to size 5.5pt on input line 25.
+LaTeX Font Info:    Font shape `LMX/ntxexx/m/n' will be
+(Font)              scaled to size 7.3pt on input line 25.
+LaTeX Font Info:    Font shape `LMX/ntxexx/m/n' will be
+(Font)              scaled to size 5.5pt on input line 25.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 25.
+
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/amsfonts\umsa
+.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 25.
+
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/amsfonts\umsb
+.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+LaTeX Font Info:    Trying to load font information for U+ntxmia on input line 
+25.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/newtx\untxmia
+.fd
+File: untxmia.fd 2024/04/09 Fontinst v1.933 font definitions for U/ntxmia.
+)
+LaTeX Font Info:    Font shape `U/ntxmia/m/it' will be
+(Font)              scaled to size 7.3pt on input line 25.
+LaTeX Font Info:    Font shape `U/ntxmia/m/it' will be
+(Font)              scaled to size 5.5pt on input line 25.
+LaTeX Font Info:    Trying to load font information for U+ntxsym on input line 
+25.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/newtx\untxsym
+.fd
+File: untxsym.fd 2023/08/16 Fontinst v1.933 font definitions for U/ntxsym.
+)
+LaTeX Font Info:    Font shape `U/ntxsym/m/n' will be
+(Font)              scaled to size 7.3pt on input line 25.
+LaTeX Font Info:    Font shape `U/ntxsym/m/n' will be
+(Font)              scaled to size 5.5pt on input line 25.
+LaTeX Font Info:    Trying to load font information for U+ntxsyc on input line 
+25.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/newtx\untxsyc
+.fd
+File: untxsyc.fd 2012/04/12 Fontinst v1.933 font definitions for U/ntxsyc.
+)
+LaTeX Font Info:    Font shape `U/ntxsyc/m/n' will be
+(Font)              scaled to size 7.3pt on input line 25.
+LaTeX Font Info:    Font shape `U/ntxsyc/m/n' will be
+(Font)              scaled to size 5.5pt on input line 25.
+LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
+(Font)              scaled to size 7.3pt on input line 25.
+LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
+(Font)              scaled to size 5.5pt on input line 25.
+LaTeX Info: Command `\dddot' is already robust on input line 25.
+LaTeX Info: Command `\ddddot' is already robust on input line 25.
+LaTeX Info: Redefining \microtypecontext on input line 25.
+Package microtype Info: Applying patch `item' on input line 25.
+Package microtype Info: Applying patch `toc' on input line 25.
+Package microtype Info: Applying patch `eqnum' on input line 25.
+Package microtype Info: Applying patch `footnote' on input line 25.
+Package microtype Info: Applying patch `verbatim' on input line 25.
+LaTeX Info: Redefining \microtypesetup on input line 25.
+Package microtype Info: Generating PDF output.
+Package microtype Info: Character protrusion enabled (level 2).
+Package microtype Info: Using default protrusion set `alltext'.
+Package microtype Info: Automatic font expansion enabled (level 2),
+(microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
+Package microtype Info: Using default expansion set `alltext-nott'.
+Package microtype Info: Patching command `\showhyphens'.
+Package microtype Info: No adjustment of tracking.
+Package microtype Info: No adjustment of interword spacing.
+Package microtype Info: No adjustment of character kerning.
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `LinuxLibertineT-TLF' (encoding: T1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
+Package hyperref Info: Link coloring OFF on input line 25.
+ (D:\Github\ShadowLedger\Tesis\output\main.out)
+(D:\Github\ShadowLedger\Tesis\output\main.out)
+\@outlinefile=\write5
+\openout5 = `main.out'.
+
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/context/base/mkii\s
+upp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count356
+\scratchdimen=\dimen328
+\scratchbox=\box87
+\nofMPsegments=\count357
+\nofMParguments=\count358
+\everyMPshowfont=\toks61
+\MPscratchCnt=\count359
+\MPscratchDim=\dimen329
+\MPnumerator=\count360
+\makeMPintoPDFobject=\count361
+\everyMPtoPDFconversion=\toks62
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/epstopdf-pkg\
+epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/00miktex\epst
+opdf-sys.cfg
+File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
+))
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: custom
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: includehead includefoot twoside heightrounded 
+* h-part:(L,W,R)=(54.0pt, 506.295pt, 54.0pt)
+* v-part:(T,H,B)=(57.0pt, 664.96999pt, 73.0pt)
+* \paperwidth=614.295pt
+* \paperheight=794.96999pt
+* \textwidth=506.295pt
+* \textheight=626.0pt
+* \oddsidemargin=-18.26999pt
+* \evensidemargin=-18.26999pt
+* \topmargin=-15.26999pt
+* \headheight=13.0pt
+* \headsep=14.0pt
+* \topskip=10.0pt
+* \footskip=12.0pt
+* \marginparwidth=24.0pt
+* \marginparsep=11.0pt
+* \columnsep=24.0pt
+* \skip\footins=7.0pt plus 11.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidetrue
+* \@mparswitchtrue
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+\c@mv@tabular=\count362
+\c@mv@boldtabular=\count363
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/upquote\upquo
+te.sty
+Package: upquote 2012/04/19 v1.3 upright-quote and grave-accent glyphs in verba
+tim
+)
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: float package is loaded.
+Package caption Info: listings package is loaded.
+Package caption Info: End \AtBeginDocument code.
+
+Package pgfplots notification 'compat/show suggested version=true': you might b
+enefit from \pgfplotsset{compat=1.18} (current compat level: 1.17).
+
+\c@lstlisting=\count364
+Excluding 'CCSXML' comment.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 17.28pt on input line 77.
+LaTeX Font Info:    Trying to load font information for T1+LinuxBiolinumT-TLF o
+n input line 77.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/libertine\t1l
+inuxbiolinumt-tlf.fd
+File: T1LinuxBiolinumT-TLF.fd 2017/03/20 (autoinst) Font definitions for T1/Lin
+uxBiolinumT-TLF.
+)
+LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/m/n' will be
+(Font)              scaled to size 17.28pt on input line 77.
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `LinuxBiolinumT-TLF' (encoding: T1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
+LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/b/n' will be
+(Font)              scaled to size 17.28pt on input line 77.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 12.0pt on input line 77.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 10.0pt on input line 77.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/b/n' will be
+(Font)              scaled to size 9.0pt on input line 77.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/b/n' will be
+(Font)              scaled to size 10.95pt on input line 77.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 9.0pt on input line 77.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 9.0pt on input line 77.
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `LinuxLibertineT-TLF' (encoding: OT1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 6.6pt on input line 77.
+LaTeX Font Info:    Font shape `OML/nxlmi/m/it' will be
+(Font)              scaled to size 9.0pt on input line 77.
+LaTeX Font Info:    Font shape `OML/nxlmi/m/it' will be
+(Font)              scaled to size 6.6pt on input line 77.
+LaTeX Font Info:    Font shape `LMS/ntxsy/m/n' will be
+(Font)              scaled to size 9.0pt on input line 77.
+LaTeX Font Info:    Font shape `LMS/ntxsy/m/n' will be
+(Font)              scaled to size 6.6pt on input line 77.
+LaTeX Font Info:    Font shape `LMX/ntxexx/m/n' will be
+(Font)              scaled to size 9.0pt on input line 77.
+LaTeX Font Info:    Font shape `LMX/ntxexx/m/n' will be
+(Font)              scaled to size 6.6pt on input line 77.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/microtype\mt-
+msa.cfg
+File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/microtype\mt-
+msb.cfg
+File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
+)
+LaTeX Font Info:    Font shape `U/ntxmia/m/it' will be
+(Font)              scaled to size 9.0pt on input line 77.
+LaTeX Font Info:    Font shape `U/ntxmia/m/it' will be
+(Font)              scaled to size 6.6pt on input line 77.
+LaTeX Font Info:    Font shape `U/ntxsym/m/n' will be
+(Font)              scaled to size 9.0pt on input line 77.
+LaTeX Font Info:    Font shape `U/ntxsym/m/n' will be
+(Font)              scaled to size 6.6pt on input line 77.
+LaTeX Font Info:    Font shape `U/ntxsyc/m/n' will be
+(Font)              scaled to size 9.0pt on input line 77.
+LaTeX Font Info:    Font shape `U/ntxsyc/m/n' will be
+(Font)              scaled to size 6.6pt on input line 77.
+LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
+(Font)              scaled to size 9.0pt on input line 77.
+LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
+(Font)              scaled to size 6.6pt on input line 77.
+LaTeX Font Info:    Trying to load font information for TS1+LinuxLibertineT-TLF
+ on input line 77.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/libertine\ts1
+linuxlibertinet-tlf.fd
+File: TS1LinuxLibertineT-TLF.fd 2017/03/20 (autoinst) Font definitions for TS1/
+LinuxLibertineT-TLF.
+)
+LaTeX Font Info:    Font shape `TS1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 9.0pt on input line 77.
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `LinuxLibertineT-TLF' (encoding: TS1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
+ (secciones/01-introduction.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 6.0pt on input line 49.
+ [1.1{C:/Users/ejane/scoop/apps/latex/current/texmfs/data/fonts/map/pdftex/pdft
+ex.map}{C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/enc/dvips/
+libertine/lbtn_76gpa5.enc}{C:/Users/ejane/scoop/apps/latex/current/texmfs/insta
+ll/fonts/enc/dvips/libertine/lbtn_25tcsq.enc}
+
+{C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/enc/dvips/liberti
+ne/lbtn_nh77jq.enc}{C:/Users/ejane/scoop/apps/latex/current/texmfs/install/font
+s/enc/dvips/libertine/lbtn_7grukw.enc}{C:/Users/ejane/scoop/apps/latex/current/
+texmfs/install/fonts/enc/dvips/libertine/lbtn_oexx6f.enc}{C:/Users/ejane/scoop/
+apps/latex/current/texmfs/install/fonts/enc/dvips/libertine/lbtn_naooyc.enc}]) 
+(secciones/02-background.tex
+Overfull \hbox (1.19221pt too wide) in paragraph at lines 57--1
+\T1/LinuxLibertineT-TLF/m/n/9 (-20) de-sign goals and gives the node ar-chi-tec
+-ture. Ÿ[]5[] de-vel-ops the erasure-
+ []
+
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 6.6pt on input line 19.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 5.5pt on input line 19.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/sc' will be
+(Font)              scaled to size 9.0pt on input line 25.
+) (secciones/03-related-work.tex
+Overfull \hbox (13.9438pt too wide) in paragraph at lines 49--1
+\T1/LinuxLibertineT-TLF/m/n/9 (-20) cur-ren-cies on them. Proofs of re-triev-ab
+il-ity [[]], proof-of-replication [[]],
+ []
+
+
+Overfull \hbox (4.59569pt too wide) in paragraph at lines 49--1
+\T1/LinuxLibertineT-TLF/m/n/9 (-20) de-cen-tral-ized stor-age net-works such as
+ Storj [[]], and Per-ma-coin [[]]
+ []
+
+
+Overfull \hbox (15.83788pt too wide) in paragraph at lines 3--19
+\T1/LinuxLibertineT-TLF/m/n/9 (-20) entropy-based down-sam-pling [[]], and fail
+ure-pattern-aware codes [[]];
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/m/n' will be
+(Font)              scaled to size 9.0pt on input line 26.
+LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/m/n' will be
+(Font)              scaled to size 7.0pt on input line 26.
+ [2.2{C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/enc/dvips/li
+bertine/lbtn_ncsllp.enc}]
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 8.0pt on input line 57.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 8.0pt on input line 58.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 6.0pt on input line 58.
+LaTeX Font Info:    Font shape `OML/nxlmi/m/it' will be
+(Font)              scaled to size 8.0pt on input line 58.
+LaTeX Font Info:    Font shape `OML/nxlmi/m/it' will be
+(Font)              scaled to size 6.0pt on input line 58.
+LaTeX Font Info:    Font shape `LMS/ntxsy/m/n' will be
+(Font)              scaled to size 8.0pt on input line 58.
+LaTeX Font Info:    Font shape `LMS/ntxsy/m/n' will be
+(Font)              scaled to size 6.0pt on input line 58.
+LaTeX Font Info:    Font shape `LMX/ntxexx/m/n' will be
+(Font)              scaled to size 8.0pt on input line 58.
+LaTeX Font Info:    Font shape `LMX/ntxexx/m/n' will be
+(Font)              scaled to size 6.0pt on input line 58.
+LaTeX Font Info:    Font shape `U/ntxmia/m/it' will be
+(Font)              scaled to size 8.0pt on input line 58.
+LaTeX Font Info:    Font shape `U/ntxmia/m/it' will be
+(Font)              scaled to size 6.0pt on input line 58.
+LaTeX Font Info:    Font shape `U/ntxsym/m/n' will be
+(Font)              scaled to size 8.0pt on input line 58.
+LaTeX Font Info:    Font shape `U/ntxsym/m/n' will be
+(Font)              scaled to size 6.0pt on input line 58.
+LaTeX Font Info:    Font shape `U/ntxsyc/m/n' will be
+(Font)              scaled to size 8.0pt on input line 58.
+LaTeX Font Info:    Font shape `U/ntxsyc/m/n' will be
+(Font)              scaled to size 6.0pt on input line 58.
+LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
+(Font)              scaled to size 8.0pt on input line 58.
+LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
+(Font)              scaled to size 6.0pt on input line 58.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/b/n' will be
+(Font)              scaled to size 8.0pt on input line 67.
+) (secciones/04-system-overview.tex
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 6.5pt on input line 27.
+LaTeX Font Info:    Font shape `OML/nxlmi/m/it' will be
+(Font)              scaled to size 6.5pt on input line 27.
+LaTeX Font Info:    Font shape `LMS/ntxsy/m/n' will be
+(Font)              scaled to size 6.5pt on input line 27.
+LaTeX Font Info:    Font shape `LMX/ntxexx/m/n' will be
+(Font)              scaled to size 6.5pt on input line 27.
+LaTeX Font Info:    Font shape `U/ntxmia/m/it' will be
+(Font)              scaled to size 6.5pt on input line 27.
+LaTeX Font Info:    Font shape `U/ntxsym/m/n' will be
+(Font)              scaled to size 6.5pt on input line 27.
+LaTeX Font Info:    Font shape `U/ntxsyc/m/n' will be
+(Font)              scaled to size 6.5pt on input line 27.
+LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
+(Font)              scaled to size 6.5pt on input line 27.
+
+
+Class acmart Warning: A possible image without description on input line 34.
+
+) (secciones/05-history.tex
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 9.0pt on input line 22.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 6.6pt on input line 22.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 5.5pt on input line 22.
+ [3.3{C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/enc/dvips/li
+bertine/lbtn_kijugd.enc}]
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 6.5pt on input line 50.
+
+
+Class acmart Warning: A possible image without description on input line 57.
+
+
+Underfull \vbox (badness 1902) has occurred while \output is active []
+
+)
+(secciones/06-consensus.tex [4.4]
+LaTeX Font Info:    Trying to load font information for T1+zi4 on input line 55
+.
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/latex/inconsolata\t
+1zi4.fd
+File: t1zi4.fd 2018/01/14 T1/zi4 (Inconsolata)
+)
+LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
+(Font)              scaled to size 9.0pt on input line 55.
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `zi4' (encoding: T1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/b/it' will be
+(Font)              scaled to size 9.0pt on input line 61.
+) (secciones/06b-storage-audit.tex) (secciones/07-fork-finality.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [5.5{C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/enc/dvips/in
+consolata/i4-t1-4.enc}{C:/Users/ejane/scoop/apps/latex/current/texmfs/install/f
+onts/enc/dvips/libertine/lbtn_ki75ao.enc}]
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 6.0pt on input line 63.
+
+
+Class acmart Warning: A possible image without description on input line 70.
+
+) (secciones/08-economics.tex
+Overfull \hbox (48.96606pt too wide) in paragraph at lines 72--1
+[] []\OT1/LinuxLibertineT-TLF/m/n/9 (-20) 100[]101[][]102[]$ \T1/LinuxLibertine
+T-TLF/m/n/9 (-20) while val-ida-tor $\OML/nxlmi/m/it/9 B$ \T1/LinuxLibertineT-T
+LF/m/n/9 (-20) ex-tends $[] []\OT1/LinuxLibertineT-TLF/m/n/9 (-20) 100[]101[][]
+102[][]103[]$
+ []
+
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/scit' will be
+(Font)              scaled to size 9.0pt on input line 30.
+) (secciones/09-contracts.tex [6.6]
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 8.0pt on input line 30.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 6.0pt on input line 30.
+
+Overfull \hbox (4.03625pt too wide) in paragraph at lines 30--44
+ [][] 
+ []
+
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
+nput line 57.
+LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
+(Font)              scaled to size 6.0pt on input line 57.
+) (secciones/10-threat-model.tex [7.7{C:/Users/ejane/scoop/apps/latex/current/t
+exmfs/install/fonts/enc/dvips/libertine/lbtn_iqbcqn.enc}]
+Overfull \hbox (3.42262pt too wide) in paragraph at lines 68--78
+[]\T1/LinuxLibertineT-TLF/b/n/9 (-20) Leader grind-ing. \T1/LinuxLibertineT-TLF
+/m/n/9 (-20) Be-cause leader elec-tion is $[]\LMS/ntxsy/m/n/9 ¹[]\OML/nxlmi/m/i
+t/9 ; h; t\LMS/ntxsy/m/n/9 º$\T1/LinuxLibertineT-TLF/m/n/9 (-20) ,
+ []
+
+) (secciones/11-implementation.tex [8.8]) (secciones/12-evaluation.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+Package pgfplots info on input line 61: Using 'lua backend=false' for axis: xmo
+de=log unsupported (yet).
+
+
+Class acmart Warning: A possible image without description on input line 71.
+
+[9.9]) (secciones/13-discussion.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [10.10])
+(secciones/14-rationale.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+)
+(secciones/15-conclusion.tex)
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [11.11]
+(D:\Github\ShadowLedger\Tesis\output\main.bbl
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 7.0pt on input line 56.
+LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 7.3pt on input line 60.
+
+Underfull \hbox (badness 1163) in paragraph at lines 209--215
+\T1/LinuxLibertineT-TLF/m/n/7 (+20) Se-cure Foun-tain Ar-chi-tec-ture for Slash
+-ing Stor-age Costs in Blockchains.
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+LaTeX Info: Redefining \tempurl on input line 408.
+)
+
+Class acmart Warning: Some images may lack descriptions.
+(acmart)              ACM is committed to complying with the upcoming US ADA ht
+tps://accessiblyapp.com/accessibility-compliance/ada/ and European Accessibilit
+y Act (EAA) https://accessiblyapp.com/accessibility-compliance/eaa/ regulations
+ by actively working to ensure our publications and application services are ac
+cessible to individuals with disabilities, adhering to the WCAG guidelines to p
+rovide a seamless experience for all users, and regularly reviewing our accessi
+bility practices to maintain compliance with evolving standards. 
+(acmart)              To this end, we strongly encourage our authors to provide
+ alternative text and captions for images and multimedia content. It is also im
+portant to optimize color contrast for the visually impaired. Taking these impo
+rtant steps when creating your papers will ensure that the widest possible audi
+ence can ingest your work..
+
+
+Class acmart Warning: ACM reference format is mandatory 
+(acmart)              for papers over one page. 
+(acmart)              Please add printacmref=true to the 
+(acmart)              \settopmatter command..
+
+
+Package balance Warning: You have called \balance in second column
+(balance)                Columns might not be balanced.
+
+
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/stringenc\s
+e-pdfdoc.def
+File: se-pdfdoc.def 2019/11/29 v1.12 stringenc: PDFDocEncoding
+)
+(C:\Users\ejane\scoop\apps\latex\current\texmfs\install\tex/generic/stringenc\s
+e-utf8.def
+File: se-utf8.def 2019/11/29 v1.12 stringenc: UTF-8
+) [12.12] (D:\Github\ShadowLedger\Tesis\output\main.aux)
+ ***********
+LaTeX2e <2023-11-01> patch level 1
+L3 programming layer <2024-01-04>
+ ***********
+Package rerunfilecheck Info: File `main.out' has not changed.
+(rerunfilecheck)             Checksum: B17F9181393ED0C241449A184A9A9E8D;5428.
+ ) 
+Here is how much of TeX's memory you used:
+ 45839 strings out of 474486
+ 1005121 string characters out of 5739017
+ 2057542 words of memory out of 5000000
+ 66262 multiletter control sequences out of 15000+600000
+ 819707 words of font info for 628 fonts, out of 8000000 for 9000
+ 1302 hyphenation exceptions out of 8191
+ 90i,19n,131p,1003b,2282s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/public/in
+consolata/Inconsolata-zi4r.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/
+install/fonts/type1/public/newtx/LibertineMathMI.pfb><C:/Users/ejane/scoop/apps
+/latex/current/texmfs/install/fonts/type1/public/newtx/LibertineMathMI5.pfb><C:
+/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/public/newtx/L
+ibertineMathMI7.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fon
+ts/type1/public/newtx/LibertineMathRM.pfb><C:/Users/ejane/scoop/apps/latex/curr
+ent/texmfs/install/fonts/type1/public/libertine/LinBiolinumT.pfb><C:/Users/ejan
+e/scoop/apps/latex/current/texmfs/install/fonts/type1/public/libertine/LinBioli
+numTB.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/p
+ublic/libertine/LinLibertineT.pfb><C:/Users/ejane/scoop/apps/latex/current/texm
+fs/install/fonts/type1/public/libertine/LinLibertineTB.pfb><C:/Users/ejane/scoo
+p/apps/latex/current/texmfs/install/fonts/type1/public/libertine/LinLibertineTB
+I.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/publi
+c/libertine/LinLibertineTI.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/
+install/fonts/type1/public/newtx/NewTXMI.pfb><C:/Users/ejane/scoop/apps/latex/c
+urrent/texmfs/install/fonts/type1/public/newtx/NewTXMI7.pfb><C:/Users/ejane/sco
+op/apps/latex/current/texmfs/install/fonts/type1/public/newtx/txexs.pfb><C:/Use
+rs/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/public/newtx/txmia
+X.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/publi
+c/newtx/txsym.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts
+/type1/public/newtx/txsys.pfb>
+Output written on D:\Github\ShadowLedger\Tesis\output\main.pdf (12 pages, 70508
+0 bytes).
+PDF statistics:
+ 600 PDF objects out of 1000 (max. 8388607)
+ 119 named destinations out of 1000 (max. 500000)
+ 138509 words of extra memory for PDF output out of 154059 (max. 10000000)
+

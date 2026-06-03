@@ -1,0 +1,85 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+Reallocating 'name_of_file' (item size: 1) to 21 items.
+The style file: ACM-Reference-Format.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'wiz_functions' (item size: 4) to 6000 items.
+Database file #1: references.bib
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'wiz_functions' (item size: 4) to 9000 items.
+Reallocating 'glb_str_end' (item size: 4) to 20 items.
+Reallocating 'glb_str_ptr' (item size: 4) to 20 items.
+Reallocating 'global_strs' (item size: 1) to 4000000 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Warning--empty address in albassam2021fraud
+Warning--empty address in bunz2020flyclient
+Warning--empty address in dziembowski2015proofs
+Warning--empty address in garay2015backbone
+Warning--empty address in hallandersen2024frida
+Warning--page numbers missing in both pages and numpages fields in hallandersen2024frida
+Warning--page numbers missing in both pages and numpages fields in hallandersen2025foundations
+Warning--page numbers missing in both pages and numpages fields in huang2022downsampling
+Warning--empty address in juels2007pors
+Warning--empty address in karger1997consistent
+Warning--empty address in kiayias2017ouroboros
+Warning--empty address in kokoriskogias2018omniledger
+Warning--empty address in luu2016elastico
+Warning--empty address in merkle1988digsig
+Warning--empty address in miller2014permacoin
+Warning--page numbers missing in both pages and numpages fields in miller2014permacoin
+Warning--empty address in mitra2019patterned
+Warning--empty address in moran2019simple
+Warning--page numbers missing in both pages and numpages fields in moran2019simple
+Warning--empty address in park2018spacemint
+Warning--page numbers missing in both pages and numpages fields in park2018spacemint
+Warning--empty address in perard2018erasure
+Warning--empty address in sompolinsky2015ghost
+Warning--empty address in wang2019monoxide
+Warning--page numbers missing in both pages and numpages fields in yang2024scaling
+Warning--empty address in yu2020coded
+Warning--empty address in zamani2018rapidchain
+You've used 34 entries,
+            6273 wiz_defined-function locations,
+            1733 strings with 25284 characters,
+and the built_in function-call counts, 37843 in all, are:
+= -- 4322
+> -- 1276
+< -- 0
++ -- 440
+- -- 444
+* -- 2836
+:= -- 3703
+add.period$ -- 168
+call.type$ -- 34
+change.case$ -- 261
+chr.to.int$ -- 34
+cite$ -- 61
+duplicate$ -- 3474
+empty$ -- 2440
+format.name$ -- 568
+if$ -- 8852
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 120
+newline$ -- 330
+num.names$ -- 238
+pop$ -- 1371
+preamble$ -- 1
+purify$ -- 528
+quote$ -- 0
+skip$ -- 1327
+stack$ -- 0
+substring$ -- 2804
+swap$ -- 316
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 950
+warning$ -- 27
+while$ -- 204
+width$ -- 0
+write$ -- 711
+(There were 27 warnings)

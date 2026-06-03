@@ -1,0 +1,99 @@
+%% ShadowLedger — CIIS 2026 full paper (ACM ICPS / TAPS), target 10--14 pp.
+%% Double-blind: `anonymous,review` hides authors + adds review line numbers.
+%% Camera-ready: remove `anonymous,review`, fill author block, real CCS + rights.
+%%
+%% STRUCTURE: each section lives in secciones/NN-name.tex (edit those, not this file).
+%% BUILD: pdflatex -> bibtex -> pdflatex x2  (references.bib must be copied to the
+%% output dir when using -output-directory; see compile-all.ps1).
+\documentclass[sigconf,anonymous,review]{acmart}
+
+\acmConference[CIIS 2026]{IX International Congress on Systems Engineering}{2026}{Lima, Peru}
+\settopmatter{printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+\pagestyle{plain}
+
+%% Figures, plots, pseudocode, listings.
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\scriptsize,columns=fullflexible,keepspaces=true,
+  frame=single,breaklines=true,aboveskip=4pt,belowskip=2pt}
+
+\begin{document}
+
+\title{ShadowLedger: A Storage-Scarce Blockchain with Erasure-Coded Fragmented History and Storage-Weighted Consensus}
+
+\author{Anonymous Author(s)}
+\affiliation{\institution{Submission to CIIS 2026}\country{}}
+
+\begin{abstract}
+Full nodes in conventional blockchains must store the \emph{entire} chain history, an
+unbounded, monotonically growing cost paid by every node, which centralizes validation
+around storage-rich operators and wastes resources through total replication. Proof-of-Work
+(PoW) chains compound this with energy spent purely to order blocks. We present
+\textbf{ShadowLedger}, a permissionless blockchain in which \emph{storage}, not
+computation, is the scarce, security-relevant resource. Every block body is encoded with
+Reed--Solomon into $K{+}M$ shards and distributed by rendezvous (highest-random-weight)
+hashing, so that \emph{no node stores the full history}: any $K$-of-$(K{+}M)$ shards
+reconstruct a block while fewer than $K$ reveal nothing. The right to produce blocks comes
+not from hashing but from a Proof-of-Storage discipline over an on-chain, bonded validator
+registry, gated against Sybil attacks by a one-shot registration PoW and protected by
+equivocation slashing. Leader election is \emph{weighted by proven storage}: validators submit
+on-chain storage-proof records for protocol-assigned shards, and a validator's block-production
+odds scale with its accepted proofs, decaying to a base weight if it stops proving. We are explicit
+about what remains: \emph{bond} slashing for missed proofs (the prototype penalizes by weight
+decay, not bond burn) and storage-weighted \emph{fork choice} (branch weight is still chain length)
+are documented gaps, not hidden ones. A heaviest-chain fork-choice and reorganization engine (state rewind
+plus replay) with depth-based finality provides convergence and hard irreversibility, and a
+PoW faucet anchored to committed block data lets capital-less newcomers join. We give the
+design, an analytical model showing per-node history storage scales as $O(1/n)$ in the
+number of nodes $n$, and measurements from a running Go prototype deployed on a public cloud
+node: at $n{=}128$ each node stores $\approx 28\times$ less than a full replica; Reed--Solomon
+coding sustains $0.3$--$1.4$\,GB/s with a fixed $1.5\times$ overhead; seven forged-block
+attack variants are rejected; two partitioned validators reconverge; and a zero-balance
+wallet earns its first coins on the live network. We articulate the central
+\emph{state-versus-history} separation that reconciles ``no node stores everything'' with
+stateless validation, present a threat model, and state the open problems
+(storage-weighted fork choice, succinct state commitments, external audit) candidly.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+<concept><concept_id>10002978.10003022</concept_id><concept_desc>Security and privacy~Distributed systems security</concept_desc><concept_significance>500</concept_significance></concept>
+<concept><concept_id>10003752.10003809.10010172</concept_id><concept_desc>Theory of computation~Distributed algorithms</concept_desc><concept_significance>300</concept_significance></concept>
+<concept><concept_id>10002951.10003227</concept_id><concept_desc>Information systems~Data management systems</concept_desc><concept_significance>300</concept_significance></concept>
+</ccs2012>
+\end{CCSXML}
+\ccsdesc[500]{Security and privacy~Distributed systems security}
+\ccsdesc[300]{Theory of computation~Distributed algorithms}
+\ccsdesc[300]{Information systems~Data management systems}
+
+\keywords{blockchain, erasure coding, Reed--Solomon, rendezvous hashing, proof-of-storage,
+data availability, consensus, finality, smart contracts}
+
+\maketitle
+
+\input{secciones/01-introduction}
+\input{secciones/02-background}
+\input{secciones/03-related-work}
+\input{secciones/04-system-overview}
+\input{secciones/05-history}
+\input{secciones/06-consensus}
+\input{secciones/06b-storage-audit}
+\input{secciones/07-fork-finality}
+\input{secciones/08-economics}
+\input{secciones/09-contracts}
+\input{secciones/10-threat-model}
+\input{secciones/11-implementation}
+\input{secciones/12-evaluation}
+\input{secciones/13-discussion}
+\input{secciones/14-rationale}
+\input{secciones/15-conclusion}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}

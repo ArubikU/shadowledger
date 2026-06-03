@@ -3,6 +3,7 @@
 package state
 
 import (
+	"crypto/sha256"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -66,6 +67,9 @@ type Validator struct {
 	Active  bool   `json:"active"`
 	Since   uint64 `json:"since"`             // height registered
 	Slashed bool   `json:"slashed,omitempty"` // permanently barred after equivocation
+	// On-chain proven-storage state (drives storage-weighted leader election).
+	StorageScore uint64 `json:"storage_score,omitempty"` // accepted storage proofs (capped)
+	LastProofAt  uint64 `json:"last_proof_at,omitempty"` // chain height of last accepted proof
 }
 
 // State is a thread-safe account ledger bound to a head height.
@@ -88,7 +92,13 @@ type State struct {
 	// AnchorBodyHash resolves a confirmed block's committed BodyHash by height
 	// (set by chain). nil disables faucet claims (e.g. unit tests without a chain).
 	AnchorBodyHash func(height uint64) ([32]byte, bool) `json:"-"`
-	lastLogs       []types.Log                          // events from the most recently applied block (transient)
+	// Storage-proof config + resolvers (set by chain; nil disables on-chain proofs).
+	StorageWindow   uint64                                            `json:"-"` // proof target must be within this many blocks of head
+	StorageMinDepth uint64                                            `json:"-"` // and at least this deep (confirmed)
+	StorageCap      uint64                                            `json:"-"` // max StorageScore bonus per validator
+	ShardAt         func(height uint64) ([32]byte, int, bool)         `json:"-"` // (blockID, totalShards, ok) for a height
+	ShardProofOK    func(height uint64, index int, shard []byte) bool `json:"-"` // verify shard vs committed hash
+	lastLogs        []types.Log                                       // events from the most recently applied block (transient)
 }
 
 // SetRegPoWBits sets the difficulty (leading zero bits) of the validator
@@ -131,6 +141,42 @@ func (s *State) InheritConfig(src *State) {
 	s.FaucetBits, s.FaucetAmount = bits, amt
 	s.FaucetCooldown, s.FaucetDepth = cd, depth
 	s.FaucetSource, s.AnchorBodyHash = srcAddr, anchor
+	src.mu.RLock()
+	w, md, cp, sa, pk := src.StorageWindow, src.StorageMinDepth, src.StorageCap, src.ShardAt, src.ShardProofOK
+	src.mu.RUnlock()
+	s.StorageWindow, s.StorageMinDepth, s.StorageCap = w, md, cp
+	s.ShardAt, s.ShardProofOK = sa, pk
+}
+
+// SetStorageProof configures on-chain proof-of-storage: the recency window and
+// min depth a proven block must satisfy, the max score bonus, and the resolvers
+// that read a block's shard commitment. Disabled if shardAt/proofOK are nil.
+func (s *State) SetStorageProof(window, minDepth, cap uint64, shardAt func(uint64) ([32]byte, int, bool), proofOK func(uint64, int, []byte) bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.StorageWindow, s.StorageMinDepth, s.StorageCap = window, minDepth, cap
+	s.ShardAt, s.ShardProofOK = shardAt, proofOK
+}
+
+// StorageWeights returns each active validator's leader-election weight: a base
+// of 1 plus its proven-storage bonus (capped), decayed to the base if it has not
+// proven storage within the window. Consensus reads this so block-production odds
+// track PROVEN storage; a validator that stops proving falls to the base weight.
+func (s *State) StorageWeights() map[crypto.Address]uint64 {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	out := make(map[crypto.Address]uint64, len(s.Validators))
+	for a, v := range s.Validators {
+		if !v.Active {
+			continue
+		}
+		w := uint64(1)
+		if s.StorageWindow == 0 || s.Height < v.LastProofAt+s.StorageWindow {
+			w += v.StorageScore // bonus still fresh
+		}
+		out[a] = w
+	}
+	return out
 }
 
 // SetChainID sets the network id transactions must carry.
@@ -313,6 +359,8 @@ var (
 	ErrBadFaucetPoW     = errors.New("state: invalid faucet proof-of-work")
 	ErrFaucetCooldown   = errors.New("state: faucet claim too soon (cooldown)")
 	ErrFaucetDry        = errors.New("state: faucet treasury exhausted")
+	ErrStorageDisabled  = errors.New("state: on-chain storage proofs disabled")
+	ErrBadStorageProof  = errors.New("state: invalid or stale storage proof")
 )
 
 // applySlash verifies equivocation evidence (two validly-signed conflicting
@@ -552,6 +600,48 @@ func (s *State) ApplyBlock(b *types.Block) error {
 				s.FaucetClaims = map[crypto.Address]uint64{}
 			}
 			s.FaucetClaims[t.From] = H
+		case types.KindStorageProof:
+			// On-chain proof of storage: prove you hold a pseudo-randomly assigned
+			// shard of a recent block. Data = targetHeight(8) || shardBytes. The shard
+			// INDEX is derived from (sender, blockID), so the prover cannot cherry-pick
+			// one easy shard; it must hold the shard the protocol assigns it.
+			if s.ShardAt == nil || s.ShardProofOK == nil {
+				rollback()
+				return ErrStorageDisabled
+			}
+			v := s.Validators[t.From]
+			if v == nil || !v.Active {
+				rollback()
+				return ErrNotValidator
+			}
+			if len(t.Data) < 8 {
+				rollback()
+				return ErrBadStorageProof
+			}
+			target := binary.BigEndian.Uint64(t.Data[0:8])
+			shard := t.Data[8:]
+			H := b.Header.Height
+			if target >= H || target+s.StorageWindow < H || H-target < s.StorageMinDepth {
+				rollback()
+				return ErrBadStorageProof
+			}
+			blockID, total, ok := s.ShardAt(target)
+			if !ok || total <= 0 {
+				rollback()
+				return ErrBadStorageProof
+			}
+			// Derive the assigned index deterministically: every node computes the same.
+			hh := sha256.Sum256(append([]byte(t.From), blockID[:]...))
+			index := int(binary.BigEndian.Uint64(hh[:8]) % uint64(total))
+			if !s.ShardProofOK(target, index, shard) {
+				rollback()
+				return ErrBadStorageProof
+			}
+			// Credit proven storage (capped); refresh recency for weight decay.
+			if v.StorageScore < s.StorageCap {
+				v.StorageScore++
+			}
+			v.LastProofAt = H
 		default: // KindTransfer
 			snap(t.To)
 			s.acct(t.To).Balance += t.Amount

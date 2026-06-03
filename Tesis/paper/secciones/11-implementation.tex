@@ -1,0 +1,55 @@
+\section{Implementation}
+\label{sec:impl}
+ShadowLedger is implemented in Go as a set of small, independently tested packages: erasure
+coding (over an RS library), rendezvous placement, the Proof-of-Storage engine, the chain
+manager (fork-choice tree, reorg, finality, state), the uint64 VM and the SHL compiler, the
+registration-PoW and faucet-PoW primitives, and the peer-to-peer layer. The network is deployed
+as a live prototype with a bootstrap node on a public cloud host plus additional peers;
+discovery uses DNS seeds and peer exchange with no central coordinator. The deterministic core
+is exercised by an automated test suite spanning roughly sixteen packages. Table~\ref{tab:modules}
+lists the principal modules and their responsibilities; the separation keeps each mechanism
+independently testable, which is how the security and functional checks of \S\ref{sec:eval} are
+obtained in isolation before integration.
+
+\begin{table}[t]
+\centering
+\caption{Principal implementation modules and responsibilities.}
+\label{tab:modules}
+\small
+\begin{tabular}{ll}
+\toprule
+module & responsibility \\
+\midrule
+erasure      & RS encode/decode, shard hashing, reconstruction \\
+placement    & HRW shard assignment, holder selection \\
+consensus    & Proof-of-Storage leader election, round fallback \\
+chain        & fork-choice tree, reorg, finality, block apply \\
+state        & accounts, validator registry, contract storage \\
+vm + shl     & uint64 VM, gas metering, SHL compiler \\
+regpow       & one-shot registration PoW (Sybil gate) \\
+faucet       & onboarding PoW, anchor verification \\
+p2p          & DNS-seed/peer-exchange discovery, gossip, sync \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Networking and discovery.} Membership is maintained without any central directory. A new
+node bootstraps from a small set of DNS seeds baked into the binary, then learns further peers by
+exchange (each peer shares a sample of its own peer set), so the view of membership grows and heals
+under churn, which is the same set the placement module feeds to HRW. Two channels carry traffic: a
+control channel gossips headers and full blocks for state application, and a shard-transfer channel
+serves and requests individual shards for reconstruction. Genesis is derived deterministically from
+the embedded parameters rather than gossiped, so every node that ships the same binary computes an
+identical block~$0$ and therefore an identical chain of prev-hash links, which is what lets a
+zero-configuration node join a running network safely.
+
+\textbf{Deployment notes.} The prototype runs as zero-configuration mainnet: network parameters
+(genesis, seed nodes, erasure policy) are baked into the binary, so a freshly installed node joins
+automatically, in the spirit of how reference clients ship their genesis and seeds. The bootstrap
+node runs on a single small cloud instance behind a standard firewall; the only operational
+prerequisite is opening the control/transfer ports. Software updates are \emph{advisory}: a node
+reports a newer release but never auto-applies it, since silent auto-update would be a central
+kill switch in a system whose point is decentralization. We treat the live network as a testnet:
+the tokens carry no real value, which lets us exercise consensus, reorg, finality, the faucet, and
+contract deployment on a genuinely public deployment without inviting financial risk before an
+external audit.

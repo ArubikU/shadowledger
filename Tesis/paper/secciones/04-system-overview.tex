@@ -1,0 +1,78 @@
+\section{System Overview}
+\label{sec:overview}
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners, minimum height=9mm, minimum width=24mm, align=center, fill=gray!6},
+  io/.style={draw, minimum height=8mm, align=center, fill=blue!6},
+  arr/.style={-{Stealth[length=2mm]}, thick}]
+  \node[io] (tx) {Transactions\\(mempool)};
+  \node[box, right=10mm of tx] (cons) {Consensus\\(PoStorage\\leader election)};
+  \node[box, right=10mm of cons] (chain) {Chain manager\\(fork-choice,\\reorg, finality)};
+  \node[io, right=10mm of chain] (state) {Local state\\(balances, VM\\storage)};
+  \node[box, below=9mm of cons] (eras) {Erasure layer\\(RS encode/\\decode)};
+  \node[box, below=9mm of chain] (place) {Placement\\(HRW shard\\assignment)};
+  \node[io, below=9mm of state] (disk) {Local shards\\(assigned only)};
+  \node[box, below=9mm of tx] (p2p) {P2P\\(DNS seed +\\peer exchange)};
+  \draw[arr] (tx) -- (cons);
+  \draw[arr] (cons) -- node[above,font=\scriptsize]{block} (chain);
+  \draw[arr] (chain) -- node[above,font=\scriptsize]{apply} (state);
+  \draw[arr] (chain) -- (eras);
+  \draw[arr] (eras) -- node[above,font=\scriptsize]{shards} (place);
+  \draw[arr] (place) -- node[above,font=\scriptsize]{keep mine} (disk);
+  \draw[arr] (p2p) -- (cons);
+  \draw[arr] (p2p) |- (place);
+  \draw[arr] (disk) -- node[right,font=\scriptsize]{$K$-of-$T$} node[left,font=\scriptsize]{reconstruct} (place);
+\end{tikzpicture}
+\caption{ShadowLedger node architecture. A leader assembles transactions, the chain manager
+applies the state transition (kept local) and hands the body to the erasure layer; HRW placement
+keeps only the node's assigned shards and discards the full body. Old bodies are reconstructed on
+demand from any $K$-of-$T$ shards gathered over the P2P layer.}
+\label{fig:arch}
+\end{figure*}
+
+\begin{table}[t]
+\centering
+\caption{Notation.}
+\label{tab:notation}
+\small
+\begin{tabular}{ll}
+\toprule
+symbol & meaning \\
+\midrule
+$n$ & number of live nodes \\
+$K,M$ & RS data / parity shards; $T=K{+}M$ \\
+$r$ & holders per shard (replication factor) \\
+$|b|$ & block body size \\
+$f$ & per-node unavailability probability \\
+$F$ & finality depth (blocks behind head) \\
+$N$ & faucet PoW difficulty (leading zero bits) \\
+$\tau$ & target block time \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A ShadowLedger node runs five cooperating subsystems (Figure~\ref{fig:arch}): (i) an \emph{erasure layer} that encodes
+and reconstructs block bodies; (ii) a \emph{placement} module computing HRW shard assignments
+from the live membership; (iii) a \emph{consensus engine} (Proof-of-Storage leader election
+over the bonded registry); (iv) a \emph{chain manager} holding the fork-choice tree, reorg, and
+finality logic plus the local state; and (v) a \emph{peer-to-peer} layer with DNS-seed and
+peer-exchange discovery (no central server). The lifecycle of a block is: a leader assembles
+transactions, computes the state transition, signs a header committing the body hash and
+per-shard hashes, and broadcasts the block; each node applies the state transition, then keeps
+only its HRW-assigned shards and discards the full body. Reconstruction is on demand: a node
+that needs an old body gathers $K$ shards from current holders and checks them against the
+committed hashes.
+
+\textbf{Design goals.} The architecture is shaped by five requirements that the rest of the paper
+returns to. \textbf{G1 (storage scarcity):} per-node history cost should shrink as the network
+grows, not stay constant (\S\ref{sec:storagemodel}). \textbf{G2 (fast validation):} validating a
+new block must not require a network round-trip, so the working set stays local
+(\S\ref{sec:history}). \textbf{G3 (permissionless, Sybil-resistant entry):} anyone may join as a
+validator, but identities must carry a cost (\S\ref{sec:consensus}). \textbf{G4 (convergence and
+irreversibility):} temporary partitions must heal, and sufficiently deep history must become
+unchangeable (\S\ref{sec:fork}). \textbf{G5 (capital-free onboarding):} a participant with no
+tokens must have a path to acquire a small amount without a trusted faucet operator
+(\S\ref{sec:econ}). No single mechanism meets all five; the contribution is their composition.

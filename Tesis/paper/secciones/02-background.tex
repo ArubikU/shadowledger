@@ -1,0 +1,60 @@
+\section{Background}
+\label{sec:bg}
+\textbf{Reed--Solomon erasure codes.} A Reed--Solomon (RS) code~\cite{reed1960polynomial}
+encodes $K$ data symbols into $K{+}M$ symbols such that the original is recoverable from
+\emph{any} $K$ of them; it tolerates up to $M$ erasures. Compared with $r$-fold replication
+(which costs $r\times$ storage to survive $r{-}1$ losses), an $(K,M)$ RS code survives $M$
+losses at only $(K{+}M)/K$ overhead. Crucially, RS is all-or-nothing below the threshold:
+fewer than $K$ symbols determine the message no better than zero symbols do, which doubles as
+a confidentiality property for partial holders.
+
+\emph{Worked example.} Take $K{=}4,M{=}2$, so $T{=}6$ shards tolerate $M{=}2$ erasures at
+$T/K=1.5\times$ overhead. A $1$\,MiB body splits into four $256$\,KiB data shards plus two
+$256$\,KiB parity shards; any four of the six rebuild the megabyte. Triple replication would
+instead store $3$\,MiB to survive two losses, twice the cost for the same fault tolerance.
+This $1.5\times$-versus-$3\times$ gap, generalized over a growing node set, is the lever
+ShadowLedger pulls (\S\ref{sec:storagemodel}).
+
+\textbf{Rendezvous (HRW) hashing.} Given a key and a set of nodes, highest-random-weight
+hashing~\cite{thaler1998rendezvous} ranks nodes by $h(\text{key},\text{node})$ and assigns the
+key to the top-ranked node(s). Unlike ring-based consistent hashing~\cite{karger1997consistent},
+each key's ranking is independent, so adding or removing a node reshuffles only the keys that
+node would win or lose, ideal for shard placement under churn. Formally, for a key $\kappa$, node
+set $V$, and replication $r$, the holders are the top-$r$ nodes by weight,
+\[
+\textsc{Holders}(\kappa,V,r) \;=\; \operatorname*{top\text{-}}r_{v\in V}\; H(\kappa \,\|\, v),
+\]
+and a single highest-weight node is the special case $r{=}1$ used for leader election with
+$\kappa=(\textit{prevHash},h,t)$. Adding a node $v'$ changes the holder set of $\kappa$ only if
+$H(\kappa\|v')$ ranks within the top $r$, so the expected fraction of keys reassigned on a single
+join is $r/|V|$, which is the minimal disruption a placement scheme can achieve. We use HRW for
+both shard placement and leader election, keeping one source of deterministic, agreement-free
+randomness.
+
+\textbf{Data availability.} When blocks are erasure-coded and dispersed, light or partial
+nodes need assurance the data \emph{exists} and can be reconstructed. Fraud and
+data-availability proofs~\cite{albassam2021fraud}, coded Merkle trees~\cite{yu2020coded}, and
+the formal theory of data-availability sampling~\cite{hallandersen2025foundations,hallandersen2024frida}
+show that with $2$D/coded commitments a verifier can probabilistically check availability by
+sampling a few shards: if a fraction of the coded data is missing, an erasure-coded block cannot
+be reconstructed, and that missing fraction is exactly what random sampling is overwhelmingly
+likely to hit, so a withholding producer is caught with few queries. These results target
+light clients that never store blocks. ShadowLedger's setting is different, its participants
+\emph{do} store shards, so it uses a simpler operational notion suited to a fragment-holding
+network (\S\ref{sec:history}): a block is canonical only if the network can reconstruct it to its
+signed commitment, and a node that needs a body gathers $K$ shards and verifies the hash. Layering
+succinct DA sampling on top, to protect non-storing light clients, is compatible and left as
+future work.
+
+\textbf{Storage-based consensus.} Replacing PoW's wasted work with a useful resource is a
+recurring goal. Proofs of space~\cite{dziembowski2015proofs} and
+space-time~\cite{moran2019simple} prove dedicated disk; SpaceMint~\cite{park2018spacemint} and
+Chia~\cite{cohen2019chia} build currencies on them. Proofs of
+retrievability~\cite{juels2007pors}, proof-of-replication~\cite{fisch2018scaling},
+decentralized storage networks such as Storj~\cite{wilkinson2016storj}, and
+Permacoin~\cite{miller2014permacoin} bind rewards to stored data. The energy contrast is the
+motivation: PoW chains spend electricity per block forever, whereas storing data is a one-time
+cost amortized over the data's lifetime, so a storage-based right to produce blocks converts an
+ongoing burn into a useful, reusable asset. ShadowLedger's Proof-of-Storage is closest to Permacoin
+in spirit but applies to the chain's \emph{own} erasure-coded history rather than an external
+archive, so the resource being proved is the very data the network must keep anyway.

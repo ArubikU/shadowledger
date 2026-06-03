@@ -1,0 +1,35 @@
+\section{Economics and Capital-Free Onboarding}
+\label{sec:econ}
+\textbf{Issuance.} The native unit \$SHARD\ follows a Bitcoin-style schedule: a fixed maximum
+supply and a block subsidy that halves every fixed number of blocks, paid to the block's validator
+as a coinbase together with the transaction fees of that block. Two invariants keep the schedule
+deterministic and non-inflationary. First, only the subsidy counts against the cap; fees are
+recycled from payers to the producer, never newly minted, so total issuance is exactly the sum of
+the (geometrically decaying) subsidies and is bounded by the cap. Second, the faucet pays from a
+pre-funded treasury balance rather than minting, so onboarding grants do not perturb the schedule.
+A node validates the coinbase against the schedule on every block, rejecting any block whose
+coinbase exceeds the height's allowed subsidy plus its fees, so a producer cannot pay itself more
+than the protocol permits.
+
+\textbf{PoW faucet.} A brand-new follower holds no \$SHARD\ and can pay neither fees nor a bond.
+The faucet is the on-ramp: the follower mines a nonce so that
+$H(\textit{chainID}\,\|\,\textit{addr}\,\|\,\textit{anchorBodyHash}\,\|\,\textit{nonce})$ has $N$
+leading zero bits, and claims a small fixed payout drawn from the treasury (\emph{not} newly
+minted, so the cap is untouched). The anchor is a recent block's committed body
+hash, present in the signed header, hence verifiable by \emph{every} node without holding the
+fragmented body, the same data-availability-safe principle as the rest of the design. The anchor
+is unknown until the block exists, so claims cannot be precomputed; a per-address cooldown and
+the tunable hashing cost rate-limit abuse, giving a Sybil price linear in the number of
+identities (Algorithm~\ref{alg:faucet}).
+
+\begin{algorithm}[t]
+\SetAlgoLined\DontPrintSemicolon
+\KwIn{claim tx from $a$ at height $h$: (anchorHt, nonce); params $N,F_{\!f},\textit{cool},\textit{amt}$}
+\lIf{$\textit{anchorHt}+F_{\!f}>h$ \textbf{or} $h-\textit{anchorHt}>256$}{reject \tcp*{unconfirmed/stale}}
+$\textit{anchor} \leftarrow \textsc{HeaderBodyHash}(\textit{anchorHt})$ \tcp*{from signed header; no body needed}
+\lIf{$\textsc{Lz}(H(\textit{chainID}\|a\|\textit{anchor}\|\textit{nonce}))<N$}{reject \tcp*{bad PoW}}
+\lIf{$h<\textit{lastClaim}[a]+\textit{cool}$}{reject \tcp*{cooldown}}
+treasury $\!-\!=\textit{amt}$;\ balance$[a]\!+\!=\textit{amt}$;\ $\textit{lastClaim}[a]\leftarrow h$\;
+\caption{Faucet claim verification (\textsc{Lz}: leading-zero-bit count).}
+\label{alg:faucet}
+\end{algorithm}

@@ -1,0 +1,68 @@
+\section{Proof-of-Storage Consensus}
+\label{sec:consensus}
+\textbf{Bonded validator registry.} Validators are on-chain state, not configuration. A node
+joins by submitting a \emph{register} transaction that locks a bond (skin-in-the-game, in the
+spirit of PoS deposits~\cite{kiayias2017ouroboros,buterin2017casper}) and solves a one-shot
+registration PoW. The PoW is \emph{not} block production: it is a Sybil gate that makes mass
+fake identities expensive and seeds shard-assignment randomness, exactly as one-shot PoW is
+used for committee formation in Elastico~\cite{luu2016elastico}. The active registry is read
+live from state, so registration changes the producer set with no reconfiguration round and
+every node derives the same set deterministically.
+
+The two entry costs are complementary. The \emph{bond} is recoverable capital that creates
+skin-in-the-game: it is returned on a clean exit but burned on equivocation
+(\S\ref{sec:fork},~\ref{sec:threat}), so it deters misbehavior rather than entry. The
+\emph{registration PoW} is a one-time sunk compute cost that deters \emph{mass} entry: minting $m$
+Sybil identities costs $m$ independent puzzle solutions, making large fake fleets expensive even if
+each bond is small. The difficulty is a tunable parameter, set so a single honest registration is
+sub-second while a fleet of thousands is costly; \S\ref{sec:eval} reports the analogous cost curve
+for the faucet PoW, which uses the same primitive. Because the puzzle is bound to the registering
+address, its solution doubles as an unbiased seed for that identity's shard-assignment and
+leader-election ranking, so a validator cannot choose which shards or slots it will win.
+
+\textbf{Storage-weighted leader election.} For height $h$ and round $t$, the leader is chosen by
+HRW over the active validators seeded by $(\textit{prevHash},h,t)$, but \emph{weighted by proven
+storage}: each validator is given $1+\min(\textit{score},C)$ virtual HRW entries, where
+$\textit{score}$ is its count of accepted on-chain storage proofs (\S\ref{sec:audit}) and $C$ caps
+the bonus. The weight is integer-only, so every node computes the identical election from
+deterministic chain state, and a validator that stops proving decays to the base weight of one. The
+rank depends on the previous block hash, so it is unpredictable until the parent is fixed and cannot
+be ground out in advance (\S\ref{sec:threat}). Block-production odds therefore track demonstrated
+storage rather than mere registration.
+
+\textbf{Implementation status (what is built vs.\ specified).} To avoid overclaiming, we separate
+the two precisely. \emph{Built and evaluated}: the bonded on-chain registry, the one-shot
+registration PoW, the on-chain storage-proof transaction and its verification against committed
+shard hashes (\S\ref{sec:audit}), storage-weighted HRW leader election driven by those proofs with
+round fallback, equivocation slashing, the reorg engine, and depth-based finality. \emph{Specified
+but not yet built}: slashing a validator's \emph{bond} for missed storage proofs (the prototype
+applies the softer penalty of election-weight decay, not bond burn) and storage-weighted
+\emph{fork choice} (branch weight remains chain length, \S\ref{sec:fork}). The election is genuinely
+storage-coupled in the running binary; what is deferred is the harsher economic punishment and the
+extension of weighting from leader selection to branch selection.
+
+\textbf{Liveness fallback.} A silent leader must not stall the chain. Round $t$ is derived from
+elapsed time since the parent ($t=\lfloor\Delta/\tau\rfloor$ for block time $\tau$); if round-0's
+leader produces nothing within one block time, round $1$ elects a \emph{different} validator,
+and so on. Headers carry $t$, and a block is rejected unless its timestamp is consistent with
+its claimed round ($\textit{ts}\ge \textit{prevTs}+t\tau$), so a high round cannot be claimed
+early. Genesis uses a fixed timestamp to anchor the schedule identically on all nodes
+(Algorithm~\ref{alg:leader}).
+
+\begin{algorithm}[t]
+\SetAlgoLined\DontPrintSemicolon
+\KwIn{height $h$, parent header $P$, local time $\textit{now}$, block time $\tau$, my id $\textit{me}$}
+$V \leftarrow \textsc{ActiveValidators}()$ \tcp*{live from on-chain registry}
+$t \leftarrow \max(0,\lfloor(\textit{now}-P.\textit{ts})/\tau\rfloor)$ \tcp*{elapsed rounds}
+$\textit{leader} \leftarrow \arg\max_{v\in V}\ \textsc{HRW}(P.\textit{hash},h,t,v)$\;
+\If{$\textit{leader}=\textit{me}$ \textbf{and} have-work}{
+  build block at $(h,t)$ with $\textit{ts}\ge P.\textit{ts}+t\tau$; sign; broadcast\;
+}
+\caption{Proof-of-Storage leader election with round fallback (run each tick).}
+\label{alg:leader}
+\end{algorithm}
+
+\textbf{Slashing.} Two validly signed, conflicting headers at the same height by one validator
+are provable equivocation. A \emph{slash} transaction carries the two headers as evidence; it
+burns the offender's bond (a fraction rewards the reporter) and permanently bars the identity,
+following Casper/Tendermint practice~\cite{buterin2017casper,buchman2018gossip}.

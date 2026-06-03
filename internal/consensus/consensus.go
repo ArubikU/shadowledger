@@ -96,11 +96,18 @@ func (a *Authority) IsValidator() bool { return a.Self != "" && a.set[a.Self] }
 // without any config change. Optionally gates the local node on its storage
 // score (advisory).
 type PoStorage struct {
-	validators func() []crypto.Address // live on-chain active validator set
+	validators func() []crypto.Address          // live on-chain active validator set
+	weights    func() map[crypto.Address]uint64 // proven-storage election weights (nil = uniform)
 	Self       crypto.Address
 	scores     *pos.Scoreboard // optional advisory storage gate (nil = disabled)
 	minRatio   float64
 }
+
+// SetWeights installs a proven-storage weight provider so leader election is
+// weighted by on-chain proven storage (state.StorageWeights). nil keeps it
+// uniform. Weights are derived from deterministic chain state, so every node
+// computes the same election.
+func (p *PoStorage) SetWeights(w func() map[crypto.Address]uint64) { p.weights = w }
 
 // StaticValidators wraps a fixed slice as a validator provider (tests/config).
 func StaticValidators(vs []crypto.Address) func() []crypto.Address {
@@ -120,7 +127,7 @@ func (p *PoStorage) setList() (map[crypto.Address]bool, []crypto.Address) {
 	return validatorSet(p.validators())
 }
 
-func leaderScore(prev types.Hash, v crypto.Address, height uint64, round uint32) uint64 {
+func leaderScore(prev types.Hash, v crypto.Address, height uint64, round uint32, copy uint64) uint64 {
 	h := sha256.New()
 	h.Write(prev[:])
 	h.Write([]byte(v))
@@ -130,19 +137,37 @@ func leaderScore(prev types.Hash, v crypto.Address, height uint64, round uint32)
 	var rb [4]byte
 	binary.BigEndian.PutUint32(rb[:], round)
 	h.Write(rb[:])
+	binary.BigEndian.PutUint64(hb[:], copy)
+	h.Write(hb[:])
 	return binary.BigEndian.Uint64(h.Sum(nil)[:8])
 }
 
 // LeaderFor returns the elected validator for (height, prev, round). Each round
-// reshuffles the ranking, so the leader changes when a round advances.
+// reshuffles the ranking, so the leader changes when a round advances. When a
+// proven-storage weight provider is set, each validator is given `weight` virtual
+// HRW entries (integer-only, so determinism holds across nodes), making its odds
+// of holding the top entry proportional to its proven storage; a validator that
+// stops proving falls to the base weight of 1.
 func (p *PoStorage) LeaderFor(height uint64, prev types.Hash, round uint32) crypto.Address {
 	_, list := p.setList()
+	var w map[crypto.Address]uint64
+	if p.weights != nil {
+		w = p.weights()
+	}
 	var best crypto.Address
 	var bestScore uint64
 	for _, v := range list {
-		s := leaderScore(prev, v, height, round)
-		if best == "" || s > bestScore || (s == bestScore && v < best) {
-			best, bestScore = v, s
+		copies := uint64(1)
+		if w != nil {
+			if cw, ok := w[v]; ok && cw > 1 {
+				copies = cw
+			}
+		}
+		for j := uint64(0); j < copies; j++ {
+			s := leaderScore(prev, v, height, round, j)
+			if best == "" || s > bestScore || (s == bestScore && v < best) {
+				best, bestScore = v, s
+			}
 		}
 	}
 	return best

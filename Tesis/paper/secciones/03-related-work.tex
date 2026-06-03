@@ -1,0 +1,70 @@
+\section{Related Work}
+\label{sec:related}
+\textbf{Coded and low-storage blockchains.} Several systems erasure-code blocks to shrink
+per-node storage: low-storage nodes that keep RS fragments~\cite{perard2018erasure}, secure
+fountain (LT-code) architectures~\cite{kadhe2019sef}, entropy-based
+downsampling~\cite{huang2022downsampling}, and failure-pattern-aware
+codes~\cite{mitra2019patterned}; a recent survey maps the field~\cite{yang2024scaling}. These
+works typically retain a conventional consensus and treat coding as a storage optimization
+layered on top. ShadowLedger instead makes fragmentation the \emph{default} for all history
+\emph{and} couples shard placement to the consensus membership set, so storage and
+block-production rights are one mechanism rather than two. The closest points of comparison
+differ in emphasis: erasure-coded low-storage nodes~\cite{perard2018erasure} keep RS fragments
+but rely on a fixed set of full nodes to bootstrap from, and the secure-fountain
+architecture~\cite{kadhe2019sef} analyzes precisely the storage-versus-bootstrap-bandwidth
+tradeoff we revisit empirically in \S\ref{sec:eval}; coded Merkle trees~\cite{yu2020coded} and
+downsampling~\cite{huang2022downsampling} optimize availability proofs and per-node footprint
+respectively. None of these ties the act of \emph{storing a shard} to the right to \emph{produce
+a block}, which is ShadowLedger's organizing idea.
+
+\textbf{Data-availability designs.} LazyLedger/Celestia~\cite{albassam2019lazyledger} reduces
+block validity to data availability; coded Merkle trees~\cite{yu2020coded} and DA
+sampling~\cite{hallandersen2025foundations,hallandersen2024frida} give succinct availability
+guarantees. ShadowLedger shares the availability-first philosophy but targets a
+fragment-storing full-node network rather than a light-client sampling regime; succinct DA
+proofs are complementary future work (\S\ref{sec:disc}).
+
+\textbf{Sharding.} Elastico~\cite{luu2016elastico}, OmniLedger~\cite{kokoriskogias2018omniledger},
+RapidChain~\cite{zamani2018rapidchain}, and Monoxide~\cite{wang2019monoxide} scale throughput by
+partitioning \emph{transactions/state} across committees. ShadowLedger instead partitions
+\emph{storage of history} while keeping a single global state and a single ordering, so it does
+not inherit cross-shard atomicity costs; the lineage's use of one-shot PoW for committee
+randomness directly informs our registration gate.
+
+\textbf{Storage markets versus storage ledgers.} Filecoin~\cite{fisch2018scaling} and
+Storj~\cite{wilkinson2016storj} are decentralized storage \emph{markets}: their purpose is to store
+arbitrary client data for pay, with a blockchain as the accounting layer beside that storage.
+ShadowLedger inverts the relationship. The data being stored \emph{is} the chain's own history, and
+storing it \emph{is} the consensus right, so there is no separate payload market and no oracle
+problem of proving that externally supplied data was kept; the verifier already holds the
+commitment in a signed header. The cost of this simplicity is generality: the only thing the network
+stores is itself. Permacoin~\cite{miller2014permacoin} sits between the two, repurposing mining to
+preserve a fixed external dataset, which ShadowLedger removes entirely.
+
+\textbf{Consensus and finality.} Our heaviest-chain rule descends from
+GHOST~\cite{sompolinsky2015ghost}; depth-based finality is grounded in the common-prefix
+guarantees of the Bitcoin backbone analysis~\cite{garay2015backbone}. The bonded-validator
+layer follows Proof-of-Stake practice, Ouroboros~\cite{kiayias2017ouroboros} for the security
+model, Tendermint~\cite{buchman2018gossip} and Casper/Gasper~\cite{buterin2017casper,buterin2020gasper}
+for deposits, equivocation slashing, and finality gadgets. Light-client sync over fragmented
+history relates to FlyClient~\cite{bunz2020flyclient} and Merkle
+commitments~\cite{merkle1988digsig}.
+
+\begin{table}[t]
+\centering
+\caption{Positioning of ShadowLedger against representative prior work.}
+\label{tab:position}
+\small
+\begin{tabular}{lccc}
+\toprule
+System & History storage & Block production & Placement \\
+\midrule
+Bitcoin~\cite{nakamoto2008bitcoin}        & full replica   & PoW            & n/a \\
+Coded nodes~\cite{perard2018erasure}      & RS fragments   & inherited      & ad hoc \\
+SpaceMint~\cite{park2018spacemint}        & full replica   & PoSpace        & n/a \\
+Permacoin~\cite{miller2014permacoin}      & external data  & PoRet          & assigned \\
+OmniLedger~\cite{kokoriskogias2018omniledger} & sharded state & PoS/BFT     & committee \\
+\textbf{ShadowLedger}                     & RS fragments   & Proof-of-Storage & HRW \\
+\bottomrule
+\end{tabular}
+\end{table}

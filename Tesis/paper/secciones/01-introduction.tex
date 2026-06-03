@@ -1,0 +1,66 @@
+\section{Introduction}
+A defining and growing cost of operating a full node in Bitcoin~\cite{nakamoto2008bitcoin} or
+Ethereum is storing the complete transaction history. This cost is \emph{unbounded}, it
+only ever increases, and it is paid by \emph{every} full node, because the classical
+security model replicates the whole chain everywhere. The practical consequence is
+centralization: as history accumulates, fewer participants can afford to validate
+independently, and the network drifts toward a small set of storage-rich operators. Energy
+is the second well-known cost: PoW chains expend electricity solely to decide who appends the
+next block, work that is intrinsically discarded.
+
+The magnitude is not hypothetical. Production chains accumulate history into the hundreds of
+gigabytes and beyond, and the requirement that every validating node retain all of it is widely
+recognized as a scalability and decentralization bottleneck, motivating an entire line of
+coded-storage work~\cite{yang2024scaling,perard2018erasure}. Yet most such work treats coding as
+an optimization bolted onto an unchanged consensus. We instead ask what a chain looks like when
+fragmentation is the \emph{default} and when block-production rights are derived from the very act
+of storing fragments.
+
+We take the position that the scarce, security-relevant resource of a blockchain should be
+\emph{storage of the network's own data}, not wasted hashing, and that \emph{no single node
+should need the entire history} to participate. \textbf{ShadowLedger} is our realization of
+this position. Its thesis has two parts. First, block \emph{history} is erasure-coded and
+scattered across the network so each node retains only a fraction, yet any sufficiently large
+set of nodes can reconstruct any block on demand. Second, the right to produce blocks is
+earned by \emph{proving storage} of assigned fragments over a bonded validator set, rather
+than by burning energy; the only PoW present is a one-shot Sybil gate and a small onboarding
+faucet, never the block-ordering mechanism.
+
+Realizing this is not free of tension. If history is not stored whole, validators must still
+be able to recover it, or a malicious producer could withhold data; this is the
+\emph{data-availability} problem~\cite{albassam2021fraud,yu2020coded}. If block production is
+permissionless, the system must resist Sybil flooding and equivocation. And if storage
+replaces hashing, the protocol must measure and reward it without a centralized auditor. We
+address each of these and report what a working implementation achieves and what it does not.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+  \item An architecture that fragments \emph{history} (block bodies) with Reed--Solomon coding
+  and rendezvous placement while keeping \emph{state} (balances, nonces, contract storage)
+  materialized locally, the \emph{state-versus-history} separation that reconciles ``no node
+  stores everything'' with fast stateless validation (\S\ref{sec:history}).
+  \item A Proof-of-Storage consensus with a bonded on-chain validator registry, a one-shot
+  registration PoW as a Sybil gate, HRW leader election with a round-based liveness fallback,
+  equivocation slashing, a heaviest-chain reorg engine, and depth-based finality
+  (\S\ref{sec:consensus}, \S\ref{sec:fork}). Leader election is weighted by
+  on-chain proven storage (validators submit storage-proof records that drive election odds); what
+  remains specified-not-built is \emph{bond} slashing for missed proofs (the prototype uses weight
+  decay) and storage-weighted \emph{fork choice} (\S\ref{sec:audit}, \S\ref{sec:disc}).
+  \item A capital-free onboarding mechanism (a PoW faucet) and a deterministic contract VM with
+  a Solidity-like language, both anchored to committed block data and thus verifiable without
+  holding the fragmented body (\S\ref{sec:econ}, \S\ref{sec:vm}).
+  \item An analytical storage model ($O(1/n)$ per-node history) and an empirical evaluation of a
+  live Go prototype, with an explicit threat model and an honest account of open problems
+  (\S\ref{sec:threat}--\S\ref{sec:disc}).
+\end{enumerate}
+
+The paper is organized as follows. \S\ref{sec:bg} and \S\ref{sec:related} review the primitives
+(erasure coding, rendezvous hashing, data availability, storage-based consensus) and position
+ShadowLedger against prior coded blockchains, sharding, and proof-of-storage systems.
+\S\ref{sec:overview} states the design goals and gives the node architecture. \S\ref{sec:history}
+develops the erasure-coded history and its storage model; \S\ref{sec:consensus}--\ref{sec:fork}
+the Proof-of-Storage consensus, storage auditing, fork choice, and finality; \S\ref{sec:econ} the
+economics and capital-free onboarding; and \S\ref{sec:vm} the contract VM. \S\ref{sec:threat}
+presents the threat model, \S\ref{sec:impl} the implementation, and \S\ref{sec:eval} the
+evaluation. \S\ref{sec:disc}--\ref{sec:rationale} discuss limitations, applicability, and design
+rationale before \S\ref{sec:concl} concludes.

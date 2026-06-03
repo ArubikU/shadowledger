@@ -37,6 +37,31 @@ func TestLeaderDeterministicAndInSet(t *testing.T) {
 	}
 }
 
+func TestStorageWeightedElection(t *testing.T) {
+	vs := addrs(2)
+	low, high := vs[0], vs[1]
+	e := NewPoStorage(StaticValidators(vs), low, nil, 0.8)
+	// `high` has proven storage (weight 65); `low` has the base weight 1.
+	e.SetWeights(func() map[crypto.Address]uint64 {
+		return map[crypto.Address]uint64{low: 1, high: 65}
+	})
+	var prev types.Hash
+	wins := map[crypto.Address]int{}
+	for h := uint64(0); h < 2000; h++ {
+		prev[0] = byte(h)
+		prev[1] = byte(h >> 8)
+		wins[e.LeaderFor(h, prev, 0)]++
+	}
+	// With ~65:1 weighting, the high-storage validator should win the large
+	// majority; assert at least 90% rather than an exact ratio.
+	if wins[high]*10 < 9*(wins[low]+wins[high]) {
+		t.Fatalf("storage weighting weak: high=%d low=%d", wins[high], wins[low])
+	}
+	if wins[low] == 0 {
+		t.Fatal("base-weight validator never won (should still win occasionally)")
+	}
+}
+
 func TestLeaderRotates(t *testing.T) {
 	vs := addrs(5)
 	e := NewPoStorage(StaticValidators(vs), vs[0], nil, 0.8)

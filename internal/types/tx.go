@@ -19,13 +19,14 @@ type Hash = merkle.Hash
 
 // Transaction kinds.
 const (
-	KindTransfer   uint8 = 0 // plain value transfer
-	KindDeploy     uint8 = 1 // deploy a contract (Data = bytecode)
-	KindCall       uint8 = 2 // call a contract (To = contract, Data = input words)
-	KindRegister   uint8 = 3 // register as a validator, locking Amount as a bond
-	KindUnregister uint8 = 4 // exit the validator set, unlocking the bond
-	KindSlash      uint8 = 5 // report equivocation; Data = two conflicting signed headers
-	KindFaucet     uint8 = 6 // claim faucet $SHARD via PoW; Data = anchorHeight(8) || nonce(8)
+	KindTransfer     uint8 = 0 // plain value transfer
+	KindDeploy       uint8 = 1 // deploy a contract (Data = bytecode)
+	KindCall         uint8 = 2 // call a contract (To = contract, Data = input words)
+	KindRegister     uint8 = 3 // register as a validator, locking Amount as a bond
+	KindUnregister   uint8 = 4 // exit the validator set, unlocking the bond
+	KindSlash        uint8 = 5 // report equivocation; Data = two conflicting signed headers
+	KindFaucet       uint8 = 6 // claim faucet $SHARD via PoW; Data = anchorHeight(8) || nonce(8)
+	KindStorageProof uint8 = 7 // prove you store a committed shard; Data = height(8) || index(8) || shardBytes
 )
 
 // EquivocationEvidence is two conflicting headers signed by the same validator

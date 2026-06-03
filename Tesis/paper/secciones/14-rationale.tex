@@ -1,0 +1,32 @@
+\section{Design Rationale}
+\label{sec:rationale}
+Several choices warrant justification beyond their mechanics.
+
+\textbf{Why fragment history but not state?} A naive ``shard everything'' design would force a
+network round-trip to read any balance during block validation, making validation latency
+non-deterministic and consensus fragile. By keeping the bounded, derivable \emph{state} local and
+fragmenting only the unbounded \emph{history}, validation stays a local, deterministic memory
+operation while the cost that actually grows without bound is the one distributed
+(\S\ref{sec:history}). This mirrors how Bitcoin and Ethereum already keep a working set (UTXO
+set / state trie) locally, ShadowLedger simply removes the obligation to also keep the
+\emph{archive} locally.
+
+\textbf{Why HRW rather than consistent hashing?} Shard placement must rebalance gracefully as the
+permissionless validator set churns. HRW's per-key independent ranking moves only the shards a
+joining/leaving node would win/lose, whereas ring-based schemes can shift unrelated
+keys~\cite{thaler1998rendezvous,karger1997consistent}. Reusing the same primitive for leader
+election keeps the trusted-randomness surface small.
+
+\textbf{Why PoW only as a gate?} Energy-as-security is the property we set out to remove. Yet a
+permissionless system still needs a per-identity cost (Sybil resistance) and an onboarding ramp
+for the capital-less. Confining PoW to a one-shot registration gate and a small faucet preserves
+those properties at negligible aggregate energy, while block ordering, the high-frequency
+operation, burns nothing. This is the Elastico insight~\cite{luu2016elastico} applied to a
+storage-centric, rather than throughput-centric, design.
+
+\textbf{Why depth-based finality first?} A full finality gadget (e.g.\ Casper
+FFG~\cite{buterin2017casper}) adds voting rounds and messages. Depth-based finality reuses the
+reorg machinery already needed for fork choice: making the replay base monotone is sufficient to
+render deep history irreversible, with safety inherited from the common-prefix
+theorem~\cite{garay2015backbone}. It is the smallest change that yields hard irreversibility, and
+it composes with a future voting gadget.

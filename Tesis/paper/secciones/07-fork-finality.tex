@@ -1,0 +1,82 @@
+\section{Fork Choice, Reorganization, and Finality}
+\label{sec:fork}
+\textbf{Fork choice.} Nodes maintain a block tree and follow the heaviest branch, after
+GHOST~\cite{sompolinsky2015ghost}; ties break by lowest block id for determinism. Today
+``weight'' is chain length. Note the distinction from \emph{leader election}, which \emph{is}
+storage-weighted (\S\ref{sec:consensus}): here the branch-selection weight remains chain length, and
+extending storage weighting to fork choice is future work (\S\ref{sec:disc}).
+
+\textbf{Reorg engine.} On observing a heavier branch, a node rewinds state to a \emph{replay
+base} and replays the winning branch onto a fresh copy, committing only if the whole branch
+applies cleanly, so a malformed branch can never corrupt live state. A linear extension of
+the current head is fast-forwarded without a full replay.
+
+\textbf{Depth-based finality.} The replay base advances to $\textit{head}-F$ as the chain grows
+and never moves backward. Because a reorg can rewind no further than the replay base, a
+competing branch that forks \emph{below} the finalized height $\textit{head}-F$ literally cannot
+be applied: it cannot reach the base to replay from, and is refused. Thus history older than
+$F$ blocks is irreversible. The safety of depth-based finality rests on the common-prefix
+property: for an honest-majority bonded set, the probability that an $F$-deep block is later
+displaced decays exponentially in $F$~\cite{garay2015backbone}; the prototype sets $F{=}16$
+(Algorithm~\ref{alg:final}).
+
+\begin{algorithm}[t]
+\SetAlgoLined\DontPrintSemicolon
+\KwIn{head $H$, finality depth $F$, replay base $(B,\textit{baseHt})$}
+\lIf{$H.\textit{height}-F \le \textit{baseHt}$}{\Return}
+$\textit{target} \leftarrow H.\textit{height}-F$\;
+walk $H \rightsquigarrow B$, collecting canonical blocks with height $\le \textit{target}$\;
+$S \leftarrow \textsc{Clone}(\textit{baseState})$;\ replay collected blocks onto $S$ in order\;
+advance replay base to deepest replayed block; persist; \textbf{base never moves back}\;
+\tcp{a fork below the base cannot reach it $\Rightarrow$ reorg refused}
+\caption{Depth-based finality advance (after the head changes).}
+\label{alg:final}
+\end{algorithm}
+
+\textbf{Safety and liveness, informally.} Safety of finality reduces to a single invariant: the
+replay base is monotone non-decreasing in height. Since every reorg target is reached by walking
+down to the replay base and a fork below it cannot be walked to, no committed block at height
+$\le \textit{baseHt}$ is ever rewritten. The base advances only to $\textit{head}-F$, so the
+window of mutable history is bounded by $F$, and the probability that an honest $F$-deep block is
+displaced before finalization decays as the common-prefix bound in
+$F$~\cite{garay2015backbone,sompolinsky2015ghost}. Liveness is provided by the round fallback of
+\S\ref{sec:consensus}: if the round-$t$ leader is silent, round $t{+}1$ elects a different
+validator, so as long as some honest validator is eligible and online the head advances and, with
+it, the finalized height. The two properties are independent: the round mechanism guarantees
+progress, while the monotone base guarantees that progress, once $F$ deep, is permanent.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\scriptsize, >=Stealth,
+  blk/.style={draw, rounded corners, minimum width=8mm, minimum height=5mm},
+  fin/.style={draw, rounded corners, minimum width=8mm, minimum height=5mm, fill=gray!20}]
+  \node[fin] (b84) {84};
+  \node[blk, right=6mm of b84] (b100) {100};
+  \node[blk, above right=2mm and 7mm of b100] (a101) {$101_A$};
+  \node[blk, right=6mm of a101] (a102) {$102_A$};
+  \node[blk, below right=2mm and 7mm of b100] (b101) {$101_B$};
+  \node[blk, right=6mm of b101] (b102) {$102_B$};
+  \node[blk, right=6mm of b102] (b103) {$103_B$};
+  \draw[->] (b84)--(b100);
+  \draw[->] (b100)--(a101); \draw[->] (a101)--(a102);
+  \draw[->] (b100)--(b101); \draw[->] (b101)--(b102); \draw[->] (b102)--(b103);
+  \node[below=1mm of b84, font=\scriptsize\itshape] {finality floor};
+  \draw[dashed] ($(b84.north east)+(2mm,4mm)$) -- ($(b84.south east)+(2mm,-6mm)$);
+\end{tikzpicture}
+\caption{Reorg above the finality floor. Branch $B$ (heavier, height $103$) wins over branch $A$;
+nodes rewind to the common parent $100$ and replay $B$. Blocks at or below the floor (height $84$,
+shaded) are final and cannot be reorganized.}
+\label{fig:reorg}
+\end{figure}
+
+\emph{Worked reorg.} Suppose a partition leaves validator $A$ extending tip
+$\dots{\to}100{\to}101_A{\to}102_A$ while validator $B$ extends
+$\dots{\to}100{\to}101_B{\to}102_B{\to}103_B$ from the same parent at height $100$. When the
+partition heals, every node sees both branches; $B$'s is heavier (height $103$ versus $102$), so a
+node currently on $A$'s tip walks back to the last common point (height $100$, which is at or above
+its replay base), rewinds its state to that point, and replays $101_B,102_B,103_B$ onto a fresh copy.
+It commits only after all three apply cleanly, then adopts $103_B$ as head; nodes already on $B$
+simply keep it. If instead $B$'s branch had forked at height $80$ while the replay base had already
+advanced to $84$ (finality depth reached), the walk-back could not reach a replayable base and the
+reorg would be refused outright, since heights $\le 84$ are final. Convergence above the finality
+floor, immutability below it.

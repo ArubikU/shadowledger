@@ -1,0 +1,91 @@
+\section{Erasure-Coded History}
+\label{sec:history}
+\subsection{State versus history}
+The pivotal design decision is to treat \emph{state} and \emph{history} differently.
+\emph{State}, account balances, nonces, contract storage, is the materialized result of
+replaying history; it is bounded (one entry per active account or storage slot) and every
+validator keeps it in full locally, exactly as Bitcoin keeps the UTXO set and Ethereum the
+state trie. \emph{History}, the block bodies that produced that state, is unbounded and is
+the \emph{only} thing fragmented away. Because state is derivable, losing a node's local copy
+is not data loss: it is recomputed by replay, or fetched as a snapshot from a peer and checked
+against the committed chain. This separation is precisely what lets ``no node stores all
+history'' coexist with fast, deterministic validation: validation reads \emph{state}, which is
+local; only audit, sync, and dispute resolution need \emph{history}, which is recoverable.
+
+\subsection{Encoding, placement, reconstruction}
+On commit, a block body $b$ of size $|b|$ is RS-encoded into $T=K{+}M$ shards, each of size
+$\lceil |b|/K\rceil$ (data shards padded; parity shards equal size). The erasure shape
+$(K,M)$ is chosen adaptively from the live node count $n$ (\S\ref{sec:overview}); the leader
+stamps it into the signed header, so peers read the shape rather than agreeing on it. Each
+shard index $s$ is assigned to the top-$r$ nodes under $\mathrm{HRW}(\textit{blockID},s)$,
+where $r$ is a replication factor that also scales with $n$. A node persists only the shards
+it wins and discards $b$. The header commits $\mathit{BodyHash}(b)$ and the vector of per-shard
+hashes; any node gathering $K$ valid shards reconstructs $b$ and verifies
+$\mathit{BodyHash}=\,$commitment, so a lying holder is detected and skipped.
+
+\emph{Concrete walkthrough.} Consider a $128$-node network producing block $1000$ with a $1$\,MiB
+body. The shape is K16\,M8, so the body becomes $24$ shards of $64$\,KiB each, and the header
+commits one $32$-byte hash per shard plus the body hash. Node $X$ computes
+$\mathrm{HRW}(\textit{id}_{1000},s)$ for every shard $s$ and finds it ranks in the top
+$r{=}3$ for, say, shards $\{3,7\}$; it stores those two ($128$\,KiB) and discards the
+$1$\,MiB body. Months later an auditor requests block $1000$: it queries holders, collects any
+$16$ of the $24$ shards (each verified against its committed hash), runs RS decode to rebuild the
+$1$\,MiB body, and checks the body hash. If eight holders are offline the remaining sixteen still
+suffice; if a malicious holder returns a corrupted shard, its hash mismatch excludes it and another
+holder's shard is used instead. Node $X$ never reconstructed the block to validate the chain ahead
+of it; it only did so on this explicit audit request.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\scriptsize, node distance=4.5mm,
+  lcell/.style={draw, rounded corners, fill=gray!8, align=center, minimum width=20mm, minimum height=6mm},
+  a/.style={-{Stealth[length=1.6mm]}}]
+  \node[lcell] (s1) {1. leader\\assembles txs};
+  \node[lcell, below=of s1] (s2) {2. apply state\\transition (local)};
+  \node[lcell, below=of s2] (s3) {3. sign header\\(BodyHash, shardHashes)};
+  \node[lcell, below=of s3] (s4) {4. broadcast block};
+  \node[lcell, right=14mm of s4] (s5) {5. peers apply\\state transition};
+  \node[lcell, above=of s5] (s6) {6. RS-encode body};
+  \node[lcell, above=of s6] (s7) {7. HRW: keep mine,\\drop full body};
+  \node[lcell, above=of s7] (s8) {8. on demand:\\fetch $K$, reconstruct};
+  \draw[a] (s1)--(s2); \draw[a] (s2)--(s3); \draw[a] (s3)--(s4);
+  \draw[a] (s4)--(s5); \draw[a] (s5)--(s6); \draw[a] (s6)--(s7); \draw[a] (s7)--(s8);
+\end{tikzpicture}
+\caption{Block lifecycle: state is applied and kept by all; the body is encoded, only assigned
+shards are retained, and old bodies are reconstructed on demand.}
+\label{fig:lifecycle}
+\end{figure}
+
+\subsection{Storage model}
+\label{sec:storagemodel}
+Let each shard have $r$ holders and let the $T$ shards be spread over $n$ nodes by HRW. The
+expected number of shard copies a node holds for one block is $Tr/n$, each of size $|b|/K$, so
+expected per-node storage per block is
+\[
+S_{\text{node}} \;=\; \frac{Tr}{n}\cdot\frac{|b|}{K}.
+\]
+Full replication stores $|b|$ per node, giving a reduction factor
+\[
+\rho \;=\; \frac{|b|}{S_{\text{node}}} \;=\; \frac{Kn}{Tr}.
+\]
+With ShadowLedger's policy ($T,K$ saturate at $K{=}16,M{=}8$ and $r{=}3$ for large $n$),
+$\rho \approx Kn/(Tr) = 16n/(24\cdot3)=n/4.5$, i.e.\ per-node history cost falls as
+$O(1/n)$ while full replication is constant. Below $n\!\approx\!4$ the fixed parity overhead
+$T/K$ dominates and fragmentation is not yet a win, an honest small-network regime we report
+rather than hide. \S\ref{sec:eval} validates this model empirically against rendezvous
+placement.
+
+\subsection{Sync and state snapshots}
+\label{sec:sync}
+A node that joins late, or that lost its local state, must reach the current head without
+necessarily replaying every historical body. Two paths exist. The \emph{header-first} path
+downloads the (small, signed) header chain and verifies its links and signatures, giving the node
+a trustworthy skeleton of heights, commitments, and the validator set; bodies are then fetched and
+reconstructed only as needed (\S\ref{sec:eval} quantifies that cost). The \emph{snapshot} path
+fetches a materialized state at a recent height from a peer and adopts it as a \emph{checkpoint}:
+the node sets its replay base (\S\ref{sec:fork}) to that height, so it can still reorg above the
+checkpoint but trusts the snapshot below it. Because the snapshot is the fold of all prior blocks,
+its correctness is in principle checkable by replay; making it succinctly \emph{verifiable}
+without replay needs a committed state root, which the present header omits (\S\ref{sec:disc}). In
+both paths, steady-state operation then reverts to keeping only HRW-assigned shards: sync cost is
+paid once, storage savings persist.

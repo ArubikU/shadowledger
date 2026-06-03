@@ -4,6 +4,8 @@ package node
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/binary"
 	"log"
 	"net/http"
 	"os"
@@ -67,9 +69,12 @@ func New(cfg *Config) (*Node, error) {
 	switch cfg.Consensus {
 	case "postorage":
 		// Validator set is read LIVE from the on-chain registry, so registrations
-		// change the minting rotation with no config edits. Storage gate is
-		// advisory for now (on-chain proofs make it enforceable). docs/CONSENSUS.md.
-		eng = consensus.NewPoStorage(ledger.ActiveValidators, id.Address(), nil, 0.8)
+		// change the minting rotation with no config edits. Leader election is
+		// weighted by PROVEN storage (state.StorageWeights), fed by on-chain
+		// KindStorageProof txs. docs/CONSENSUS.md.
+		ps := consensus.NewPoStorage(ledger.ActiveValidators, id.Address(), nil, 0.8)
+		ps.SetWeights(ledger.StorageWeights)
+		eng = ps
 	default:
 		eng = consensus.NewAuthority(cfg.Validators, id.Address())
 	}
@@ -108,6 +113,9 @@ func New(cfg *Config) (*Node, error) {
 		faucetSrc = mp.Validators[0]
 	}
 	ledger.SetFaucet(mp.FaucetBits, mp.FaucetAmount, mp.FaucetCooldown, mp.FaucetDepth, faucetSrc, ch.BodyHashAt)
+	// On-chain proof-of-storage: verify proofs against committed shard hashes and
+	// let them weight leader election.
+	ledger.SetStorageProof(mp.StorageWindow, mp.StorageMinDepth, mp.StorageCap, ch.ShardAt, ch.ShardProofOK)
 
 	n.srv = p2p.NewServer(peers, cfg.Seeds, cfg.DNSSeeds, cfg.ControlAddr, ch, pool, cfg.Consensus == "postorage")
 	ch.SetSource(n.srv)
@@ -217,6 +225,8 @@ func (n *Node) loops(ctx context.Context) {
 	defer save.Stop()
 	audit := time.NewTicker(15 * time.Second)
 	defer audit.Stop()
+	prove := time.NewTicker(30 * time.Second)
+	defer prove.Stop()
 
 	for {
 		select {
@@ -229,6 +239,8 @@ func (n *Node) loops(ctx context.Context) {
 			}
 		case <-save.C:
 			n.persist()
+		case <-prove.C:
+			n.maybeProveStorage()
 		case <-audit.C:
 			if p, m := n.srv.AuditRound(); p+m > 0 {
 				log.Printf("proof-of-storage: %d passed, %d missed", p, m)
@@ -274,6 +286,54 @@ func (n *Node) maybeProduce() {
 	n.srv.BroadcastBlock(blk)
 	log.Printf("produced block height=%d txs=%d spec=K%dM%d nodes=%d id=%x",
 		blk.Header.Height, len(blk.Txs), set.Spec.K, set.Spec.M, n.peers.Count(), idShort(blk.Header.ID()))
+}
+
+// maybeProveStorage lets a postorage validator submit an on-chain proof that it
+// holds the protocol-assigned shard of a recent block, accruing the proven-storage
+// weight that biases leader election toward nodes that actually store data. The
+// assigned shard index is derived deterministically from (self, blockID), so the
+// validator cannot cherry-pick an easy shard; it obtains the shard locally or by
+// reconstruction. Best-effort: it silently skips if it cannot produce the shard.
+func (n *Node) maybeProveStorage() {
+	if n.cfg.Consensus != "postorage" || !n.eng.IsValidator() {
+		return
+	}
+	head, ok := n.chain.Head()
+	if !ok {
+		return
+	}
+	mp := chainparams.Mainnet()
+	if head.Height <= mp.StorageMinDepth+1 {
+		return
+	}
+	target := head.Height - mp.StorageMinDepth - 1
+	if target+mp.StorageWindow < head.Height {
+		return
+	}
+	blockID, total, ok := n.chain.ShardAt(target)
+	if !ok || total <= 0 {
+		return
+	}
+	self := n.id.Address()
+	h := sha256.Sum256(append([]byte(self), blockID[:]...))
+	index := int(binary.BigEndian.Uint64(h[:8]) % uint64(total))
+	shard, ok := n.chain.ShardBytes(target, index)
+	if !ok {
+		return
+	}
+	data := make([]byte, 8+len(shard))
+	binary.BigEndian.PutUint64(data[0:8], target)
+	copy(data[8:], shard)
+	tx := types.Transaction{
+		Kind: types.KindStorageProof, Data: data,
+		ChainID: mp.ChainID, Nonce: n.state.Get(self).Nonce,
+	}
+	tx.Sign(n.id)
+	if err := n.pool.Submit(tx); err != nil {
+		return
+	}
+	n.srv.BroadcastTx(tx)
+	log.Printf("storage proof: block=%d shard=%d/%d submitted", target, index, total)
 }
 
 // checkUpdate logs (only) if a newer release exists. No auto-apply.

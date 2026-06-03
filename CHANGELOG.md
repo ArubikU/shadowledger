@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.27.0 — storage-weighted consensus (on-chain proof-of-storage)
+
+- **On-chain storage proofs.** New `KindStorageProof` tx: a validator proves it can produce a
+  *protocol-assigned* shard of a recent confirmed block. The shard index is derived as
+  `H(addr ‖ blockID) mod T` (no cherry-picking), and the bytes are verified against the committed
+  shard hash from the persisted header/shard set — no full body, no header change, no reset.
+- **Storage-weighted leader election.** `state.StorageWeights` gives each validator
+  `1 + min(score, cap)` virtual HRW entries; `PoStorage.LeaderFor` elects over those entries
+  (integer-only, deterministic). Block-production odds now track *proven* storage; a validator that
+  stops proving decays to the base weight. This makes the consensus genuinely storage-coupled in the
+  running binary (previously: uniform election + advisory scoreboard).
+- **Validator auto-proof loop.** A postorage validator periodically derives its assigned shard,
+  obtains it (local or by reconstruction), and submits a storage proof, accruing election weight.
+- **Honest scope:** still *not* done — bond *slashing* for missed proofs (today: weight decay) and
+  storage-weighted *fork choice* (branch weight is still chain length). Documented, not hidden.
+- Chainparams: `StorageWindow=256`, `StorageMinDepth=4`, `StorageCap=64`. Tests: proof credited /
+  bad-shard rejected / stale+shallow rejected / weight decays / 65:1 weighting wins >90%. Consensus
+  change → validators must run v0.27+.
+
 ## v0.26.0 — PoW faucet (follower on-ramp to $SHARD)
 
 - **Earn $SHARD by Proof-of-Work, no bond, no balance.** New `KindFaucet` tx + `internal/faucet`:

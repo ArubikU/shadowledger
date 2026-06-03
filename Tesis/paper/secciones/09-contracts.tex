@@ -1,0 +1,75 @@
+\section{Deterministic Smart Contracts}
+\label{sec:vm}
+We treat programmability as a \emph{supporting capability}, not a scientific contribution of this
+paper: the core results concern fragmented history and the storage-coupled consensus, and a reader
+interested only in those may skip this section. We include it because a storage-scarce ledger is of
+little use if it cannot run application logic, and because the contract layer must obey the same
+commitment discipline (signed roots, deterministic execution) as the rest of the system; we
+therefore keep the description brief.
+
+Contracts execute on a deterministic stack virtual machine with metered gas. Determinism is a hard
+requirement: every node that runs the same bytecode on the same input and storage must reach the
+same result, or consensus over contract state breaks. The VM therefore excludes every source of
+nondeterminism, namely wall-clock time, floating point, and randomness, and bounds execution by a
+gas budget and a step limit so a contract cannot loop forever or exhaust memory.
+
+\textbf{Machine model.} The VM is a stack machine over $64$-bit words with a per-contract
+key/value store (uint64 to uint64). Opcodes fall into the classes of Table~\ref{tab:opcodes}.
+Storage writes are the expensive operation, reflecting their real cost (they enlarge the state
+every node keeps), so gas pricing discourages gratuitous writes. Cross-contract calls are allowed
+but bounded by a call-depth limit, which caps reentrancy and recursion. Because a $64$-bit word
+cannot hold a $20$-byte address or a string, a byte-storage layer holds variable-length blobs
+(addresses, token identifiers, URIs) sourced from calldata, with opcodes to store, compare, hash,
+and return them; this is how a contract can manipulate full addresses despite the uint64 core.
+
+\begin{table}[t]
+\centering
+\caption{VM opcode classes (representative, not exhaustive).}
+\label{tab:opcodes}
+\small
+\begin{tabular}{ll}
+\toprule
+class & opcodes / role \\
+\midrule
+arithmetic    & add/sub/mul (overflow-checked), div/mod (revert on $0$) \\
+logic/compare & and, or, not, eq, lt, gt, iszero \\
+stack         & push, pop, dup, swap \\
+control flow  & jump, jumpi, stop, return, revert \\
+storage       & sload, sstore, mix (mapping-slot hash) \\
+environment   & caller, value, self, calldata, calldata-len \\
+byte layer    & bstore, beq, bhash, caller-bytes, return-bytes \\
+events / calls& log (committed in LogsRoot), call (depth-bounded) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{The SHL language.} Writing raw bytecode is error-prone, so contracts are written in SHL, a
+small Solidity-like language compiled through a lexer, parser, and code generator. SHL offers named
+\texttt{state} variables and mappings (each assigned a fixed storage slot by the compiler, so there
+are no hand-managed magic offsets), functions with selector dispatch, \texttt{require} and
+\texttt{revert} with full state rollback, and overflow-checked arithmetic by default. A function
+selector is derived from the function name and placed in the call's first calldata word; the
+compiler emits a dispatcher that routes to the matching function and reverts on an unknown selector.
+Listing~\ref{lst:shl} shows a fungible-token transfer: the \texttt{require} guard reverts the entire
+call (restoring all storage) if the sender is short, and both updates are overflow-checked, so a
+short and readable contract is also a safe one.
+
+\begin{lstlisting}[caption={A safe ERC-20-style transfer in SHL.},label={lst:shl}]
+state balances;          // mapping holder -> amount
+state totalSupply;
+
+fn transfer(to, amount) {
+  require(balances[msg.sender] >= amount);
+  balances[msg.sender] = balances[msg.sender] - amount; // checked
+  balances[to] = balances[to] + amount;                 // checked
+  emit(TRANSFER, msg.sender, to, amount);
+}
+fn balanceOf(who) { return balances[who]; }
+\end{lstlisting}
+
+\textbf{Scope.} SHL is deliberately a faithful \emph{subset} of the Solidity model rather than a
+clone. It omits $256$-bit integers, contract inheritance, and the ABI, trading generality for a VM
+small enough to audit and reason about, which suits a system that has not yet undergone external
+security review (\S\ref{sec:disc}). Events emitted via \texttt{log} are committed through the block
+header's logs root, so a verifier can later prove that an event occurred without trusting the node
+that serves it, the same commitment discipline used for shards and transactions.
