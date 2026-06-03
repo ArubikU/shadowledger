@@ -26,7 +26,7 @@ func Estimate(code []byte) uint64 {
 			continue
 		case vm.SSTORE:
 			total += 100
-		case vm.SLOAD:
+		case vm.SLOAD, vm.MIX:
 			total += 20
 		case vm.LOG:
 			total += 50

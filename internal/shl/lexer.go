@@ -30,6 +30,8 @@ var keywords = map[string]bool{
 	"let": true, "if": true, "else": true, "while": true,
 	"emit": true, "return": true, "store": true, "stop": true,
 	"caller": true, "value": true, "balance": true, "self": true, "arg": true,
+	// Solidity-like additions:
+	"fn": true, "state": true, "require": true, "revert": true, "msg": true,
 }
 
 type lexer struct {
@@ -86,7 +88,7 @@ func (l *lexer) next() (token, error) {
 		}
 	}
 	switch c {
-	case '(', ')', '{', '}', '[', ']', ';', ',', '=', '+', '-', '*', '/', '%', '<', '>', '!':
+	case '(', ')', '{', '}', '[', ']', ';', ',', '.', '=', '+', '-', '*', '/', '%', '<', '>', '!':
 		l.i++
 		return token{kind: tPunct, str: string(c), pos: start, line: l.line}, nil
 	}

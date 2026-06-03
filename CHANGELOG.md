@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.25.0 — SHL goes Solidity-like (contracts rewritten)
+
+- **Functions + selector dispatch.** `fn name(params){…}` with an auto-generated dispatcher: calldata
+  word 0 is the selector `be8(sha256(name))` (the analogue of Solidity's 4-byte keccak selector),
+  params bind from words 1.. , and an unknown selector **reverts**. No more hand-rolled
+  `if (arg(0)==1)` chains.
+- **Named state + mappings — no magic numbers.** `state x;` gets a compiler-assigned slot; use it as
+  a scalar or a mapping `x[k]` (storage key `MIX(slot,k)`, a new keccak-equivalent VM opcode, so
+  mappings never collide). Replaces the old `store[18446744073709551614]` reserved-key hacks.
+- **`require` / `revert`.** Real revert (new `REVERT` opcode): a failed check discards *all* storage
+  writes and charges gas — not the old silent `return 0;` no-op.
+- **Overflow-checked arithmetic by default** (Solidity 0.8 semantics): new `ADDC/SUBC/MULC` opcodes
+  revert on overflow/underflow; `/ %` already revert on zero. `+ - *` in SHL emit the checked forms.
+- **`msg.sender` / `msg.value`** aliases.
+- **Contracts rewritten** in the new dialect: `token.shl`, `nft.shl`, `memecoin.shl` (counter stays
+  flat to demo backward-compat). Flat scripts still compile unchanged.
+- **`slctl call/query --fn NAME --args a,b`** computes the selector + packs the calldata for you.
+- Tests: selector dispatch, mapping reads/writes, require-reverts-and-undoes, unknown-selector
+  revert, checked overflow/underflow, all repo contracts compile. Honest scope in docs/SHL.md: this
+  is a faithful Solidity *subset* (uint64, no 256-bit/structs/inheritance/ABI), not a drop-in.
+
 ## v0.24.0 — finality (hard irreversibility)
 
 - **Depth-based finality:** blocks `FinalityDepth` behind the head (16 on mainnet) become

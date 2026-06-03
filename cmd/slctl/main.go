@@ -88,15 +88,43 @@ func deploy(args []string) {
 	fmt.Printf("contract address: %s\n", types.ContractAddress(kp.Address(), tx.Nonce))
 }
 
-// call sends a contract-call tx. --to is the contract; --data hex words input (optional).
+// buildCalldata assembles a contract call's input. Solidity-like contracts are
+// called by name: --fn transfer --args <to>,<amount> becomes
+// [Selector("transfer"), to, amount] as 8-byte BE words. Flat contracts use
+// positional --args (no --fn) or raw --data HEX.
+func buildCalldata(args []string) []byte {
+	if d := flagVal(args, "data"); d != "" {
+		return decodeHex(d)
+	}
+	var out []byte
+	if fn := flagVal(args, "fn"); fn != "" {
+		out = append(out, be8w(shl.Selector(fn))...)
+	}
+	if a := flagVal(args, "args"); a != "" {
+		for _, p := range strings.Split(a, ",") {
+			p = strings.TrimSpace(p)
+			if p == "" {
+				continue
+			}
+			out = append(out, be8w(mustU64(p))...)
+		}
+	}
+	return out
+}
+
+func be8w(v uint64) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, v)
+	return b
+}
+
+// call sends a contract-call tx. --to is the contract; call by --fn NAME --args
+// a,b,... or by raw --data HEX.
 func call(args []string) {
 	rpc := rpcOf(args)
 	kp, err := crypto.LoadWalletAuto(flagVal(args, "wallet"), passOf(args))
 	must(err)
-	var data []byte
-	if d := flagVal(args, "data"); d != "" {
-		data = decodeHex(d)
-	}
+	data := buildCalldata(args)
 	amount := uint64(0)
 	if a := flagVal(args, "amount"); a != "" {
 		amount = mustU64(a)
@@ -131,8 +159,8 @@ Passphrase for .tok wallets: --pass or env SL_WALLET_PASS.
   slash       --wallet w.tok --evidence ev.json --rpc URL   (report equivocation; earn 10% of bond)
   bans        --rpc URL               (locally banned peers)
   deploy      --wallet w.tok --code prog.hex [--gas N] --rpc URL   (deploy a contract)
-  call        --wallet w.tok --to <contract> [--data HEX] [--amount N] [--gas N] --rpc URL
-  query       --to <contract> [--data HEX] [--caller sl..] [--gas N] --rpc URL   (read-only, no tx/fee)
+  call        --wallet w.tok --to <contract> [--fn NAME --args a,b | --data HEX] [--amount N] [--gas N] --rpc URL
+  query       --to <contract> [--fn NAME --args a,b | --data HEX] [--caller sl..] [--gas N] --rpc URL   (read-only)
   logs        --height N --rpc URL    (contract event logs at a block)
   compile     --in prog.shl [--out prog.hex]   (.shl source -> VM bytecode)
   estimate    --in prog.shl                     (approx gas for the compiled program)`)
@@ -308,7 +336,7 @@ func query(args []string) {
 	rpc := rpcOf(args)
 	body := map[string]any{
 		"to":     flagVal(args, "to"),
-		"data":   strings.TrimPrefix(flagVal(args, "data"), "0x"),
+		"data":   hex.EncodeToString(buildCalldata(args)),
 		"caller": flagVal(args, "caller"),
 		"gas":    mustU64opt(args, "gas", 0),
 	}

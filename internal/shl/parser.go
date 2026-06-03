@@ -24,13 +24,31 @@ type (
 	EmitStmt   struct{ Args []Node } // emit(a, b, ...);
 	ReturnStmt struct{ Val Node }
 	StopStmt   struct{}
+
+	// Solidity-like declarations & statements.
+	StateDecl struct{ Name string } // state name;  (named storage var/mapping)
+	FnDecl    struct {              // fn name(params) { body }
+		Name   string
+		Params []string
+		Body   []Node
+	}
+	RequireStmt struct{ Cond Node } // require(cond);  -> revert if false
+	RevertStmt  struct{}            // revert;
+	IndexStore  struct {
+		Name     string
+		Key, Val Node
+	} // name[key] = val;  (mapping write)
 )
 
 // Expressions.
 type (
-	Num     struct{ V uint64 }
-	Var     struct{ Name string }
-	Load    struct{ Key Node } // store[k] as an r-value -> SLOAD
+	Num   struct{ V uint64 }
+	Var   struct{ Name string }
+	Load  struct{ Key Node } // store[k] as an r-value -> SLOAD
+	Index struct {
+		Name string
+		Key  Node
+	} // name[k] as an r-value -> SLOAD(MIX(slot,k))
 	Builtin struct {
 		Name string
 		Arg  Node
@@ -59,13 +77,60 @@ func Parse(src string) ([]Node, error) {
 	p := &parser{toks: toks}
 	var prog []Node
 	for !p.at(tEOF) {
-		s, err := p.stmt()
+		s, err := p.topLevel()
 		if err != nil {
 			return nil, err
 		}
 		prog = append(prog, s)
 	}
 	return prog, nil
+}
+
+// topLevel parses a top-level item: a state declaration, a function definition,
+// or (for flat scripts) a plain statement.
+func (p *parser) topLevel() (Node, error) {
+	switch {
+	case p.isKw("state"):
+		p.adv()
+		name := p.adv()
+		if name.kind != tIdent {
+			return nil, fmt.Errorf("line %d: expected name after state", name.line)
+		}
+		return &StateDecl{Name: name.str}, p.expect(";")
+	case p.isKw("fn"):
+		return p.fnDecl()
+	}
+	return p.stmt()
+}
+
+func (p *parser) fnDecl() (Node, error) {
+	p.adv() // fn
+	name := p.adv()
+	if name.kind != tIdent {
+		return nil, fmt.Errorf("line %d: expected function name", name.line)
+	}
+	if err := p.expect("("); err != nil {
+		return nil, err
+	}
+	var params []string
+	for !p.isPunct(")") {
+		pn := p.adv()
+		if pn.kind != tIdent {
+			return nil, fmt.Errorf("line %d: expected parameter name", pn.line)
+		}
+		params = append(params, pn.str)
+		if p.isPunct(",") {
+			p.adv()
+		}
+	}
+	if err := p.expect(")"); err != nil {
+		return nil, err
+	}
+	body, err := p.block()
+	if err != nil {
+		return nil, err
+	}
+	return &FnDecl{Name: name.str, Params: params, Body: body}, nil
 }
 
 func (p *parser) cur() token        { return p.toks[p.i] }
@@ -141,8 +206,42 @@ func (p *parser) stmt() (Node, error) {
 	case p.isKw("stop"):
 		p.adv()
 		return &StopStmt{}, p.expect(";")
-	case p.at(tIdent): // assignment: x = e;
+	case p.isKw("require"):
+		p.adv()
+		if err := p.expect("("); err != nil {
+			return nil, err
+		}
+		c, err := p.expr()
+		if err != nil {
+			return nil, err
+		}
+		if err := p.expect(")"); err != nil {
+			return nil, err
+		}
+		return &RequireStmt{Cond: c}, p.expect(";")
+	case p.isKw("revert"):
+		p.adv()
+		return &RevertStmt{}, p.expect(";")
+	case p.at(tIdent): // assignment: x = e;  OR  name[k] = v;
 		name := p.adv()
+		if p.isPunct("[") { // mapping write: name[key] = val;
+			p.adv()
+			k, err := p.expr()
+			if err != nil {
+				return nil, err
+			}
+			if err := p.expect("]"); err != nil {
+				return nil, err
+			}
+			if err := p.expect("="); err != nil {
+				return nil, err
+			}
+			v, err := p.expr()
+			if err != nil {
+				return nil, err
+			}
+			return &IndexStore{Name: name.str, Key: k, Val: v}, p.expect(";")
+		}
 		if err := p.expect("="); err != nil {
 			return nil, err
 		}
@@ -366,8 +465,31 @@ func (p *parser) primary() (Node, error) {
 			return nil, err
 		}
 		return &Builtin{Name: "arg", Arg: e}, p.expect(")")
+	case p.isKw("msg"): // msg.sender / msg.value (Solidity aliases)
+		p.adv()
+		if err := p.expect("."); err != nil {
+			return nil, err
+		}
+		field := p.adv()
+		switch field.str {
+		case "sender":
+			return &Builtin{Name: "caller"}, nil
+		case "value":
+			return &Builtin{Name: "value"}, nil
+		default:
+			return nil, fmt.Errorf("line %d: unknown msg.%s (use sender|value)", field.line, field.str)
+		}
 	case p.at(tIdent):
-		return &Var{Name: p.adv().str}, nil
+		name := p.adv()
+		if p.isPunct("[") { // mapping read: name[key]
+			p.adv()
+			k, err := p.expr()
+			if err != nil {
+				return nil, err
+			}
+			return &Index{Name: name.str, Key: k}, p.expect("]")
+		}
+		return &Var{Name: name.str}, nil
 	}
 	return nil, fmt.Errorf("line %d: unexpected %q in expression", p.cur().line, p.cur().str)
 }

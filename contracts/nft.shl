@@ -1,23 +1,26 @@
-// nft.shl — a minimal NFT in the .shl language.
-// Input words: arg(0)=selector, arg(1)=tokenId, arg(2)=newOwner.
-//   selector 0 = mint     : owner[tokenId] = caller; emit Transfer
-//   selector 1 = transfer : require caller owns it, then reassign; emit Transfer
-//   selector 2 = ownerOf  : return owner[tokenId]
-// Owner is stored as the caller's id (uint64 digest) — see docs/SMART-CONTRACTS.md
-// for the honest ERC-721 limits.
+// nft.shl — a minimal ERC-721-style NFT in the Solidity-like SHL dialect.
+//
+//   mint(tokenId)         claim an unowned token id           -> reverts if taken
+//   transfer(tokenId, to) move a token you own                -> reverts if not owner
+//   ownerOf(tokenId)      read the owner (caller-id digest)
+//
+// `owner` is a mapping tokenId -> owner-id. Owner is the caller's uint64 digest
+// (full-address recovery uses the VM byte layer; see docs/SMART-CONTRACTS.md).
 
-if (arg(0) == 0) {
-    store[arg(1)] = caller();
-    emit(0, caller(), arg(1));          // Transfer(mint): topics [sig=0, to, tokenId]
-} else {
-    if (arg(0) == 1) {
-        if (store[arg(1)] == caller()) {
-            store[arg(1)] = arg(2);
-            emit(1, caller(), arg(2), arg(1)); // Transfer: [sig=1, from, to, tokenId]
-        } else {
-            return 0;                   // not the owner -> no-op
-        }
-    } else {
-        return store[arg(1)];           // ownerOf
-    }
+state owner;
+
+fn mint(tokenId) {
+    require(owner[tokenId] == 0);            // unowned (0 = no owner)
+    owner[tokenId] = caller();
+    emit(0, caller(), tokenId);              // Transfer(mint): [sig=0, to, tokenId]
+}
+
+fn transfer(tokenId, to) {
+    require(owner[tokenId] == caller());     // only the owner may move it
+    owner[tokenId] = to;
+    emit(1, caller(), to, tokenId);          // Transfer: [sig=1, from, to, tokenId]
+}
+
+fn ownerOf(tokenId) {
+    return owner[tokenId];
 }

@@ -1,38 +1,40 @@
-// token.shl — a minimal fungible token (ERC-20-style) for ShadowLedger.
+// token.shl — an ERC-20-style fungible token in the Solidity-like SHL dialect.
 //
-// Balances are keyed by the holder's address digest: store[addrDigest] = balance.
-// Call input words: arg(0)=selector, arg(1)=address-or-recipient, arg(2)=amount.
-//   selector 0 = init        : one-time mint of the whole supply to the caller
-//   selector 1 = transfer    : send arg(2) to arg(1)
-//   selector 2 = balanceOf   : return balance of arg(1)
-//   selector 3 = totalSupply : return total supply
+// No magic numbers: `state` vars get compiler-assigned slots; `balances` is a
+// mapping keyed by holder. Calls carry calldata word 0 = Selector("<fn>") and
+// the args in the following words; the compiler emits the selector dispatcher.
 //
-// Reserved metadata keys live at the top of the uint64 space so they don't
-// collide with address-digest balance keys.
-//   18446744073709551615 = initialized flag
-//   18446744073709551614 = total supply
+//   init()                 one-time mint of the whole supply to the caller
+//   transfer(to, amount)   move `amount` to `to`        -> reverts if short
+//   balanceOf(who)         read a balance
+//   supply()               read total supply
+//
+// Arithmetic is overflow-checked (Solidity 0.8 semantics) and `require` reverts
+// — a failed transfer undoes everything, it is not a silent no-op.
 
-if (arg(0) == 0) {                              // init (once)
-    if (store[18446744073709551615] == 0) {
-        store[18446744073709551615] = 1;
-        store[caller()] = 1000000;
-        store[18446744073709551614] = 1000000;
-        emit(0, caller(), 1000000);             // Mint(to, amount)
-    }
-} else {
-    if (arg(0) == 1) {                          // transfer(to=arg1, amount=arg2)
-        if (store[caller()] >= arg(2)) {
-            store[caller()] = store[caller()] - arg(2);
-            store[arg(1)] = store[arg(1)] + arg(2);
-            emit(1, caller(), arg(1), arg(2));  // Transfer(from, to, amount)
-        } else {
-            return 0;                           // insufficient balance -> no-op
-        }
-    } else {
-        if (arg(0) == 2) {
-            return store[arg(1)];               // balanceOf(addr)
-        } else {
-            return store[18446744073709551614]; // totalSupply
-        }
-    }
+state balances;
+state totalSupply;
+state initialized;
+
+fn init() {
+    require(initialized == 0);
+    initialized = 1;
+    balances[caller()] = 1000000;
+    totalSupply = 1000000;
+    emit(0, caller(), 1000000);              // Mint(to, amount)
+}
+
+fn transfer(to, amount) {
+    require(balances[caller()] >= amount);
+    balances[caller()] = balances[caller()] - amount;
+    balances[to] = balances[to] + amount;    // self-transfer nets to zero (same slot)
+    emit(1, caller(), to, amount);           // Transfer(from, to, amount)
+}
+
+fn balanceOf(who) {
+    return balances[who];
+}
+
+fn supply() {
+    return totalSupply;
 }

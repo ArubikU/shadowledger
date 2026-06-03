@@ -24,6 +24,9 @@ const (
 	MUL    = 0x12
 	DIV    = 0x13 // div by zero -> revert
 	MOD    = 0x14
+	ADDC   = 0x15 // checked add  : revert on overflow  (Solidity 0.8 default)
+	SUBC   = 0x16 // checked sub  : revert on underflow
+	MULC   = 0x17 // checked mul  : revert on overflow
 	EQ     = 0x20
 	LT     = 0x21
 	GT     = 0x22
@@ -37,6 +40,7 @@ const (
 	JUMPI  = 0x41 // pop dest, pop cond -> if cond!=0 pc=dest
 	SLOAD  = 0x50 // pop key -> push storage[key]
 	SSTORE = 0x51 // pop value, pop key -> storage[key]=value
+	MIX    = 0x57 // pop key, pop base -> push be8(sha256(base||key)); mapping slot (keccak-equiv)
 	CALLER = 0x60 // push caller-id (uint64 derived from address)
 	VALUE  = 0x61 // push value sent with the call
 	BAL    = 0x62 // push contract balance
@@ -44,6 +48,7 @@ const (
 	SELF   = 0x64 // push this contract's id (uint64 digest of its address)
 	CALL   = 0x71 // pop gasLimit, pop arg, pop target -> call target contract; push its return (0 on fail)
 	RETURN = 0x70 // pop -> set return value, halt
+	REVERT = 0x74 // abort: discard all storage writes, charge gas (require/revert)
 	LOG    = 0x72 // pop n, pop n topic words -> emit an event (history); n<=maxLogTopics
 
 	// Byte-value layer: full addresses & strings live in byte-storage (bkey -> []byte),
@@ -70,6 +75,8 @@ var (
 	ErrDivZero    = errors.New("vm: division by zero")
 	ErrBadCode    = errors.New("vm: malformed bytecode")
 	ErrStepLimit  = errors.New("vm: step limit exceeded")
+	ErrRevert     = errors.New("vm: reverted")
+	ErrOverflow   = errors.New("vm: arithmetic overflow")
 )
 
 // CallHost lets a contract invoke another contract. The host resolves the
@@ -104,7 +111,7 @@ func gasCost(op byte) uint64 {
 		return 100
 	case LOG:
 		return 50 // + 8 per topic, charged inline
-	case SLOAD, BEQ, BHASH:
+	case SLOAD, BEQ, BHASH, MIX:
 		return 20
 	case PUSH:
 		return 3
@@ -226,6 +233,56 @@ func ExecuteB(code, input []byte, storage map[uint64]uint64, bstore map[uint64][
 			if err := push(r); err != nil {
 				return nil, err
 			}
+		case ADDC, SUBC, MULC:
+			b, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			a, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			var r uint64
+			switch op {
+			case ADDC:
+				r = a + b
+				if r < a {
+					return nil, ErrOverflow
+				}
+			case SUBC:
+				if b > a {
+					return nil, ErrOverflow
+				}
+				r = a - b
+			case MULC:
+				r = a * b
+				if a != 0 && r/a != b {
+					return nil, ErrOverflow
+				}
+			}
+			if err := push(r); err != nil {
+				return nil, err
+			}
+		case MIX:
+			k, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			base, err := pop()
+			if err != nil {
+				return nil, err
+			}
+			var buf [16]byte
+			for i := 0; i < 8; i++ {
+				buf[i] = byte(base >> (56 - 8*i))
+				buf[8+i] = byte(k >> (56 - 8*i))
+			}
+			sum := sha256.Sum256(buf[:])
+			if err := push(beU64(sum[:8])); err != nil {
+				return nil, err
+			}
+		case REVERT:
+			return nil, ErrRevert
 		case ISZERO, NOT:
 			a, err := pop()
 			if err != nil {
