@@ -100,6 +100,15 @@ func New(cfg *Config) (*Node, error) {
 	})
 	n.chain = ch
 
+	// PoW faucet (follower on-ramp): payout drawn from the treasury (the genesis
+	// premine recipient), PoW anchored to recent block BodyHashes via the chain.
+	mp := chainparams.Mainnet()
+	var faucetSrc crypto.Address
+	if len(mp.Validators) > 0 {
+		faucetSrc = mp.Validators[0]
+	}
+	ledger.SetFaucet(mp.FaucetBits, mp.FaucetAmount, mp.FaucetCooldown, mp.FaucetDepth, faucetSrc, ch.BodyHashAt)
+
 	n.srv = p2p.NewServer(peers, cfg.Seeds, cfg.DNSSeeds, cfg.ControlAddr, ch, pool, cfg.Consensus == "postorage")
 	ch.SetSource(n.srv)
 	return n, nil

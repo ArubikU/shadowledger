@@ -14,6 +14,7 @@ import (
 
 	"github.com/ArubikU/shadowledger/internal/chainparams"
 	"github.com/ArubikU/shadowledger/internal/crypto"
+	"github.com/ArubikU/shadowledger/internal/faucet"
 	"github.com/ArubikU/shadowledger/internal/regpow"
 	"github.com/ArubikU/shadowledger/internal/shl"
 	"github.com/ArubikU/shadowledger/internal/types"
@@ -65,6 +66,8 @@ func main() {
 		fmt.Println(getJSON(rpcOf(os.Args[2:]) + "/bans"))
 	case "version":
 		fmt.Printf("shadowledger %s\n", version.Version)
+	case "faucet":
+		faucetClaim(os.Args[2:])
 	case "register":
 		register(os.Args[2:])
 	case "unregister":
@@ -118,6 +121,42 @@ func be8w(v uint64) []byte {
 	return b
 }
 
+// faucetClaim earns a little $SHARD by PoW (the follower on-ramp). It mines a
+// nonce against a recent block's committed BodyHash, then submits a KindFaucet tx
+// (Data = anchorHeight || nonce). No bond, no balance needed — fee is zero.
+func faucetClaim(args []string) {
+	rpc := rpcOf(args)
+	kp, err := crypto.LoadWalletAuto(flagVal(args, "wallet"), passOf(args))
+	must(err)
+	p := chainparams.Mainnet()
+	if p.FaucetAmount == 0 {
+		must(fmt.Errorf("faucet disabled on this network"))
+	}
+	var head struct {
+		Height uint64 `json:"height"`
+	}
+	must(json.Unmarshal([]byte(getJSON(rpc+"/head")), &head))
+	if head.Height < p.FaucetDepth {
+		must(fmt.Errorf("chain too short for a faucet claim (height %d)", head.Height))
+	}
+	anchorH := head.Height - p.FaucetDepth
+	var blk struct {
+		Header struct {
+			BodyHash [32]byte `json:"body_hash"`
+		} `json:"header"`
+	}
+	must(json.Unmarshal([]byte(getJSON(rpc+fmt.Sprintf("/block/%d", anchorH))), &blk))
+	fmt.Printf("mining faucet PoW: address=%s anchor=block %d bits=%d ...\n", kp.Address(), anchorH, p.FaucetBits)
+	nonce := faucet.Solve(p.ChainID, kp.Address(), blk.Header.BodyHash, p.FaucetBits)
+	data := make([]byte, 16)
+	binary.BigEndian.PutUint64(data[0:8], anchorH)
+	binary.BigEndian.PutUint64(data[8:16], nonce)
+	tx := types.Transaction{Kind: types.KindFaucet, Data: data, Nonce: fetchNonce(rpc, kp.Address())}
+	signTx(&tx, kp)
+	submit(rpc, tx)
+	fmt.Printf("solved nonce=%d — claim submitted (+%d base units after it mines)\n", nonce, p.FaucetAmount)
+}
+
 // call sends a contract-call tx. --to is the contract; call by --fn NAME --args
 // a,b,... or by raw --data HEX.
 func call(args []string) {
@@ -154,6 +193,7 @@ Passphrase for .tok wallets: --pass or env SL_WALLET_PASS.
   peers       --rpc URL               (this node's known peers)
   storage     --rpc URL               (Proof-of-Storage scoreboard)
   validators  --rpc URL               (on-chain validator registry)
+  faucet      --wallet w.tok --rpc URL                      (earn a little $SHARD by PoW; follower on-ramp)
   register    --wallet w.tok --bond N [--fee N] --rpc URL   (join validator set; bond>=1000 SHARD base units)
   unregister  --wallet w.tok [--fee N] --rpc URL            (exit, reclaim bond)
   slash       --wallet w.tok --evidence ev.json --rpc URL   (report equivocation; earn 10% of bond)

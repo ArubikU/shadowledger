@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.26.0 — PoW faucet (follower on-ramp to $SHARD)
+
+- **Earn $SHARD by Proof-of-Work, no bond, no balance.** New `KindFaucet` tx + `internal/faucet`:
+  a follower mines a nonce so `H(chainID ‖ addr ‖ anchorBodyHash ‖ nonce)` has N leading zero bits
+  (Bitcoin-style), then claims a small fixed payout. Validators still mint via the coinbase; this is
+  the on-ramp for everyone else.
+- **Anchored to a recent block's committed `BodyHash`** — the commitment to the body that becomes
+  that block's erasure shards. The anchor is in the *signed header*, so **every node verifies a claim
+  without holding the (fragmented) body** — consensus-safe in a no-full-history network. It's unknown
+  until the block is produced, so solutions can't be precomputed and the target rotates with the chain.
+- **Paid from the treasury, not freshly minted** → the 21M cap + halving schedule are untouched.
+  Per-address cooldown (50 blocks) rate-limits; anchor must be confirmed (≥4 deep) and recent (≤256).
+  Sybil cost = the hashing per address.
+- `slctl faucet --wallet w.tok --rpc URL` mines the PoW and submits the claim (fee 0 — a brand-new
+  empty wallet can earn its first coins).
+- Chainparams: `FaucetAmount` (2 SHARD), `FaucetBits` (18), `FaucetCooldown` (50), `FaucetDepth` (4).
+  State persists per-address claim heights; replay/finality clones inherit faucet+PoW config
+  (`State.InheritConfig`) so reorg/finality replay validates faucet txs identically.
+- Tests: PoW solve/verify (anchor/addr/chain-bound), claim pays from treasury, bad-PoW rejected,
+  cooldown enforced, unconfirmed-anchor rejected. Consensus note: `KindFaucet` changes block
+  execution → all validators must run v0.26+ (mainnet validator upgraded).
+
 ## v0.25.0 — SHL goes Solidity-like (contracts rewritten)
 
 - **Functions + selector dispatch.** `fn name(params){…}` with an auto-generated dispatcher: calldata

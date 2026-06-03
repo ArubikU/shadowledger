@@ -187,6 +187,7 @@ func (c *Chain) advanceFinality() {
 		}
 	}
 	ns := c.replayBase.Clone()
+	ns.InheritConfig(c.state)            // replay base from disk lacks in-memory faucet/PoW config
 	for i := len(rev) - 1; i >= 0; i-- { // ascending order
 		if err := ns.ApplyBlock(rev[i]); err != nil {
 			return // shouldn't happen on the canonical chain; bail safely
@@ -262,6 +263,17 @@ func (c *Chain) HeadID() types.Hash {
 
 // State exposes the account ledger.
 func (c *Chain) State() *state.State { return c.state }
+
+// BodyHashAt returns the committed BodyHash of the block at the given height —
+// the faucet PoW anchor. Available to every node from the (signed) header alone,
+// with no need to hold the fragmented body. ok=false if the height is unknown.
+func (c *Chain) BodyHashAt(height uint64) ([32]byte, bool) {
+	hdr, _, err := c.store.GetHeader(height)
+	if err != nil {
+		return [32]byte{}, false
+	}
+	return [32]byte(hdr.BodyHash), true
+}
 
 // Spec returns the erasure shape the network policy currently picks.
 func (c *Chain) Spec() types.ShardSpec { return c.specFor() }

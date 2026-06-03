@@ -13,6 +13,7 @@ import (
 
 	"github.com/ArubikU/shadowledger/internal/crypto"
 	"github.com/ArubikU/shadowledger/internal/economy"
+	"github.com/ArubikU/shadowledger/internal/faucet"
 	"github.com/ArubikU/shadowledger/internal/regpow"
 	"github.com/ArubikU/shadowledger/internal/types"
 	"github.com/ArubikU/shadowledger/internal/vm"
@@ -76,7 +77,18 @@ type State struct {
 	Minted     uint64                        `json:"minted"`     // total $SHARD emitted (counts toward cap)
 	ChainID    uint64                        `json:"chain_id"`   // network id txs must match (replay protection)
 	RegPoWBits int                           `json:"-"`          // validator-registration PoW difficulty (0 = off)
-	lastLogs   []types.Log                   // events from the most recently applied block (transient)
+	// Faucet: addr -> height of its last successful PoW claim (rate limit). Persisted.
+	FaucetClaims map[crypto.Address]uint64 `json:"faucet_claims,omitempty"`
+	// Faucet params (set from chainparams, not persisted).
+	FaucetBits     int            `json:"-"`
+	FaucetAmount   uint64         `json:"-"`
+	FaucetCooldown uint64         `json:"-"`
+	FaucetDepth    uint64         `json:"-"`
+	FaucetSource   crypto.Address `json:"-"`
+	// AnchorBodyHash resolves a confirmed block's committed BodyHash by height
+	// (set by chain). nil disables faucet claims (e.g. unit tests without a chain).
+	AnchorBodyHash func(height uint64) ([32]byte, bool) `json:"-"`
+	lastLogs       []types.Log                          // events from the most recently applied block (transient)
 }
 
 // SetRegPoWBits sets the difficulty (leading zero bits) of the validator
@@ -85,6 +97,40 @@ func (s *State) SetRegPoWBits(bits int) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.RegPoWBits = bits
+}
+
+// SetFaucet configures the PoW faucet: difficulty, payout, per-address cooldown,
+// min anchor depth, the treasury the payout is drawn from, and the resolver that
+// looks up a confirmed block's committed BodyHash (the PoW anchor). amount==0 or
+// anchor==nil disables the faucet.
+func (s *State) SetFaucet(bits int, amount, cooldown, depth uint64, source crypto.Address, anchor func(uint64) ([32]byte, bool)) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.FaucetBits = bits
+	s.FaucetAmount = amount
+	s.FaucetCooldown = cooldown
+	s.FaucetDepth = depth
+	s.FaucetSource = source
+	s.AnchorBodyHash = anchor
+	if s.FaucetClaims == nil {
+		s.FaucetClaims = map[crypto.Address]uint64{}
+	}
+}
+
+// InheritConfig copies the non-persisted protocol configuration (chain id, PoW
+// difficulties, faucet params + anchor resolver) from src. Used on replay-base
+// clones, which are restored from disk and so lack these in-memory settings.
+func (s *State) InheritConfig(src *State) {
+	src.mu.RLock()
+	bits, amt, cd, depth, srcAddr, anchor := src.FaucetBits, src.FaucetAmount, src.FaucetCooldown, src.FaucetDepth, src.FaucetSource, src.AnchorBodyHash
+	chainID, reg := src.ChainID, src.RegPoWBits
+	src.mu.RUnlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.ChainID, s.RegPoWBits = chainID, reg
+	s.FaucetBits, s.FaucetAmount = bits, amt
+	s.FaucetCooldown, s.FaucetDepth = cd, depth
+	s.FaucetSource, s.AnchorBodyHash = srcAddr, anchor
 }
 
 // SetChainID sets the network id transactions must carry.
@@ -104,8 +150,9 @@ func (s *State) LastLogs() []types.Log {
 // New returns an empty state.
 func New() *State {
 	return &State{
-		Accounts:   make(map[crypto.Address]*Account),
-		Validators: make(map[crypto.Address]*Validator),
+		Accounts:     make(map[crypto.Address]*Account),
+		Validators:   make(map[crypto.Address]*Validator),
+		FaucetClaims: make(map[crypto.Address]uint64),
 	}
 }
 
@@ -191,6 +238,12 @@ func (s *State) Clone() *State {
 	cp.Minted = s.Minted
 	cp.ChainID = s.ChainID
 	cp.RegPoWBits = s.RegPoWBits
+	for a, h := range s.FaucetClaims {
+		cp.FaucetClaims[a] = h
+	}
+	cp.FaucetBits, cp.FaucetAmount = s.FaucetBits, s.FaucetAmount
+	cp.FaucetCooldown, cp.FaucetDepth = s.FaucetCooldown, s.FaucetDepth
+	cp.FaucetSource, cp.AnchorBodyHash = s.FaucetSource, s.AnchorBodyHash
 	return cp
 }
 
@@ -210,6 +263,10 @@ func (s *State) ReplaceWith(other *State) {
 	}
 	s.Height = other.Height
 	s.Minted = other.Minted
+	s.FaucetClaims = make(map[crypto.Address]uint64, len(other.FaucetClaims))
+	for a, h := range other.FaucetClaims {
+		s.FaucetClaims[a] = h
+	}
 }
 
 func (s *State) acct(a crypto.Address) *Account {
@@ -251,6 +308,11 @@ var (
 	ErrBadEvidence      = errors.New("state: invalid equivocation evidence")
 	ErrBadChainID       = errors.New("state: transaction chain id mismatch (wrong network)")
 	ErrBadRegPoW        = errors.New("state: invalid validator-registration proof-of-work")
+	ErrFaucetDisabled   = errors.New("state: faucet disabled")
+	ErrBadFaucet        = errors.New("state: malformed or stale faucet claim")
+	ErrBadFaucetPoW     = errors.New("state: invalid faucet proof-of-work")
+	ErrFaucetCooldown   = errors.New("state: faucet claim too soon (cooldown)")
+	ErrFaucetDry        = errors.New("state: faucet treasury exhausted")
 )
 
 // applySlash verifies equivocation evidence (two validly-signed conflicting
@@ -445,6 +507,51 @@ func (s *State) ApplyBlock(b *types.Block) error {
 			// Return the bond; the value field (t.Amount) must be zero here.
 			s.acct(t.From).Balance += v.Bond + t.Amount
 			delete(s.Validators, t.From)
+		case types.KindFaucet:
+			// Follower on-ramp: PoW against a recent block's committed BodyHash,
+			// paid from the treasury. Data = anchorHeight(8) || nonce(8).
+			if s.FaucetAmount == 0 || s.AnchorBodyHash == nil {
+				rollback()
+				return ErrFaucetDisabled
+			}
+			if len(t.Data) < 16 {
+				rollback()
+				return ErrBadFaucet
+			}
+			anchorHeight := binary.BigEndian.Uint64(t.Data[0:8])
+			nonce := binary.BigEndian.Uint64(t.Data[8:16])
+			H := b.Header.Height
+			// Anchor must be confirmed (>= FaucetDepth deep) and recent (<=256 back),
+			// so claims track the live chain and can't be precomputed long in advance.
+			if anchorHeight+s.FaucetDepth > H || anchorHeight+256 < H {
+				rollback()
+				return ErrBadFaucet
+			}
+			anchor, ok := s.AnchorBodyHash(anchorHeight)
+			if !ok {
+				rollback()
+				return ErrBadFaucet
+			}
+			if !faucet.Verify(s.ChainID, t.From, anchor, nonce, s.FaucetBits) {
+				rollback()
+				return ErrBadFaucetPoW
+			}
+			if last, seen := s.FaucetClaims[t.From]; seen && H < last+s.FaucetCooldown {
+				rollback()
+				return ErrFaucetCooldown
+			}
+			src := s.acct(s.FaucetSource)
+			if src.Balance < s.FaucetAmount {
+				rollback()
+				return ErrFaucetDry
+			}
+			snap(s.FaucetSource)
+			src.Balance -= s.FaucetAmount
+			s.acct(t.From).Balance += s.FaucetAmount
+			if s.FaucetClaims == nil {
+				s.FaucetClaims = map[crypto.Address]uint64{}
+			}
+			s.FaucetClaims[t.From] = H
 		default: // KindTransfer
 			snap(t.To)
 			s.acct(t.To).Balance += t.Amount

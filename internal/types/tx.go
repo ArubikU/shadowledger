@@ -25,6 +25,7 @@ const (
 	KindRegister   uint8 = 3 // register as a validator, locking Amount as a bond
 	KindUnregister uint8 = 4 // exit the validator set, unlocking the bond
 	KindSlash      uint8 = 5 // report equivocation; Data = two conflicting signed headers
+	KindFaucet     uint8 = 6 // claim faucet $SHARD via PoW; Data = anchorHeight(8) || nonce(8)
 )
 
 // EquivocationEvidence is two conflicting headers signed by the same validator

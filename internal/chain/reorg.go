@@ -114,6 +114,7 @@ func (c *Chain) reorgToBest() error {
 		return nil // deeper than our rewind floor; keep current head
 	}
 	ns := c.replayBase.Clone()
+	ns.InheritConfig(c.state) // replay base from disk lacks in-memory faucet/PoW config
 	for _, b := range branch {
 		if err := ns.ApplyBlock(b); err != nil {
 			return ErrReorgReplay

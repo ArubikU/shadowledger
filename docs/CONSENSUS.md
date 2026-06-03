@@ -35,6 +35,17 @@ How people compete:
 - **To earn (mint):** store more assigned shards and prove it — proven storage weights leader
   election (the ongoing race; deterministic weighting lands with on-chain storage proofs).
 
+## How does a follower with no coins get started? (v0.26 PoW faucet)
+
+Validators mint via the coinbase, but a brand-new follower has zero $SHARD — can't pay gas, can't
+post a bond. The **PoW faucet** is the on-ramp: mine a nonce so `H(chainID ‖ yourAddr ‖
+recentBlockBodyHash ‖ nonce)` has N leading zero bits, submit a `KindFaucet` tx (fee 0), and receive
+a small fixed payout from the treasury. `slctl faucet --wallet w.tok`. It is Bitcoin-style work, but
+the target is anchored to a recent block's committed `BodyHash` (the commitment to that block's
+shards) — so every node verifies it from the signed header alone, no full body needed. Payout is from
+the treasury (not newly minted → cap untouched); a per-address cooldown + the hashing cost rate-limit
+it. Enough to bootstrap deploying a contract or saving toward a validator bond.
+
 ## Does everyone mint?
 
 Not yet. The goal is: **any node that proves it stores its assigned shards can be in the minting
