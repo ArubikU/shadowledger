@@ -185,6 +185,34 @@ score rises (e.g.\ to several within the first minutes after the upgrade, visibl
 registry), which the election weighting then reads. Block-production odds therefore track proven
 storage in the running system, not only in design or in unit tests.
 
+\subsection{Multi-node deployment}
+Beyond the analytical and single-node measurements, we ran a real \emph{multi-process} cluster:
+three independent node processes, each with its own data directory and ports, communicating over the
+actual P2P stack (DNS-seed plus peer-exchange discovery, block and shard gossip, snapshot sync) on a
+loopback network. This exercises real message passing, real cross-process shard transfer, and the
+real consensus engine, not a single-core simulation; it does not model wide-area latency or
+geographic partition, which we flag and leave to a distributed testbed (\S\ref{sec:disc}).
+
+We observe the following on the cluster. (i) \textbf{Membership and registration:} two follower
+nodes joined, registered as validators (locking a bond and solving the registration PoW), and the
+on-chain registry grew to three on every node, with no reconfiguration round. (ii) \textbf{Storage
+proofs across nodes:} each new validator's auto-submitted storage proofs were accepted on-chain and
+its storage score rose, visible to all nodes in the registry. (iii) \textbf{Storage-weighted
+rotation:} over a 25-block window the two validators that had accrued storage proofs produced 11 and
+10 blocks against 4 for the un-proven genesis validator, the storage weighting of
+\S\ref{sec:consensus} acting in a live multi-validator setting rather than only in a unit test.
+(iv) \textbf{Liveness under failure:} killing one validator did not stall the chain; the remaining
+two continued to produce via the round fallback.
+
+The cluster also surfaced a \emph{convergence} limitation that a single-node test cannot: a validator
+taken offline and restarted, having fallen behind, would extend its own short fork rather than adopt
+the network's heavier chain, because block gossip is push-only (no backfill) and the node kept
+producing while behind. We address the production side directly, a node now suppresses block
+production whenever a peer is ahead and re-syncs instead, so it stops extending a stale branch; fully
+seamless mid-flight catch-up for a long-offline validator (incremental block backfill) remains an
+open item. We report this rather than hide it: it is exactly the class of issue that real
+multi-process and, ultimately, wide-area testing exists to expose.
+
 \subsection{Functional and security checks}
 \begin{itemize}
   \item \textbf{End-to-end.} The deployed network produced and validated several thousand

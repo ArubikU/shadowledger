@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1 Portable) (preloaded format=pdflatex 2026.5.19)  3 JUN 2026 18:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1 Portable) (preloaded format=pdflatex 2026.5.19)  4 JUN 2026 09:51
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1904,27 +1904,31 @@ de=log unsupported (yet).
 
 Class acmart Warning: A possible image without description on input line 71.
 
-[9.9] [10.10]) (secciones/13-discussion.tex) (secciones/14-rationale.tex)
-(secciones/15-conclusion.tex
+[9.9] [10.10]) (secciones/13-discussion.tex) (secciones/14-rationale.tex
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [11.11])
+(secciones/15-conclusion.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+)
 (D:\Github\ShadowLedger\Tesis\output\main.bbl
 LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
 (Font)              scaled to size 7.0pt on input line 56.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
 (Font)              scaled to size 7.3pt on input line 60.
 
-Underfull \vbox (badness 3428) has occurred while \output is active []
-
-
 Underfull \hbox (badness 1163) in paragraph at lines 209--215
 \T1/LinuxLibertineT-TLF/m/n/7 (+20) Se-cure Foun-tain Ar-chi-tec-ture for Slash
 -ing Stor-age Costs in Blockchains.
  []
 
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [12.12]
 LaTeX Info: Redefining \tempurl on input line 408.
-[12.12])
+)
 
 Class acmart Warning: Some images may lack descriptions.
 (acmart)              ACM is committed to complying with the upcoming US ADA ht
@@ -1963,14 +1967,14 @@ LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: B17F9181393ED0C241449A184A9A9E8D;5428.
+(rerunfilecheck)             Checksum: 89AD266E8FB4E728B8ABC3C4527EE654;5624.
  ) 
 Here is how much of TeX's memory you used:
- 45840 strings out of 474486
- 1005128 string characters out of 5739017
+ 45845 strings out of 474486
+ 1005238 string characters out of 5739017
  2056542 words of memory out of 5000000
- 66262 multiletter control sequences out of 15000+600000
- 819715 words of font info for 628 fonts, out of 8000000 for 9000
+ 66263 multiletter control sequences out of 15000+600000
+ 819980 words of font info for 630 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
  90i,19n,131p,1003b,2282s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/public/in
@@ -1995,10 +1999,10 @@ rs/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/public/newtx/txmia
 X.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/publi
 c/newtx/txsym.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts
 /type1/public/newtx/txsys.pfb>
-Output written on D:\Github\ShadowLedger\Tesis\output\main.pdf (13 pages, 70878
+Output written on D:\Github\ShadowLedger\Tesis\output\main.pdf (13 pages, 71199
 2 bytes).
 PDF statistics:
- 604 PDF objects out of 1000 (max. 8388607)
- 120 named destinations out of 1000 (max. 500000)
- 138509 words of extra memory for PDF output out of 154059 (max. 10000000)
+ 611 PDF objects out of 1000 (max. 8388607)
+ 121 named destinations out of 1000 (max. 500000)
+ 138517 words of extra memory for PDF output out of 154059 (max. 10000000)
 

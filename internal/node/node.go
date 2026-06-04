@@ -234,9 +234,11 @@ func (n *Node) loops(ctx context.Context) {
 			return
 		case <-discover.C:
 			n.srv.Discover()
-			if !n.eng.IsValidator() {
-				n.trySync() // followers keep catching up
-			}
+			// Everyone catches up to the best peer when behind, validators included:
+			// a validator that fell behind (e.g. was offline during a partition) must
+			// re-sync to rejoin, since block gossip is push-only and does not backfill
+			// the blocks it missed. trySync is a no-op when already at the tip.
+			n.trySync()
 		case <-save.C:
 			n.persist()
 		case <-prove.C:
@@ -254,6 +256,12 @@ func (n *Node) loops(ctx context.Context) {
 func (n *Node) maybeProduce() {
 	head, ok := n.chain.Head()
 	if !ok {
+		return
+	}
+	// Don't extend a stale fork: if a peer is ahead of us, we fell behind (e.g. were
+	// offline during a partition). Stay silent and let trySync adopt the heavier
+	// chain instead of producing competing blocks on our short branch.
+	if best := n.srv.BestPeerHeight(); best > head.Height {
 		return
 	}
 	// Consensus round = how many block-times have elapsed since the head. If the

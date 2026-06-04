@@ -187,6 +187,19 @@ func (s *Server) Discover() int {
 	return total
 }
 
+// BestPeerHeight returns the greatest head height among known peers (0 if none
+// reachable). Used to suppress block production while behind, so a validator that
+// fell behind re-syncs instead of extending a stale side fork.
+func (s *Server) BestPeerHeight() uint64 {
+	var best uint64
+	for _, p := range s.store.Peers() {
+		if h, err := s.remoteHead(p.Control); err == nil && h.Height > best {
+			best = h.Height
+		}
+	}
+	return best
+}
+
 // remoteHead fetches a peer's current head header.
 func (s *Server) remoteHead(controlURL string) (types.Header, error) {
 	b, err := s.get(controlURL + "/head")
