@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1 Portable) (preloaded format=pdflatex 2026.5.19)  4 JUN 2026 09:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1 Portable) (preloaded format=pdflatex 2026.5.19)  4 JUN 2026 10:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1904,15 +1904,15 @@ de=log unsupported (yet).
 
 Class acmart Warning: A possible image without description on input line 71.
 
-[9.9] [10.10]) (secciones/13-discussion.tex) (secciones/14-rationale.tex
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [11.11])
-(secciones/15-conclusion.tex
+[9.9] [10.10]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 )
-(D:\Github\ShadowLedger\Tesis\output\main.bbl
+(secciones/13-discussion.tex) (secciones/14-rationale.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [11.11])
+(secciones/15-conclusion.tex) (D:\Github\ShadowLedger\Tesis\output\main.bbl
 LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
 (Font)              scaled to size 7.0pt on input line 56.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
@@ -1970,11 +1970,11 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 89AD266E8FB4E728B8ABC3C4527EE654;5624.
  ) 
 Here is how much of TeX's memory you used:
- 45845 strings out of 474486
- 1005238 string characters out of 5739017
+ 45848 strings out of 474486
+ 1005310 string characters out of 5739017
  2056542 words of memory out of 5000000
  66263 multiletter control sequences out of 15000+600000
- 819980 words of font info for 630 fonts, out of 8000000 for 9000
+ 820253 words of font info for 632 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
  90i,19n,131p,1003b,2282s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/public/in
@@ -1999,10 +1999,10 @@ rs/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/public/newtx/txmia
 X.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts/type1/publi
 c/newtx/txsym.pfb><C:/Users/ejane/scoop/apps/latex/current/texmfs/install/fonts
 /type1/public/newtx/txsys.pfb>
-Output written on D:\Github\ShadowLedger\Tesis\output\main.pdf (13 pages, 71199
-2 bytes).
+Output written on D:\Github\ShadowLedger\Tesis\output\main.pdf (13 pages, 71225
+8 bytes).
 PDF statistics:
- 611 PDF objects out of 1000 (max. 8388607)
+ 612 PDF objects out of 1000 (max. 8388607)
  121 named destinations out of 1000 (max. 500000)
  138517 words of extra memory for PDF output out of 154059 (max. 10000000)
 

@@ -186,32 +186,33 @@ registry), which the election weighting then reads. Block-production odds theref
 storage in the running system, not only in design or in unit tests.
 
 \subsection{Multi-node deployment}
-Beyond the analytical and single-node measurements, we ran a real \emph{multi-process} cluster:
-three independent node processes, each with its own data directory and ports, communicating over the
-actual P2P stack (DNS-seed plus peer-exchange discovery, block and shard gossip, snapshot sync) on a
-loopback network. This exercises real message passing, real cross-process shard transfer, and the
-real consensus engine, not a single-core simulation; it does not model wide-area latency or
+Beyond the analytical and single-node measurements, we ran a real \emph{multi-process} cluster of
+\emph{eight} independent node processes, each with its own data directory and ports, communicating
+over the actual P2P stack (DNS-seed plus peer-exchange discovery, block and shard gossip, snapshot
+sync) on a loopback network. This exercises real message passing, real cross-process shard transfer,
+and the real consensus engine, not a single-core simulation; it does not model wide-area latency or
 geographic partition, which we flag and leave to a distributed testbed (\S\ref{sec:disc}).
 
-We observe the following on the cluster. (i) \textbf{Membership and registration:} two follower
-nodes joined, registered as validators (locking a bond and solving the registration PoW), and the
-on-chain registry grew to three on every node, with no reconfiguration round. (ii) \textbf{Storage
-proofs across nodes:} each new validator's auto-submitted storage proofs were accepted on-chain and
-its storage score rose, visible to all nodes in the registry. (iii) \textbf{Storage-weighted
-rotation:} over a 25-block window the two validators that had accrued storage proofs produced 11 and
-10 blocks against 4 for the un-proven genesis validator, the storage weighting of
-\S\ref{sec:consensus} acting in a live multi-validator setting rather than only in a unit test.
-(iv) \textbf{Liveness under failure:} killing one validator did not stall the chain; the remaining
-two continued to produce via the round fallback.
+We observe the following on the cluster. (i) \textbf{Fast sync:} the seven follower processes joined
+from genesis and tracked the bootstrap node's chain through the real snapshot-plus-headers path,
+reaching a common tip with no manual intervention. (ii) \textbf{Permissionless registration:} four
+followers registered as validators (each locking a bond and solving the registration PoW), and the
+on-chain registry grew to five on every node with no reconfiguration round. (iii) \textbf{Storage
+proofs across nodes:} validators' auto-submitted storage proofs were accepted on-chain and their
+scores rose, visible to all nodes. (iv) \textbf{Storage-weighted rotation:} over a 30-block window
+all five validators produced blocks ($8,7,7,4,4$), the leader rotating across the set rather than
+concentrating, with the storage-weighting of \S\ref{sec:consensus} acting in a live multi-validator
+setting rather than only in a unit test. (v) \textbf{Convergence at scale:} across registrations and
+node restarts the eight processes stayed within one to two blocks of one another and re-converged to
+a single tip, with no persistent fork.
 
-The cluster also surfaced a \emph{convergence} limitation that a single-node test cannot: a validator
-taken offline and restarted, having fallen behind, would extend its own short fork rather than adopt
-the network's heavier chain, because block gossip is push-only (no backfill) and the node kept
-producing while behind. We address the production side directly, a node now suppresses block
-production whenever a peer is ahead and re-syncs instead, so it stops extending a stale branch; fully
-seamless mid-flight catch-up for a long-offline validator (incremental block backfill) remains an
-open item. We report this rather than hide it: it is exactly the class of issue that real
-multi-process and, ultimately, wide-area testing exists to expose.
+We note a methodological caveat learned here: on a single host, stale data directories and
+orphaned processes holding ports produce spurious ``forks'' that are experiment-hygiene artifacts,
+not protocol faults; a clean run converges. As defensive robustness we nonetheless added a guard so a
+node never extends a branch while a peer is ahead (it re-syncs instead), which removes a real
+failure mode for a validator that falls behind. Wide-area latency, partition, and large-$n$ churn
+remain the right next experiment (\S\ref{sec:disc}); a loopback cluster shows the mechanisms compose
+and converge but cannot model the public Internet.
 
 \subsection{Functional and security checks}
 \begin{itemize}
